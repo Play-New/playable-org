@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-world-model / build.py — Build a substrate skeleton for the four-part analysis.
+world-model / build.py — Build a structure skeleton for the four-part analysis.
 
 Walks Org/ and emits a JSON skeleton that the agent fills with capability
 contracts, world-model observations, intelligence-layer compositions, and
 failure signals. The builder does not invent capabilities — it surfaces
-candidates and provides the substrate paths the agent will use as evidence.
+candidates and provides the structure paths the agent will use as evidence.
 
 Usage:
     python3 build.py --org-dir <path>
@@ -61,8 +61,8 @@ def get_title(text: str) -> str:
     return m.group(1).strip() if m else ""
 
 
-def collect_substrate(org_dir: Path, scope_unit: str | None) -> dict[str, Any]:
-    """Walk the substrate and emit summary structures the agent will use."""
+def collect_structure(org_dir: Path, scope_unit: str | None) -> dict[str, Any]:
+    """Walk the structure and emit summary structures the agent will use."""
     units: list[dict] = []
     for f in sorted((org_dir / "nodes" / "units").glob("*.md")):
         fm = parse_frontmatter(f.read_text(encoding="utf-8"))
@@ -160,7 +160,7 @@ def aei_summary(matches_path: Path | None, activities: list[dict]) -> dict[str, 
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build world-model substrate skeleton.")
+    parser = argparse.ArgumentParser(description="Build world-model structure skeleton.")
     parser.add_argument("--org-dir", required=True, help="Path to Org/")
     parser.add_argument("--ai-exposure-matches", help="Optional matches.json from skills/playbooks/ai-exposure")
     parser.add_argument("--scope", help="Optional unit id to scope analysis (default: whole org)")
@@ -172,21 +172,21 @@ def main() -> int:
         print(f"Org directory not found: {org_dir}", file=sys.stderr)
         return 1
 
-    substrate = collect_substrate(org_dir, args.scope)
-    aei = aei_summary(Path(args.ai_exposure_matches) if args.ai_exposure_matches else None, substrate["activities"])
+    structure = collect_structure(org_dir, args.scope)
+    aei = aei_summary(Path(args.ai_exposure_matches) if args.ai_exposure_matches else None, structure["activities"])
 
     skeleton = {
         "_scope": args.scope or "whole-org",
-        "_substrate_summary": {
-            "units_total": len(substrate["units"]),
-            "activities_total": len(substrate["activities"]),
-            "stakeholders_total": len(substrate["stakeholders"]),
-            "commitments_total": len(substrate["commitments"]),
-            "divisions": [u["id"] for u in substrate["units"] if u.get("level") == "division"],
-            "areas": [u["id"] for u in substrate["units"] if u.get("level") == "area"],
+        "_structure_summary": {
+            "units_total": len(structure["units"]),
+            "activities_total": len(structure["activities"]),
+            "stakeholders_total": len(structure["stakeholders"]),
+            "commitments_total": len(structure["commitments"]),
+            "divisions": [u["id"] for u in structure["units"] if u.get("level") == "division"],
+            "areas": [u["id"] for u in structure["units"] if u.get("level") == "area"],
         },
         "_aei_summary": aei,
-        "_substrate": substrate,
+        "_structure": structure,
         # Agent fills these:
         "capabilities": [],          # list of capability dicts
         "world_model_company": {     # how the org understands itself
@@ -202,17 +202,17 @@ def main() -> int:
             "current_human_compositions": [],   # list of {trigger, capabilities_composed, failure_modes}
             "potential_compositions": [],       # list of {trigger, capabilities, precondition}
         },
-        "interfaces": [],            # list of {name, surfaces_capabilities, _substrate}
-        "failure_signals": [],       # list of {trigger, composition_attempted, missing_capability, substrate_evidence}
+        "interfaces": [],            # list of {name, surfaces_capabilities, _structure}
+        "failure_signals": [],       # list of {trigger, composition_attempted, missing_capability, structure_evidence}
     }
 
     Path(args.out).write_text(json.dumps(skeleton, ensure_ascii=False, indent=2), encoding="utf-8")
     print(
         f"Wrote {Path(args.out).resolve()} "
-        f"(units={skeleton['_substrate_summary']['units_total']}, "
-        f"activities={skeleton['_substrate_summary']['activities_total']}, "
-        f"stakeholders={skeleton['_substrate_summary']['stakeholders_total']}, "
-        f"commitments={skeleton['_substrate_summary']['commitments_total']}, "
+        f"(units={skeleton['_structure_summary']['units_total']}, "
+        f"activities={skeleton['_structure_summary']['activities_total']}, "
+        f"stakeholders={skeleton['_structure_summary']['stakeholders_total']}, "
+        f"commitments={skeleton['_structure_summary']['commitments_total']}, "
         f"aei_available={aei['available']})"
     )
     return 0

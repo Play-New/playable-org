@@ -3,7 +3,7 @@
 value-map / audit.py — Verify a WardleyMap JSON before commit.
 
 Deterministic gate: catches missing positions, broken edges, schema-rule
-violations, components without substrate evidence, and ai_effect / numerical
+violations, components without structure evidence, and ai_effect / numerical
 claims that don't trace to attached AEI matches.
 
 Usage:
@@ -121,11 +121,11 @@ def audit_components(comps: list[dict]) -> list[str]:
                     f"  [{cid} {label}] evolution_target ({c['evolution_target']}) "
                     f"< evolution ({c['evolution']})"
                 )
-        # Substrate grounding
-        if not c.get("_substrate_id") and not c.get("is_new"):
+        # Structure grounding
+        if not c.get("_structure_id") and not c.get("is_new"):
             issues.append(
-                f"  [{cid} {label}] has no _substrate_id and is not is_new — "
-                f"agent inserted a component without substrate evidence"
+                f"  [{cid} {label}] has no _structure_id and is not is_new — "
+                f"agent inserted a component without structure evidence"
             )
         # ai_effect must trace to AEI when present
         ai_eff = c.get("ai_effect", "")
@@ -207,11 +207,11 @@ def audit_edges(edges: list[dict], anchors: list[dict], components: list[dict], 
     return issues
 
 
-def audit_substrate_existence(components: list[dict], org_dir: Path) -> list[str]:
-    """Check that _substrate_id values point to real files."""
+def audit_structure_existence(components: list[dict], org_dir: Path) -> list[str]:
+    """Check that _structure_id values point to real files."""
     issues: list[str] = []
     for c in components:
-        sid = c.get("_substrate_id")
+        sid = c.get("_structure_id")
         kind = c.get("_kind", "")
         if not sid:
             continue
@@ -223,7 +223,7 @@ def audit_substrate_existence(components: list[dict], org_dir: Path) -> list[str
         ]
         if not any(p.exists() for p in candidates):
             issues.append(
-                f"  [{c.get('id')} {c.get('label')}] _substrate_id '{sid}' not found in substrate"
+                f"  [{c.get('id')} {c.get('label')}] _structure_id '{sid}' not found in structure"
             )
     return issues
 
@@ -267,7 +267,7 @@ def main() -> int:
     issues.extend(audit_components(components))
     issues.extend(audit_anchors(anchors))
     issues.extend(audit_edges(edges, anchors, components, end_users))
-    issues.extend(audit_substrate_existence(components, org_dir))
+    issues.extend(audit_structure_existence(components, org_dir))
 
     # Component count warning
     n_comp = len(components)

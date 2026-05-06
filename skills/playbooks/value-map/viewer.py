@@ -14,7 +14,7 @@ view readable.
 Usage:
     python3 viewer.py --map <chain.json> --html <chain.html> [--svg <chain.svg>]
 
-Internal fields prefixed with `_` (e.g., `_aei`, `_substrate_id`) are
+Internal fields prefixed with `_` (e.g., `_aei`, `_structure_id`) are
 consumed by the modal but stripped from the visible SVG.
 """
 
@@ -447,7 +447,7 @@ header h1 { font-size: 1.9rem; font-weight: 600; letter-spacing: -0.02em; margin
 .modal .aei-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 12px; }
 .modal .aei-table th, .modal .aei-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 .modal .aei-table th { color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.7rem; background: var(--bg-soft); }
-.modal .substrate-ref { font-family: ui-monospace, SF Mono, Menlo, monospace; font-size: 0.75rem; color: var(--muted); margin-top: 14px; }
+.modal .structure-ref { font-family: ui-monospace, SF Mono, Menlo, monospace; font-size: 0.75rem; color: var(--muted); margin-top: 14px; }
 """
 
 
@@ -597,9 +597,9 @@ function renderModal(node) {{
     html += `</tbody></table>`;
   }}
 
-  // 6. Substrate ref
-  if (node._substrate_id) {{
-    html += `<div class="substrate-ref">Nodo substrate: <code>${{escapeHtml(node._substrate_id)}}</code>${{node._kind ? ' (' + escapeHtml(node._kind) + ')' : ''}}</div>`;
+  // 6. Structure ref
+  if (node._structure_id) {{
+    html += `<div class="structure-ref">Nodo struttura: <code>${{escapeHtml(node._structure_id)}}</code>${{node._kind ? ' (' + escapeHtml(node._kind) + ')' : ''}}</div>`;
   }}
 
   document.getElementById('modal-body').innerHTML = html;

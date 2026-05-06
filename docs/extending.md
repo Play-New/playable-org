@@ -20,8 +20,8 @@ Claude follows `skills/playbooks/new-play/SKILL.md`. Five questions:
 
 1. **What question does the playbook answer?** Must pass the repeatability test (would the org re-run this every quarter / after each restructuring?). One-shot questions are refused.
 2. **What is the anchor?** `full-org` | `commitment` | `unit` | `activity-set` | `stakeholder-set`.
-3. **What is the primitive?** Name + obligatory fields, with each field declaring its source (`substrate` | `aei` | `agent` | `numerical-derived`).
-4. **What proves a claim grounded?** For each obligatory field, the evidence rule (substrate path exists, AEI traceability, numerical traceability, external citation).
+3. **What is the primitive?** Name + obligatory fields, with each field declaring its source (`structure` | `aei` | `agent` | `numerical-derived`).
+4. **What proves a claim grounded?** For each obligatory field, the evidence rule (structure path exists, AEI traceability, numerical traceability, external citation).
 5. **Which viewer pattern?** Tabular distribution | 2-axis map | bundle bands | layered stack.
 
 The meta-skill picks the closest base playbook (default: value-map for 2-axis maps), forks the four files (`SKILL.md`, `build.py`, `audit.py`, `viewer.py`), and adds a row to `skills/ROADMAP.md` with status `pending`.

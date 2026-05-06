@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-value-map / build.py — Build a value-chain skeleton from substrate edges.
+value-map / build.py — Build a value-chain skeleton from structure edges.
 
-Reads the anchor (a commitment or a unit), walks substrate edges, and emits
-a WardleyMap JSON skeleton with components extracted from substrate activities
+Reads the anchor (a commitment or a unit), walks structure edges, and emits
+a WardleyMap JSON skeleton with components extracted from structure activities
 and the dependency edges derived from activity input/output frontmatter.
 
 The skeleton is deterministic. The agent positions components and writes
@@ -74,7 +74,7 @@ def get_title(text: str) -> str:
 
 
 def load_node(org_dir: Path, kind: str, node_id: str) -> tuple[dict, str]:
-    """Return (frontmatter, title) for a substrate node."""
+    """Return (frontmatter, title) for a structure node."""
     candidates = {
         "commitment": [org_dir / "commitments" / f"{node_id}.md"],
         "unit": [org_dir / "nodes" / "units" / f"{node_id}.md"],
@@ -166,7 +166,7 @@ def expand_unit_scope(org_dir: Path, unit_id: str) -> list[str]:
 
 
 def resolve_party_kind(org_dir: Path, party_id: str) -> str:
-    """Return 'unit' | 'stakeholder' | 'unknown' based on substrate location."""
+    """Return 'unit' | 'stakeholder' | 'unknown' based on structure location."""
     if (org_dir / "nodes" / "units" / f"{party_id}.md").exists():
         return "unit"
     if (org_dir / "nodes" / "stakeholders" / f"{party_id}.md").exists():
@@ -174,7 +174,7 @@ def resolve_party_kind(org_dir: Path, party_id: str) -> str:
     return "unknown"
 
 
-def build_io_edges(activities: list[dict], component_id_by_substrate: dict[str, str]) -> list[dict]:
+def build_io_edges(activities: list[dict], component_id_by_structure: dict[str, str]) -> list[dict]:
     """Edge from A to B when output of A overlaps with input of B."""
     edges: list[dict] = []
     seen: set[tuple[str, str]] = set()
@@ -185,8 +185,8 @@ def build_io_edges(activities: list[dict], component_id_by_substrate: dict[str, 
             outs = set(a["outputs"])
             ins = set(b["inputs"])
             if outs & ins:
-                ca = component_id_by_substrate[a["id"]]
-                cb = component_id_by_substrate[b["id"]]
+                ca = component_id_by_structure[a["id"]]
+                cb = component_id_by_structure[b["id"]]
                 key = (ca, cb)
                 if key not in seen:
                     edges.append({"from": ca, "to": cb})
@@ -194,22 +194,22 @@ def build_io_edges(activities: list[dict], component_id_by_substrate: dict[str, 
     return edges
 
 
-def build_unit_to_activity_edges(activities: list[dict], unit_component_id: dict[str, str], component_id_by_substrate: dict[str, str]) -> list[dict]:
+def build_unit_to_activity_edges(activities: list[dict], unit_component_id: dict[str, str], component_id_by_structure: dict[str, str]) -> list[dict]:
     """Edge from each unit container to its activities."""
     edges: list[dict] = []
     for a in activities:
         if a["unit"] in unit_component_id:
-            edges.append({"from": unit_component_id[a["unit"]], "to": component_id_by_substrate[a["id"]]})
+            edges.append({"from": unit_component_id[a["unit"]], "to": component_id_by_structure[a["id"]]})
     return edges
 
 
 def attach_aei(components: list[dict], matches_path: Path) -> int:
-    """Attach `_aei` to each component whose substrate id matches an entry in matches.json."""
+    """Attach `_aei` to each component whose structure id matches an entry in matches.json."""
     matches = json.loads(matches_path.read_text(encoding="utf-8"))
     by_id = {m["id"]: m for m in matches}
     attached = 0
     for c in components:
-        sid = c.get("_substrate_id")
+        sid = c.get("_structure_id")
         if sid and sid in by_id:
             mm = by_id[sid]
             top = mm.get("matches", [])[:3]
@@ -231,7 +231,7 @@ def attach_aei(components: list[dict], matches_path: Path) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build WardleyMap skeleton from substrate.")
+    parser = argparse.ArgumentParser(description="Build WardleyMap skeleton from structure.")
     parser.add_argument("--anchor", required=True, help="Anchor id (commitment or unit)")
     parser.add_argument("--kind", required=True, choices=["commitment", "unit"], help="Anchor type")
     parser.add_argument("--org-dir", required=True, help="Path to Org/")
@@ -265,7 +265,7 @@ def main() -> int:
         elif kind == "stakeholder":
             scope_stakeholders.append(p)
         else:
-            print(f"Warning: party '{p}' not found in substrate (units or stakeholders)", file=sys.stderr)
+            print(f"Warning: party '{p}' not found in structure (units or stakeholders)", file=sys.stderr)
 
     # De-dup units while preserving order.
     seen_u: set[str] = set()
@@ -277,7 +277,7 @@ def main() -> int:
         try:
             unit_records[u] = load_node(org_dir, "unit", u)
         except FileNotFoundError:
-            print(f"Warning: unit '{u}' not found in substrate", file=sys.stderr)
+            print(f"Warning: unit '{u}' not found in structure", file=sys.stderr)
             continue
 
     stakeholder_records: dict[str, tuple[dict, str]] = {}
@@ -291,7 +291,7 @@ def main() -> int:
 
     # 3. Build components. One per unit (kind=unit) + one per activity (kind=activity).
     components: list[dict] = []
-    component_id_by_substrate: dict[str, str] = {}
+    component_id_by_structure: dict[str, str] = {}
     unit_component_id: dict[str, str] = {}
 
     next_id = 1
@@ -301,19 +301,19 @@ def main() -> int:
         components.append({
             "id": cid,
             "label": title or u,
-            "_substrate_id": u,
+            "_structure_id": u,
             "_kind": "unit",
             "_description": fm.get("description", ""),
         })
         unit_component_id[u] = cid
-        component_id_by_substrate[u] = cid
+        component_id_by_structure[u] = cid
 
     for a in activities:
         cid = f"c{next_id}"; next_id += 1
         components.append({
             "id": cid,
             "label": a["title"],
-            "_substrate_id": a["id"],
+            "_structure_id": a["id"],
             "_kind": "activity",
             "_unit": a["unit"],
             "_description": a["description"],
@@ -321,7 +321,7 @@ def main() -> int:
             "_inputs": a["inputs"],
             "_outputs": a["outputs"],
         })
-        component_id_by_substrate[a["id"]] = cid
+        component_id_by_structure[a["id"]] = cid
 
     # Stakeholders as external components (no activities, just nodes).
     for s, (fm, title) in stakeholder_records.items():
@@ -329,16 +329,16 @@ def main() -> int:
         components.append({
             "id": cid,
             "label": title or s,
-            "_substrate_id": s,
+            "_structure_id": s,
             "_kind": "stakeholder",
             "_description": fm.get("description", ""),
         })
-        component_id_by_substrate[s] = cid
+        component_id_by_structure[s] = cid
 
     # 4. Build edges.
     edges: list[dict] = []
-    edges.extend(build_unit_to_activity_edges(activities, unit_component_id, component_id_by_substrate))
-    edges.extend(build_io_edges(activities, component_id_by_substrate))
+    edges.extend(build_unit_to_activity_edges(activities, unit_component_id, component_id_by_structure))
+    edges.extend(build_io_edges(activities, component_id_by_structure))
     # De-dup
     seen_edges = set()
     deduped_edges = []

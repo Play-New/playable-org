@@ -16,7 +16,7 @@ playable-org/
 │   ├── _assets/          embedded fonts + design assets
 │   ├── ingest/           one-source-at-a-time ingest workflow
 │   ├── lint/             quality control workflow
-│   ├── seed/             one-time bulk ingest (first install)
+│   ├── init/             one-time bulk ingest (first install)
 │   └── playbooks/        ai-exposure, value-map, reshuffle, world-model, new-play
 ├── docs/                 architecture, playbooks reference, extension guide
 ├── install.{sh,command,bat,ps1}  installers
@@ -97,7 +97,7 @@ The public template never modifies `Org/` content beyond the three identity stub
 
 ## Author names rule
 
-Names of analytical-framework authors (Wardley, Choudary, Dorsey, Botha, Cicero, Karpathy, etc.) appear only in `skills/` documentation, in this `CONTRIBUTING.md`, and in the public-facing `README.md`. They never appear under `Org/` (which is the substrate of facts cited from primary sources). Playbook output (viewer copy, modal text, agent chat replies about a play) follows the same rule: the methodology is described, the author is not named.
+Names of analytical-framework authors (Wardley, Choudary, Dorsey, Botha, Cicero, Karpathy, etc.) appear only in `skills/` documentation, in this `CONTRIBUTING.md`, and in the public-facing `README.md`. They never appear under `Org/` (which is the structure of facts cited from primary sources). Playbook output (viewer copy, modal text, agent chat replies about a play) follows the same rule: the methodology is described, the author is not named.
 
 ## License
 

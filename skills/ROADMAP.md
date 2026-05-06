@@ -2,7 +2,7 @@
 
 Four base playbooks plus one meta-skill. This file outlines what each does, what it consumes, what it produces, and the order they compose in.
 
-Author names appear here because `skills/` is the productizable layer. They never appear inside `Org/` artifacts (substrate or plays).
+Author names appear here because `skills/` is the productizable layer. They never appear inside `Org/` artifacts (structure or plays).
 
 ## Status
 
@@ -83,7 +83,7 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 **Anti-hallucination discipline.**
 - Every constraint claim cites a source or an activity body — not a generic claim about the sector.
 - "AI dissolves this constraint" requires citing the specific Anthropic-AEI signal or a recent capability demonstration.
-- Rebundle proposals are explicitly framed as proposals; the play does not overwrite substrate.
+- Rebundle proposals are explicitly framed as proposals; the play does not overwrite structure.
 
 **Good test cases for any organization.**
 - A multi-division pipeline that touches finance, legal, and a customer-facing function (the bundle is held by coordination cost; AI typically changes that first).
@@ -105,19 +105,19 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 
 **Key concepts borrowed.**
 - Capabilities as atomic primitives that are hard to acquire (regulation, network effects, expertise) and have no UI of their own.
-- World model: the organization's continuously-updated understanding of its own operations and of its users; the substrate the intelligence layer queries.
+- World model: the organization's continuously-updated understanding of its own operations and of its users; the structure the intelligence layer queries.
 - Intelligence layer: what composes capabilities into solutions for specific users at specific moments. Not "AI as productivity tool"; AI as the coordination mechanism that replaces middle-management information routing.
 - The roadmap is what the intelligence layer fails to compose. User signal — not PM hypothesis — generates the backlog.
 - Three roles emerge: ICs who build capabilities, DRIs who own outcomes, player-coaches who develop people. No permanent middle layer.
 
 **Anti-hallucination discipline.**
 - A "capability" must be reachable from at least three activities in different units OR be a regulated/credentialed primitive (notarial, legal, banking).
-- The world-model section must cite which substrate observations feed it — no hand-wave "we have data".
+- The world-model section must cite which structure observations feed it — no hand-wave "we have data".
 - Intelligence-layer compositions are conditional: each cites the capabilities composed and the user signal that would trigger composition.
 - Failure signals must cite a specific user need that no current composition addresses.
 
 **Open question.**
-- Calibration of the four-part model to a non-profit foundation. Block's frame is built on transactional businesses where money is "the most honest signal in the world". For an organization, the equivalent honest signals are donation patterns, grant outcomes, testator pre-mortem behavior. The skill should adapt the customer-world-model section to whatever signals the substrate actually has.
+- Calibration of the four-part model to a non-profit foundation. Block's frame is built on transactional businesses where money is "the most honest signal in the world". For an organization, the equivalent honest signals are donation patterns, grant outcomes, testator pre-mortem behavior. The skill should adapt the customer-world-model section to whatever signals the structure actually has.
 
 ## 5 — new-play
 
@@ -125,22 +125,22 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 
 **Inputs.**
 - A question the user wants to ask repeatedly about their organization (e.g., "where are the fragility points in our commitments?", "which sub-team is overcommitted?", "what would a partner-of-the-month playbook show?").
-- The existing four skills as composable patterns (substrate access, AEI overlay, audit gate structure, viewer template).
+- The existing four skills as composable patterns (structure access, AEI overlay, audit gate structure, viewer template).
 - Optionally: a reference to source material the user wants the new skill grounded in.
 
 **Outputs.**
 - A new skill folder under `skills/playbooks/`.
 - A SKILL.md following the established template (output style, methodology, schema, workflow, audit contract).
-- Stub `build.py`, `audit.py`, `viewer.py` with the substrate-walking and AEI-attaching machinery already wired in, plus the question-specific shape.
+- Stub `build.py`, `audit.py`, `viewer.py` with the structure-walking and AEI-attaching machinery already wired in, plus the question-specific shape.
 
 **Key concepts.**
 - Composition over template. The skill does not produce a fixed playbook; it composes one from the user's question and the existing primitives.
 - Plays are the verb the user becomes capable of. Skills are the playbooks they accumulate.
-- The substrate, the mcp server, and the four base skills are the primitives the meta-skill composes.
+- The structure, the mcp server, and the four base skills are the primitives the meta-skill composes.
 
 **Anti-hallucination discipline.**
-- Generated SKILL.md must be substrate-grounded: every audit rule it proposes must trace to a substrate constraint.
-- Generated `build.py` reuses the existing primitives (substrate readers, AEI attachment) — the meta-skill does not invent file formats or schemas.
+- Generated SKILL.md must be structure-grounded: every audit rule it proposes must trace to a structure constraint.
+- Generated `build.py` reuses the existing primitives (structure readers, AEI attachment) — the meta-skill does not invent file formats or schemas.
 - The output is reviewed before being committed to `skills/playbooks/`. The meta-skill produces a draft; the user accepts or rewrites.
 
 **Open question.**
@@ -156,9 +156,9 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 
 ## Constraints that apply to all three
 
-- English skill content. Italian content lives in plays and substrate, not in skills.
+- English skill content. Italian content lives in plays and structure, not in skills.
 - Author names allowed in skill body; not allowed in any artifact under `Org/`.
-- Substrate-first: every numerical or structural claim in a play traces to substrate.
+- Structure-first: every numerical or structural claim in a play traces to structure.
 - One play, one date, frozen at creation.
 - A standalone audit script that another agent can run before commit.
 - Generic placeholders in skill examples — no organization-specific terms in the productizable layer.

@@ -3,7 +3,7 @@
 world-model / audit.py — Verify a world-model JSON.
 
 Checks each capability against the five-property test (CAPABILITIES.md),
-verifies substrate evidence exists, enforces the three-actors rule, and
+verifies structure evidence exists, enforces the three-actors rule, and
 checks failure signals are concrete and cited.
 
 Usage:
@@ -62,23 +62,23 @@ def audit_capabilities(caps: list[dict], org_dir: Path) -> list[str]:
         # current_owners
         owners = c.get("current_owners") or []
         if len(owners) == 0:
-            issues.append(f"  capability '{name}' has no current_owners; cite which substrate units host the activities composing it")
+            issues.append(f"  capability '{name}' has no current_owners; cite which structure units host the activities composing it")
 
         # moat_grade
         mg = c.get("moat_grade")
         if mg not in ALLOWED_MOAT_GRADES:
             issues.append(f"  capability '{name}' moat_grade='{mg}' not in {sorted(ALLOWED_MOAT_GRADES)}")
 
-        # _substrate_evidence — at least one path that exists
-        ev = c.get("_substrate_evidence") or []
+        # _structure_evidence — at least one path that exists
+        ev = c.get("_structure_evidence") or []
         if len(ev) == 0:
-            issues.append(f"  capability '{name}' has no _substrate_evidence")
+            issues.append(f"  capability '{name}' has no _structure_evidence")
         else:
             for p in ev:
                 # Tolerant path resolution: try as-is, then prefixed with org_dir parent
                 candidates = [Path(p), org_dir.parent / p, org_dir / p]
                 if not any(c.exists() for c in candidates):
-                    issues.append(f"  capability '{name}' substrate evidence '{p}' not found")
+                    issues.append(f"  capability '{name}' structure evidence '{p}' not found")
 
     return issues
 
@@ -89,12 +89,12 @@ def audit_world_model(d: dict) -> list[str]:
     company = d.get("world_model_company") or {}
     obs = company.get("observations") or []
     if not obs:
-        issues.append("  world_model_company.observations is empty; cite at least one substrate observation feeding the company-side world model")
+        issues.append("  world_model_company.observations is empty; cite at least one structure observation feeding the company-side world model")
     for i, o in enumerate(obs):
         if not o.get("dimension"):
             issues.append(f"  world_model_company.observations[{i}] missing 'dimension'")
         if not o.get("lives_in"):
-            issues.append(f"  world_model_company.observations[{i}] missing 'lives_in' (which substrate file or system)")
+            issues.append(f"  world_model_company.observations[{i}] missing 'lives_in' (which structure file or system)")
         if o.get("maturity") not in ALLOWED_MATURITY:
             issues.append(f"  world_model_company.observations[{i}] maturity='{o.get('maturity')}' not in {sorted(ALLOWED_MATURITY)}")
 
@@ -160,8 +160,8 @@ def audit_failure_signals(d: dict, capability_names: set[str]) -> list[str]:
             issues.append(f"  failure_signals[{i}] missing 'composition_attempted'")
         if not f.get("missing_capability"):
             issues.append(f"  failure_signals[{i}] missing 'missing_capability' (verb-object name of the capability that doesn't exist)")
-        if not f.get("substrate_evidence"):
-            issues.append(f"  failure_signals[{i}] missing 'substrate_evidence' (citation that the request would actually arise)")
+        if not f.get("structure_evidence"):
+            issues.append(f"  failure_signals[{i}] missing 'structure_evidence' (citation that the request would actually arise)")
         # composition_attempted should reference existing capabilities
         comp = f.get("composition_attempted") or []
         if isinstance(comp, list):

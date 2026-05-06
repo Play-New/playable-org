@@ -1,11 +1,11 @@
 ---
 name: new-play
-description: "Meta-skill. Authors a new analytical playbook for the organization. Walks the user through five design decisions, picks the closest of the four base playbooks as scaffold, generates the new skill folder. Output: skills/playbooks/<name>/ with SKILL.md, build.py, audit.py, viewer.py wired to the substrate, ready for the first run."
+description: "Meta-skill. Authors a new analytical playbook for the organization. Walks the user through five design decisions, picks the closest of the four base playbooks as scaffold, generates the new skill folder. Output: skills/playbooks/<name>/ with SKILL.md, build.py, audit.py, viewer.py wired to the structure, ready for the first run."
 ---
 
 # Skill: new-play (meta)
 
-The four base playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`) are not a closed list. Any organization that adopts the substrate will want questions of its own. This skill is the recipe for adding one.
+The four base playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`) are not a closed list. Any organization that adopts the structure will want questions of its own. This skill is the recipe for adding one.
 
 It is a meta-skill: it produces another skill. The user has a question they want to ask repeatedly about their organization. The output is a new `skills/playbooks/<name>/` folder, scaffolded from the closest existing playbook, with the question-specific shape filled in.
 
@@ -15,7 +15,7 @@ All consumer-facing text the new playbook produces (the SKILL.md it generates, t
 
 ## Pre-conditions
 
-- `Org/` substrate healthy: lint Tier 1 and Tier 2 = 0
+- `Org/` structure healthy: lint Tier 1 and Tier 2 = 0
 - The user can articulate an analytical question — not a one-shot lookup
 - At least one of the four base playbooks is conceptually close to what the user wants
 
@@ -41,7 +41,7 @@ Repeatability test: the question must be one the organization will want to re-as
 
 ### Q2 — What is the anchor?
 
-The slice of the substrate the playbook walks every time it runs.
+The slice of the structure the playbook walks every time it runs.
 
 | Anchor              | Examples                                                    |
 |---------------------|-------------------------------------------------------------|
@@ -52,7 +52,7 @@ The slice of the substrate the playbook walks every time it runs.
 | `stakeholder-set`   | one or more stakeholder types and the commitments that reach them |
 | `other`             | declare it; the meta-skill defaults to `commitment`         |
 
-The anchor determines which substrate-walking primitives `build.py` reuses.
+The anchor determines which structure-walking primitives `build.py` reuses.
 
 ### Q3 — What is the primitive, and what fields does it carry?
 
@@ -67,7 +67,7 @@ The primitive is the unit of analysis the playbook produces one of, many of, per
 
 For the new playbook, name the primitive in 1-3 words, then list its obligatory fields. For each field declare:
 
-- **Source**: `substrate` (the field reads off a node directly), `aei` (the field reads off an Anthropic Economic Index match), `agent` (the agent fills it after looking at substrate + signals), `numerical-derived` (computed from other fields).
+- **Source**: `structure` (the field reads off a node directly), `aei` (the field reads off an Anthropic Economic Index match), `agent` (the agent fills it after looking at structure + signals), `numerical-derived` (computed from other fields).
 - **Required**: yes / no.
 
 Fields the agent fills without evidence are not allowed as primitive fields. Those are interpretation; they go in the play body, not in the structured map.
@@ -76,7 +76,7 @@ Fields the agent fills without evidence are not allowed as primitive fields. Tho
 
 For each obligatory field from Q3, name the evidence the audit gate will require. Patterns from the existing playbooks:
 
-- **Substrate path exists** (`world-model` capabilities cite `_substrate_evidence: [...]`)
+- **Structure path exists** (`world-model` capabilities cite `_structure_evidence: [...]`)
 - **AEI traceability** (`ai-exposure` matches cite `_match_score`, `value-map` `ai_effect` cites `_aei`)
 - **Numerical traceability** (a percentage cited in narrative must equal the count it claims)
 - **External citation** (a regulatory reference cites the article)
@@ -140,17 +140,17 @@ Create `skills/playbooks/<name>/` with:
   - **Workflow** section: rewrite step-by-step against Q3 (primitive schema), Q4 (evidence per field), Q5 (viewer)
   - **Audit gate** section: list one rule per obligatory field
   - **Method limits** section: from the user's own statement of what the playbook cannot say
-  - **When to run this skill** section: tie to the substrate state required (lint clean, optional prerequisite playbooks)
+  - **When to run this skill** section: tie to the structure state required (lint clean, optional prerequisite playbooks)
 
 - `build.py` — copied from the base, with TODO markers at:
-  - the substrate-walking call (if anchor differs from base)
+  - the structure-walking call (if anchor differs from base)
   - the primitive-schema dictionary (replace with Q3 fields)
   - the output JSON shape
 
 - `audit.py` — copied from the base, with TODO markers at:
   - the field-presence checks (replace with Q4 rules)
   - the numerical-traceability checks (keep if the new playbook has counted narrative)
-  - the substrate-existence checks (always kept)
+  - the structure-existence checks (always kept)
 
 - `viewer.py` — copied from the base, with TODO markers at:
   - the primitive-rendering function (replace fields per Q5)
@@ -187,7 +187,7 @@ If the audit passes and the viewer renders, the playbook is real. ROADMAP status
 Before committing the generated folder, the meta-skill verifies:
 
 1. `SKILL.md` exists with frontmatter `name` and `description` matching the folder name.
-2. `build.py` imports substrate primitives from one of the four base playbooks (no reinvention of substrate access).
+2. `build.py` imports structure primitives from one of the four base playbooks (no reinvention of structure access).
 3. `audit.py` declares at least one check per obligatory field from Q3.
 4. `viewer.py` references only fields present in the Q3 schema.
 5. `ROADMAP.md` has the new row.
@@ -201,22 +201,22 @@ If any check fails, the meta-skill removes the half-written folder and reports t
 - **The meta-skill does not invent evidence rules.** Q4 is the user's. The audit.py reflects what the user asked to enforce.
 - **The meta-skill does not run the new playbook.** First-run validation is on the user.
 - **The meta-skill cannot rescue a bad design.** If Q1 fails the repeatability test or Q3-Q4 fails the evidence test, the only correct output is to stop and explain why.
-- **A new playbook is a maintenance commitment.** Every playbook adds an audit script that must keep passing as substrate evolves. The meta-skill warns the user before scaffolding the fifth, sixth, seventh playbook: marginal value drops fast past four.
+- **A new playbook is a maintenance commitment.** Every playbook adds an audit script that must keep passing as structure evolves. The meta-skill warns the user before scaffolding the fifth, sixth, seventh playbook: marginal value drops fast past four.
 
 ## Anti-hallucination discipline
 
 Three structural rules.
 
 1. **No silent placeholders.** Every TODO marker in the generated files is visible and searchable. The meta-skill never fills a TODO with content the user did not give.
-2. **No new substrate primitives.** The generated `build.py` reuses substrate-walking helpers from the base. New primitives mean the meta-skill is overstepping; it stops and asks.
+2. **No new structure primitives.** The generated `build.py` reuses structure-walking helpers from the base. New primitives mean the meta-skill is overstepping; it stops and asks.
 3. **No new viewer pattern.** The generated `viewer.py` picks one of the four established patterns. A genuinely new pattern is a project-level decision, not a meta-skill decision.
 
 ## When NOT to use this skill
 
 - **The question is one-shot.** Write a play directly under `Org/plays/data/` without a skill folder.
 - **The question is the same as an existing playbook with a different filter or anchor.** Run the existing playbook with that anchor instead. Do not fork.
-- **The question is about substrate health.** Use the `lint` skill, not `new-play`.
-- **The question requires altering the substrate.** Use `org_write_node` directly, plus the `ingest` skill if the change comes from a source.
+- **The question is about structure health.** Use the `lint` skill, not `new-play`.
+- **The question requires altering the structure.** Use `org_write_node` directly, plus the `ingest` skill if the change comes from a source.
 
 ## References
 

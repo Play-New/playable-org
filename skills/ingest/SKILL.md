@@ -18,7 +18,7 @@ Recipe for ingesting a source (organizational chart, statute, paper, slide deck,
 - `org_save_source` — register the raw file in `sources/` (immutable)
 - `org_search`, `org_list`, `org_neighbors` — verify what already exists
 - `org_read` — read existing nodes to decide update vs create
-- `org_write_node` — apply changes to the substrate
+- `org_write_node` — apply changes to the structure
 - `org_log_append` — record the operation in `log.md`
 
 ## Workflow (8 steps)
@@ -121,7 +121,7 @@ If new issues appear: triage and fix before considering the ingest complete.
 The ingest is complete only when **all of these** are true:
 
 - [ ] Source file present in `sources/` (text via `content` or binary via `content_base64`).
-- [ ] Substrate updates applied via `org_write_node` (one call per node).
+- [ ] Structure updates applied via `org_write_node` (one call per node).
 - [ ] `index.md` updated with new entries.
 - [ ] **`log.md` has a new entry via `org_log_append`** — without this line the ingest did not happen, audit-wise.
 - [ ] If the source was a binary file (PDF/DOCX/XLSX/PPTX) and Claude Desktop only had the text extraction, the user has been told explicitly that the original binary was not preserved.
@@ -139,14 +139,14 @@ If any of these is missing, do not declare the ingest finished. Do not move to l
 
 ### Interpretive source (paper, position, analysis)
 
-Examples: position papers, organizational analyses, framework documents. **Do not ingest as substrate.** They live in `sources/` but do not produce new activity/unit nodes from their content.
+Examples: position papers, organizational analyses, framework documents. **Do not ingest as structure.** They live in `sources/` but do not produce new activity/unit nodes from their content.
 
 Minimal extraction allowed:
 - Fact about authorship (in `nodes/people/<author>.md`)
 - Domain terms actually used (in `language/`)
-- Reference to the paper as a **seed** for a future `play`
+- Reference to the paper as a **trigger** for a future `play`
 
-### Source with discrepancies vs the substrate
+### Source with discrepancies vs the structure
 
 Examples: org chart March vs April, registry funzionigrammi vs chart. **Flag inline** in the unit body: "**Discrepancy**: ...". Do not overwrite. Add to `open-questions.md` if not autonomously resolvable.
 
@@ -156,7 +156,7 @@ Opt-in mode. Same workflow per source, BUT ripple cascade and lint run **only on
 
 ## When NOT to use this skill
 
-- For substrate changes that don't come from a source (e.g., style fixes, refactor): use `org_write_node` directly, no ingest skill
+- For structure changes that don't come from a source (e.g., style fixes, refactor): use `org_write_node` directly, no ingest skill
 - For identity changes (mission/limits/rules): human-only, `force_identity=true` on `org_write_node`
 - For sources/ itself: immutable, no ingest
 

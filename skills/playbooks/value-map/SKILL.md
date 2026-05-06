@@ -1,6 +1,6 @@
 ---
 name: value-map
-description: "Build a value-chain map for an anchor (a commitment or a unit) of the organization. Each component is positioned on an evolution axis, with an optional target showing where AI is pushing it and a free-text effect description. Output: a frozen play with an SVG map, a JSON map (schema-interoperable with the play-new-dashboard format), and a substrate-grounded narrative."
+description: "Build a value-chain map for an anchor (a commitment or a unit) of the organization. Each component is positioned on an evolution axis, with an optional target showing where AI is pushing it and a free-text effect description. Output: a frozen play with an SVG map, a JSON map (schema-interoperable with the play-new-dashboard format), and a structure-grounded narrative."
 ---
 
 # Playbook: value-map
@@ -50,7 +50,7 @@ The play produces three artefacts under `Org/plays/data/`:
 - `value-map-<anchor>-<date>.svg` — static rendering of the map (same visual style as the dashboard)
 - `value-map-<anchor>-<date>.html` — optional interactive HTML companion
 
-The frozen play in `Org/plays/value-map-<anchor>-<date>.md` references these artefacts and adds the substrate citations and the operational interpretation.
+The frozen play in `Org/plays/value-map-<anchor>-<date>.md` references these artefacts and adds the structure citations and the operational interpretation.
 
 ### JSON schema
 
@@ -127,8 +127,8 @@ Inherited from the dashboard's convention:
 
 ## Pre-conditions
 
-- Substrate `Org/` healthy (lint Tier 1 + Tier 2 = 0)
-- Anchor exists in the substrate:
+- Structure `Org/` healthy (lint Tier 1 + Tier 2 = 0)
+- Anchor exists in the structure:
   - `commitment` anchor: a node under `Org/commitments/`
   - `unit` anchor: a node under `Org/nodes/units/`
 - Optional but recommended: a matching `ai-exposure` play already produced — the `ai_effect` and `evolution_target` fields are grounded in AEI matches by reference
@@ -150,7 +150,7 @@ Inherited from the dashboard's convention:
 When the bundled mcp server is available, the canonical way to launch this playbook is `org_play_run`:
 
 1. Call `org_play_run` with `playbook="value-map"`, `mode="build"`, `anchor=<id>`, `kind="commitment"|"unit"`. The tool runs `build.py` for you and returns the skeleton JSON inline.
-2. Read the skeleton, then for every component fill `evolution`, `visibility`, and optionally `evolution_target` / `ai_effect` / `is_new` per §3 below. Cite substrate or AEI evidence.
+2. Read the skeleton, then for every component fill `evolution`, `visibility`, and optionally `evolution_target` / `ai_effect` / `is_new` per §3 below. Cite structure or AEI evidence.
 3. Call `org_play_run` again with `mode="render"`, `json_content=<the filled JSON as a string>`. The tool writes to `plays/data/`, runs `audit.py`, then `viewer.py`, and returns the artefact paths (`json`, `html`, `svg`) plus the audit result.
 4. Append a one-line entry to `log.md` via `org_log_append`. The play's success or failure is determined by the audit pass returned by render.
 
@@ -180,11 +180,11 @@ python3 skills/playbooks/value-map/build.py \
 ```
 
 The builder:
-1. Walks the substrate edges starting from the anchor (`requires`, `produces`, sub-units, activity links).
-2. Emits a skeleton `WardleyMap` JSON with anchors and components extracted from the substrate. **No `evolution`, `evolution_target`, or `ai_effect` is set yet** — these are agent-authored in step 3.
+1. Walks the structure edges starting from the anchor (`requires`, `produces`, sub-units, activity links).
+2. Emits a skeleton `WardleyMap` JSON with anchors and components extracted from the structure. **No `evolution`, `evolution_target`, or `ai_effect` is set yet** — these are agent-authored in step 3.
 3. If `--ai-exposure-matches` is provided, attaches each component's matched AEI tasks as a hidden `_aei` field for the agent to consult when filling `ai_effect`.
 
-The skeleton is deterministic. The agent cannot add components that don't exist in the substrate — it can only add `is_new` components with explicit citation in step 3.
+The skeleton is deterministic. The agent cannot add components that don't exist in the structure — it can only add `is_new` components with explicit citation in step 3.
 
 ### 3. Position each component
 
@@ -193,7 +193,7 @@ For each component in the skeleton, the agent sets:
 - `evolution` (0..1) — position by ubiquity and certainty in the market, not org perception. Stage bands above.
 - `visibility` (0..1) — position in the dependency chain (1 = consumed by stakeholder directly, 0 = deep infra). Visibility is structural, not variable.
 - Optional `evolution_target` — only if AEI evidence (or other cited signal) supports a rightward shift. Must be ≥ `evolution`.
-- Optional `ai_effect` — free text, max ~50 words, with at least one citation to AEI matches or substrate document.
+- Optional `ai_effect` — free text, max ~50 words, with at least one citation to AEI matches or structure document.
 - Optional `is_new: true` — for components that don't exist today but emerge from the chain shift. Must be connected to existing components via edges. Never combine with `evolution_target`.
 
 For each anchor, the agent sets:
@@ -205,7 +205,7 @@ For each anchor, the agent sets:
 
 If the chain shift produces a new stakeholder type (e.g., a fundraising org starting to serve researchers directly), document it under `new_end_users`. If the chain produces a new value flow that didn't exist before, document under `new_value`.
 
-These fields are optional. Use only when the substrate or AEI evidence supports them.
+These fields are optional. Use only when the structure or AEI evidence supports them.
 
 ### 5. Visualize
 
@@ -218,7 +218,7 @@ python3 skills/playbooks/value-map/viewer.py \
 
 The HTML is the **primary consumer artefact**: an interactive document a stakeholder can open in any browser. It contains:
 
-1. A header with anchor title, id, and free-text description (from substrate).
+1. A header with anchor title, id, and free-text description (from structure).
 2. A **process introduction** explaining how to read the map (axes, shapes, the AI overlay arrows).
 3. The map itself (inline SVG) with clickable nodes — clicking an anchor or component opens a modal showing label, kind, current/target evolution stage, AI effect, and the AEI top-K matches as evidence.
 4. A text fallback below the map: components grouped by stage, each clickable to open the same modal.
@@ -247,8 +247,8 @@ python3 skills/playbooks/value-map/audit.py \
 
 The audit verifies:
 
-1. **Every component label matches a substrate node** OR has `is_new: true` AND a citation in the play body.
-2. **Every `ai_effect`** must cite at least one AEI match (when `--ai-exposure-matches` provided) or an explicit substrate evidence ID.
+1. **Every component label matches a structure node** OR has `is_new: true` AND a citation in the play body.
+2. **Every `ai_effect`** must cite at least one AEI match (when `--ai-exposure-matches` provided) or an explicit structure evidence ID.
 3. **Every `evolution_target`** must have supporting evidence — typically from AEI penetration data on the matched O*NET task.
 4. **Constraints on `is_new` and `evolution_target`** — the schema rules (never combine the two) are enforced.
 5. **Edge integrity** — every edge's `from` and `to` reference an existing anchor, component, or end-user node.
@@ -303,7 +303,7 @@ People in the organization can ask Claude:
 - "Compare two pipelines on the evolution axis."
 - "Which components could become new value flows if AI commoditizes them?"
 
-Answers are grounded in the frozen map and cited to substrate + AEI matches.
+Answers are grounded in the frozen map and cited to structure + AEI matches.
 
 ## Method limits
 
@@ -311,17 +311,17 @@ Answers are grounded in the frozen map and cited to substrate + AEI matches.
 - **`evolution_target` is a prediction**. It assumes current AEI and competitive forces continue. The play should flag this explicitly.
 - **AEI grounding is partial**. AEI covers ~3,259 O*NET tasks with rich data; the rest are silent. `ai_effect` claims on components with only `fallback` matches must cite that as a limitation.
 - **12–16 components is a heuristic**. Smaller anchors (a single sub-team commitment) may need fewer; cross-Direzione commitments may need more.
-- **Substrate-bounded**. External components (a vendor, a regulator, a market trend) appear as `is_new` or with explicit external citation in the play body.
+- **Structure-bounded**. External components (a vendor, a regulator, a market trend) appear as `is_new` or with explicit external citation in the play body.
 
 ## Anti-hallucination discipline
 
 Three structural rules:
 
-1. **Component existence is grounded**. The builder produces the skeleton deterministically by reading substrate edges; the agent cannot add components that don't exist as substrate nodes (except `is_new` with body-level citation).
+1. **Component existence is grounded**. The builder produces the skeleton deterministically by reading structure edges; the agent cannot add components that don't exist as structure nodes (except `is_new` with body-level citation).
 2. **`ai_effect` and `evolution_target` cite evidence** that the audit script can find — typically an AEI match in `matches.json`.
 3. **Interpretation is demarcated**. The "Operational consequences" section is interpretive; every line cites a (component, shift) pair from the audited tables above.
 
-The agent generates narrative around audited substrate; the agent does not assert evolution shifts without cited AEI or substrate evidence.
+The agent generates narrative around audited structure; the agent does not assert evolution shifts without cited AEI or structure evidence.
 
 ## Author-name policy
 

@@ -40,7 +40,7 @@ The mapping from activities to O*NET tasks is **embedding-based**, not manual. T
   - `anthropic-aei-onet-<release>.csv` — rich subset (per-task `ai_autonomy_mean`, `ai_education_years_mean`, `human_education_years_mean`, `count`, `pct`). Currently 2026-03-24 release, 3,259 tasks with rich metrics.
   - `anthropic-task-penetration.csv` — fallback for tasks not in rich subset. 17,998 tasks with simple penetration score.
 - Python ≥ 3.10 with `sentence-transformers` installed (`pip3 install --user sentence-transformers`).
-- Substrate `Org/` healthy (lint Tier 1 + Tier 2 = 0).
+- Structure `Org/` healthy (lint Tier 1 + Tier 2 = 0).
 - Activities in scope have textual description (frontmatter `description` + body).
 
 ## What the Anthropic data measures (and what it does NOT measure)
@@ -63,7 +63,7 @@ The dataset comes from **real Claude AI conversations** classified by Clio (Anth
 The play can target:
 - A single **area** (~10-20 activities): quick recipe
 - A **direction** (~50-100 activities): requires aggregation
-- The **entire functional substrate**: massive output
+- The **entire functional structure**: massive output
 
 For first execution on a new organization: use scope = single area.
 
@@ -200,7 +200,7 @@ Page structure, top to bottom:
 
 3. **Per-area sections** (when "All areas" is active, group by area; otherwise show only the selected area):
    - Area heading
-   - **Snapshot block**: scope description (substrate-grounded one-liner from the area's `nodes/units/<area>.md` perimeter), distribution bar specific to that area, and an interpretive **commentary note** (free prose authored by the agent, audited by `audit-notes.py`).
+   - **Snapshot block**: scope description (structure-grounded one-liner from the area's `nodes/units/<area>.md` perimeter), distribution bar specific to that area, and an interpretive **commentary note** (free prose authored by the agent, audited by `audit-notes.py`).
    - Grid of activity cards.
 
 4. **Activity card**: title, ID + area, short description, **closest O*NET task block** (top-1 task with confidence % and autonomy /5; supports an optional Italian translation when `--task-translations` provided), 5×5 grid of squares (one per top-K match) clustered by category color (verde → viola → azzurro → beige) with hover tooltip and click-to-modal, and a stat line showing the per-category breakdown (e.g., "X automated · Y augmented · Z assistive · W no data").
@@ -212,7 +212,7 @@ The viewer is consumer-facing: the leader/decision-maker opens it in a browser, 
 **Optional inputs** that enrich the viewer:
 
 - **`--metadata <list.json>`**: list of `{id, title, description, area, unit, ...}` for each activity. Title and description make cards readable instead of showing only IDs.
-- **`--area-descriptions <dict.json>`**: `{area_id: "high-level scope description"}`. One line per area, substrate-grounded (typically copied from the area's `nodes/units/<area>.md` frontmatter `description` field).
+- **`--area-descriptions <dict.json>`**: `{area_id: "high-level scope description"}`. One line per area, structure-grounded (typically copied from the area's `nodes/units/<area>.md` frontmatter `description` field).
 - **`--area-notes <dict.json>`**: `{area_id: "interpretive commentary"}`. Free prose, 3-5 sentences per area, authored by the agent. Must pass `audit-notes.py` before being shipped.
 - **`--org-description` / `--org-description-file`**: free text describing the organization, rendered at the top.
 - **`--task-translations <dict.json>`**: `{english_task: target_language_task}` for displaying O*NET task names in the UI language. Translations can come from any pipeline (manual, LLM-assisted, machine translation) — the viewer only consumes the dict.
@@ -325,7 +325,7 @@ Answers based on the frozen play, cited with traceable sources (Anthropic data +
 - **v4**: 3 markdown-native visual artefacts (2D quadrant, ASCII bar chart, aggregate).
 - **v5**: manual mapping replaced with embedding-based matcher (`match.py` + multilingual sentence-transformer). Reproducible, auditable, no agent confirmation bias in the matching step.
 - **v6**: audit.py introduced as mandatory gate. Every play must pass deterministic checks before commit: (a) every cited number traces back to matches.json, (b) unverified legal claims must be acknowledged in a dedicated review section. Eliminates the residual hallucination of an agent inserting plausible-sounding numbers from prior context.
-- **v7** (current): viewer redesigned around the four real Anthropic categories (automated/augmented/assistive/no-data). Top-of-page organization snapshot (description + distribution bar). Per-area snapshot with substrate-grounded scope description, distribution bar, and audited commentary. Confusing made-up labels ("mixed", "strong/medium" tags on cards) removed. `audit-notes.py` introduced as a dedicated gate for per-area commentary, mirroring `audit.py` for plays. Click-to-modal on each square with chain-of-inference disclaimer; hover tooltips for quick reads.
+- **v7** (current): viewer redesigned around the four real Anthropic categories (automated/augmented/assistive/no-data). Top-of-page organization snapshot (description + distribution bar). Per-area snapshot with structure-grounded scope description, distribution bar, and audited commentary. Confusing made-up labels ("mixed", "strong/medium" tags on cards) removed. `audit-notes.py` introduced as a dedicated gate for per-area commentary, mirroring `audit.py` for plays. Click-to-modal on each square with chain-of-inference disclaimer; hover tooltips for quick reads.
 
 ## Anti-hallucination discipline
 

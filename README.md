@@ -6,14 +6,14 @@ Represent an organization as a navigable graph of cited markdown files, then run
 
 - `Org/` — your structure, as a folder of markdown files. One file per organizational unit, person, role, activity, stakeholder, commitment, financial summary. Each file is short. Each claim cites its source.
 - `mcp-server/` — a TypeScript stdio mcp server that exposes 12 tools to Claude Desktop. Read tools (read, search, list, neighbors). Write tools (write_node, save_source, log_append). Meta tools (skills_list, skill_read, lint_run, play_run, open).
-- `skills/` — workflow recipes and analytical playbooks, plus the productizable design system. Two operational skills (`ingest`, `lint`), four analytical playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`), one bulk-ingest skill (`seed`), one meta-skill (`new-play`).
+- `skills/` — workflow recipes and analytical playbooks, plus the productizable design system. Three operational skills (`init`, `ingest`, `lint`), four analytical playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`), one meta-skill (`new-play`).
 - `install.command` / `install.bat` — clickable installers. They build the mcp server and register it in Claude Desktop's config. No admin privileges required.
 
 After install, you chat with Claude in plain language. *Show me the structure of marketing.* *Where is the legacy pipeline going on the evolution curve?* *Run the world-model on the customer-facing division.* The artefacts land on your disk and open in your default browser.
 
 ## Why it exists
 
-LLMs change what kind of "data" a system can manage. Before, structured data was needed because the only thing reading it was code. Now an LLM can read prose. That means a knowledge representation can be: a folder of markdown files, with a thin schema in YAML frontmatter, and citations everywhere. Persistence is the filesystem. Schema validation is a lint pass. Query is the agent reading the relevant files. Audit is an append-only log.
+LLMs change what kind of "data" a system can manage. Before, structured data was needed because the only thing reading it was code. Now an LLM can read prose. That means a knowledge representation can be: a folder of markdown files, with a thin schema in YAML frontmatter, and citations everywhere. Persistence is the filesystem. Schema validation is a lint pass. Query is the agent reading the relevant files. Audit is a prepend-only log.
 
 This pattern was articulated by Andrej Karpathy in May 2026 as the "LLM Wiki" idea. Playable Org is one application of the pattern: a representation of an organization, with analytical playbooks on top.
 
@@ -21,7 +21,7 @@ This pattern was articulated by Andrej Karpathy in May 2026 as the "LLM Wiki" id
 
 Three readers benefit.
 
-A consultant who works with organizations and wants a substrate to ground analysis in cited facts, instead of slide decks that go stale.
+A consultant who works with organizations and wants a structure to ground analysis in cited facts, instead of slide decks that go stale.
 
 An in-house operations or strategy lead who wants to think about their own organization as a system: where the work happens, where commitments are load-bearing, where AI changes structure rather than speed.
 
@@ -38,8 +38,8 @@ Twelve mcp tools, accessible from Claude Desktop:
 
 Seven skills:
 
-- `seed` — one-time bulk ingest of source documents, populating the graph from scratch.
-- `ingest` — default after seed: ingest one new source at a time with human confirmation.
+- `init` — one-time bulk ingest at first install: populates the graph from a folder of source documents.
+- `ingest` — default after init: ingest one new source at a time with human confirmation.
 - `lint` — quality control on the graph (broken links, missing frontmatter, citations to non-existent sources).
 - `ai-exposure` — for each activity, classify AI exposure using the Anthropic Economic Index dataset.
 - `value-map` — position the components of a slice on the evolution × visibility plane, with AI overlay.
@@ -59,14 +59,14 @@ This is not an org chart tool. The structure of `Org/` is richer than a tree of 
 
 ## Theoretical lineage
 
-The four playbooks have explicit roots. They are compositions of patterns from other authors, applied through the LLM substrate.
+The four playbooks have explicit roots. They are compositions of patterns from other authors, applied to the LLM-maintained graph.
 
 - `ai-exposure` — *Anthropic Economic Index*, March 2026 release. Empirical signal of AI usage in occupational tasks.
 - `value-map` — Simon Wardley. Mapping process components on the evolution × visibility plane.
 - `reshuffle` — Sangeet Paul Choudary, *Reshuffle* (2024). Tool vs engine, three constraint types, autonomy-coordination tradeoff.
 - `world-model` — Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026). Capability + world model + intelligence layer + interfaces.
 
-The substrate pattern itself is from Andrej Karpathy, *Building an LLM Wiki* (gist, May 2026). The term "structure" for the cited-graph layer is borrowed from Simone Cicero on platform design.
+The pattern itself — an LLM-maintained markdown corpus governed by an `AGENTS.md` contract, with `index.md` as catalog and `log.md` as audit — is from Andrej Karpathy, *Building an LLM Wiki* (gist, May 2026). We keep the pattern; we call our artefact `Org/`, not a wiki. The term "structure" for the cited-graph layer is borrowed from Simone Cicero, *[What is an organization today?](https://through-the-boundary.simonecicero.com/p/ttb-1-what-is-an-organization-today)* (Through The Boundary, April 2026), which contrasts the foundational *structure* of an organization (topology, taxonomy, shared context, promise chains) with the *superstructure* — hierarchical management and bureaucracy — that AI eliminates.
 
 ## Quick start
 
@@ -75,7 +75,7 @@ The substrate pattern itself is from Andrej Karpathy, *Building an LLM Wiki* (gi
 3. Double-click `install.command` (macOS) or `install.bat` (Windows). The installer builds the mcp server and registers it in Claude Desktop.
 4. Restart Claude Desktop.
 5. Drop founding documents (charter, organizational charts, role-descriptions, annual report) into `Org/sources/`.
-6. In Claude Desktop, in a new chat: *seed the structure from sources/*.
+6. In Claude Desktop, in a new chat: *initialize the structure from sources/*.
 7. After ~30–60 minutes you have a populated graph. From there, ask questions, ingest new documents as they arrive, run playbooks.
 
 Detailed instructions: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/architecture.md). Playbook reference: [`docs/playbooks.md`](docs/playbooks.md). Extending: [`docs/extending.md`](docs/extending.md).

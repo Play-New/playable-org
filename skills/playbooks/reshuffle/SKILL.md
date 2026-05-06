@@ -76,7 +76,7 @@ The skill recognizes **only three** constraint types. Regulatory constraints fol
 | **risk** | The cost of being wrong (compliance failure, reputational damage, financial loss) requires layered verification and human accountability | A multi-step approval (governance body → legal → finance); notarial certainty; an audit trail required by an external authority |
 | **coordination** | The cost of getting work across teams is high — encoding, organizing, deploying knowledge requires meetings, documents, handovers | Cross-Direzione handover of a fascicolo; a matrix unit with people borrowed from many teams; a process that requires many people to share a mental model |
 
-Each activity in the slice is tagged with **one primary constraint** (the one whose removal would change the bundle the most). Citations are required from the substrate (statute, code of ethics, regulation, role-description, commitment terms).
+Each activity in the slice is tagged with **one primary constraint** (the one whose removal would change the bundle the most). Citations are required from the structure (statute, code of ethics, regulation, role-description, commitment terms).
 
 ## Tool vs. engine — the primary diagnostic
 
@@ -103,14 +103,14 @@ Coordination tax accumulates in three distinct activities (Ch 6 of the source). 
 | **organizing** | Clerical/admin staff or knowledge-management tools categorize and synthesize. Scattered documents, lost emails, "where is that file". | AI queries knowledge across silos, surfaces the right thing at the right time without manual retrieval. |
 | **deploying** | Meetings, chats, emails to recreate lost context before a decision. People asking each other "what's the latest on X". | AI delivers contextual answers in workflow; agentic execution closes loops automatically. |
 
-For each activity in the slice, the agent identifies which of the three is the dominant tax (citing substrate or AEI evidence). This is the foundation for tool/engine classification.
+For each activity in the slice, the agent identifies which of the three is the dominant tax (citing structure or AEI evidence). This is the foundation for tool/engine classification.
 
 ## The autonomy-coordination dimension
 
 The current bundle's position on the autonomy-coordination plane is part of the assessment (Ch 6 of the source: "From see-saws to flywheels"):
 
 - **See-saw mode** (zero-sum): more team autonomy ↔ less cross-team alignment. The org buys one with the other.
-- **Flywheel mode** (mutually reinforcing): better coordination *enables* greater autonomy because shared organizational knowledge is the AI-mediated substrate.
+- **Flywheel mode** (mutually reinforcing): better coordination *enables* greater autonomy because shared organizational knowledge is the AI-mediated structure.
 
 The play declares the current mode and proposes which mode the rebundle would operate in. A rebundle that stays in see-saw mode is unlikely to be transformative; a rebundle that moves to flywheel mode is more interesting but harder to validate.
 
@@ -121,7 +121,7 @@ The play declares the current mode and proposes which mode the rebundle would op
 When the bundled mcp server is available, launch this playbook via `org_play_run`:
 
 1. Call `org_play_run` with `playbook="reshuffle"`, `mode="build"`, `anchor=<slice id>`, `kind="commitment"|"unit"`. The tool runs `build.py` and returns the activity inventory + AEI evidence inline.
-2. Read the skeleton; for every activity tag the binding constraint type (scarcity / risk / coordination), classify each AI use as tool or engine, and propose any rebundle candidates per §3-§5 below. Every claim cites substrate or an AEI match.
+2. Read the skeleton; for every activity tag the binding constraint type (scarcity / risk / coordination), classify each AI use as tool or engine, and propose any rebundle candidates per §3-§5 below. Every claim cites structure or an AEI match.
 3. Call `org_play_run` again with `mode="render"` and `json_content=<filled JSON>`. The tool writes to `plays/data/`, runs `audit.py`, runs `viewer.py`, returns artefact paths and audit summary.
 4. Append a log line via `org_log_append`.
 
@@ -149,9 +149,9 @@ python3 skills/playbooks/reshuffle/build.py \
 ```
 
 The builder:
-1. Walks substrate edges to enumerate activities and units in scope (same logic as `value-map/build.py` — division expansion, stakeholder differentiation).
+1. Walks structure edges to enumerate activities and units in scope (same logic as `value-map/build.py` — division expansion, stakeholder differentiation).
 2. For each activity, attaches `_aei` (top-K AEI matches) and `_value_map_position` if `--value-map` is provided (the evolution + visibility from a prior value-map play).
-3. Extracts candidate constraint signals from substrate citations — `regulation`, `civil code`, `board resolution`, role-description cross-references, sub-team membership crossing division boundaries.
+3. Extracts candidate constraint signals from structure citations — `regulation`, `civil code`, `board resolution`, role-description cross-references, sub-team membership crossing division boundaries.
 
 The skeleton is deterministic. The agent does the constraint-tagging and tool/engine classification in step 3.
 
@@ -161,7 +161,7 @@ The skeleton is deterministic. The agent does the constraint-tagging and tool/en
 
 For each activity, the agent records:
 
-- **`primary_constraint`**: one of `scarcity` | `risk` | `coordination` — citing a substrate document or AEI signal
+- **`primary_constraint`**: one of `scarcity` | `risk` | `coordination` — citing a structure document or AEI signal
 - **`km_cost_dominant`**: one of `encoding` | `organizing` | `deploying` | `none` — which of the three knowledge-management activities is the dominant tax for this activity
 - **`ai_classification`**: one of `tool` | `engine` | `not-applicable`
   - `engine` is allowed only when AEI shows rich autonomy on the matched task AND the AI use changes the dominant `km_cost`
@@ -185,7 +185,7 @@ The source frame describes three moves, in order: **unbundle** (which activities
 
 - **Conservative option**: AI deployed as accelerator across activities, structure unchanged. The bundle keeps its current see-saw mode. Low risk, low transformation.
 - **Structural option**: one or more engines deployed; the bundle reshuffles around the strongest engine. The bundle may move from see-saw to flywheel mode. Medium risk, real change.
-- **Radical option** (when defensible): the engines compose into a new value proposition that crosses out of the current bundle's boundaries. High risk, high transformation. Include only when the substrate genuinely supports it — do not invent radical options for symmetry.
+- **Radical option** (when defensible): the engines compose into a new value proposition that crosses out of the current bundle's boundaries. High risk, high transformation. Include only when the structure genuinely supports it — do not invent radical options for symmetry.
 
 A rebundle option exists only when at least one `engine` AI use dissolves a binding constraint (the conservative option is an exception: it explicitly does *not* deploy engines, but is included as the baseline against which the other options are compared, so its `enabled_by_engine` field references the engine that *would* be activated if the option were taken further).
 
@@ -198,7 +198,7 @@ Each option records:
 - **What would change** in the autonomy-coordination tradeoff
 - **Risk-of-rebundle**: high/medium/low — how reversible is the move, what fails if the engine doesn't deliver as expected
 
-Rebundle candidates are explicitly **proposals**, not plans. They do not modify substrate.
+Rebundle candidates are explicitly **proposals**, not plans. They do not modify structure.
 
 ### 6. Visualize
 
@@ -229,7 +229,7 @@ The audit verifies:
 1. Every activity has a `primary_constraint` from the closed set {scarcity, risk, coordination} with at least one cited source.
 2. Every `engine` classification has rich AEI evidence (autonomy data on the matched task) AND specifies which `km_cost` it changes.
 3. Every rebundle candidate cites the engine that enables it, and names the remaining binding constraint.
-4. Every autonomy-coordination claim cites a substrate document (e.g., commitment terms, sub-team membership crossing Direzione boundaries).
+4. Every autonomy-coordination claim cites a structure document (e.g., commitment terms, sub-team membership crossing Direzione boundaries).
 5. The bundle distribution sums correctly: every activity in the slice has exactly one `primary_constraint`.
 6. Coordination paradox is checked: if any function has `tool` classification but no `engine`, the play must include a paragraph acknowledging the risk.
 
@@ -249,7 +249,7 @@ playbook: reshuffle
 target: <slice-id>
 dated: <YYYY-MM-DD>
 frozen: true
-sources: [<commitment file or unit file>, <activity files>, <substrate evidence cited>]
+sources: [<commitment file or unit file>, <activity files>, <structure evidence cited>]
 references:
   - builder: skills/playbooks/reshuffle/build.py
   - viewer: skills/playbooks/reshuffle/viewer.py
@@ -291,7 +291,7 @@ To stay faithful and avoid scope creep:
 
 - **Constraint classification is interpretive**. Two reasonable agents may classify an activity differently. The audit gate enforces evidence per claim, but the choice of *primary* constraint among multiple plausible ones is a judgment call. The play surfaces the evidence; the reader can disagree.
 - **Tool/engine classification depends on AEI snapshot**. The dataset is point-in-time. An activity classified `tool` today may legitimately become `engine` after a new release.
-- **Autonomy-coordination mode is the hardest claim to ground**. Substrate citations on this dimension are scarce; the play should be conservative.
+- **Autonomy-coordination mode is the hardest claim to ground**. Structure citations on this dimension are scarce; the play should be conservative.
 - **Rebundle proposals are not predictions**. They are conditional: *if* the engine works as observed in AEI, *then* this rebundle becomes available. The play states this conditional explicitly.
 - **The skill does not handle multi-slice patterns**. Cross-bundle coordination patterns (e.g., the org has many parallel matrix units, all with the same coordination paradox) require multiple plays + manual synthesis.
 
@@ -299,8 +299,8 @@ To stay faithful and avoid scope creep:
 
 Three structural rules:
 
-1. **Constraint claims cite substrate**. The audit verifies that every `primary_constraint` has a substrate file or source-id behind it.
+1. **Constraint claims cite structure**. The audit verifies that every `primary_constraint` has a structure file or source-id behind it.
 2. **Engine claims cite AEI rich data**. The audit refuses an `engine` classification without an AEI rich match supporting the autonomy shift.
 3. **Rebundle proposals are conditional and labeled**. The audit verifies that every rebundle candidate names the engine that enables it AND the constraint that still binds.
 
-The agent narrates around audited substrate; the agent does not classify constraints or AI uses without cited evidence.
+The agent narrates around audited structure; the agent does not classify constraints or AI uses without cited evidence.

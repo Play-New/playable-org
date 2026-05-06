@@ -1,27 +1,27 @@
 ---
-name: seed
-description: "One-time bulk ingest of source documents into Org/ at first install. Walks the agent through reading every file in Org/sources/, extracting nodes in batches, writing on confirmation. Output: a populated graph (typically 200-400 nodes after one session) ready for queries and playbook runs."
+name: init
+description: "Initialize the structure of Org/ by bulk-ingesting source documents at first install. One-time operation. Walks the agent through reading every file in Org/sources/, extracting nodes in batches, writing on confirmation. Output: a populated graph (typically 200-400 nodes after one session) ready for queries and playbook runs. After init, the regular `ingest` skill handles new documents one at a time."
 ---
 
-# Skill: seed
+# Skill: init
 
 The first thing a new instance of Playable Org needs is content. The user has just installed the bundle. The graph has three empty identity stubs in `Org/identity/`. The structure under `nodes/`, `commitments/`, `financials/`, `language/` is empty.
 
-The `seed` skill is the recipe for populating it from raw documents in one session. It is a one-time operation. After seeding, the regular `ingest` skill handles new documents one at a time as they arrive.
+The `init` skill is the recipe for populating it from raw documents in one session. It is a one-time operation. After init, the regular `ingest` skill handles new documents one at a time as they arrive.
 
 ## Pre-conditions
 
 - The mcp server is connected (Claude Desktop reads `Org/`).
 - The user has dropped source documents into `Org/sources/` via Finder / file manager. Acceptable formats: PDF, DOCX, XLSX, PPTX, MD, HTML, TXT.
 - The user knows what kind of organization is being represented (so the agent can scope-check against `identity/` later).
-- Lint Tier 1 reports 3 frontmatter issues on the unmodified starter (the three `identity/` stubs ship with empty `sources: []` arrays because they haven't been pointed at a source yet). After seed fills the identity from real founding documents, those three warnings go away and Tier 1 should land at 0.
+- Lint Tier 1 reports 3 frontmatter issues on the unmodified starter (the three `identity/` stubs ship with empty `sources: []` arrays because they haven't been pointed at a source yet). After init fills the identity from real founding documents, those three warnings go away and Tier 1 should land at 0.
 
-## What `seed` does NOT do
+## What `init` does NOT do
 
-- It does not interview the user for content. The principle is: facts come from cited sources, not from the user's head. If the user has no documents, the seed cannot run.
+- It does not interview the user for content. The principle is: facts come from cited sources, not from the user's head. If the user has no documents, init cannot run.
 - It does not bypass the "every assertion cites a source" invariant. Every node it writes carries `(source-id)` citations.
-- It does not produce interpretations. No playbooks run during seed. `plays/` stays empty until a playbook is invoked separately.
-- It does not seed in batch-and-forget mode. Every batch of writes is shown to the user as a diff before being applied.
+- It does not produce interpretations. No playbooks run during init. `plays/` stays empty until a playbook is invoked separately.
+- It does not write in batch-and-forget mode. Every batch of writes is shown to the user as a diff before being applied.
 
 ## Workflow
 
@@ -40,7 +40,7 @@ For each file, the agent classifies it into one of these archetypes:
 | **Financial** | annual report, audited statements, financial summary | financial-summary nodes, commitments to funders |
 | **Code-of-conduct** | ethics code, compliance framework, risk management framework | rules, governance commitments |
 | **HR analysis** | capability assessment, headcount report, role analysis | people (where named), updates to existing units |
-| **External analysis** | a paper or assessment about the org | typically NOT ingested as substrate; preserved as source for citation, possibly seeds a play |
+| **External analysis** | a paper or assessment about the org | typically NOT ingested as structure; preserved as source for citation, possibly triggers a play later |
 
 ### 2. Read identity-bearing documents first
 
@@ -87,7 +87,7 @@ For these, the agent follows the same pattern (save source → extract → batch
 
 What remains in `sources/` after the four passes above is typically:
 
-- External analyses about the organization. The agent registers them as sources (so they can be cited later by plays) but does not extract substrate from them. They might seed playbooks later.
+- External analyses about the organization. The agent registers them as sources (so they can be cited later by plays) but does not extract structure from them. They might trigger playbooks later.
 - Old org charts or process maps. The agent flags discrepancies vs the current structure (existing units that are gone, or units in the chart but absent from the current role-description). Discrepancies are documented inline in the relevant unit, not silently overwritten.
 - Documents the agent cannot classify. Listed in `open-questions.md` for the user to triage.
 
@@ -98,9 +98,9 @@ After all batches:
 1. The agent reviews `index.md` for completeness — every node should have one line in the catalog.
 2. The agent runs `org_lint_run` (Tier 1 + Tier 2). Reports issues to the user.
 3. The agent appends one line to `log.md` summarizing the session: total nodes by type, sources triaged, issues found.
-4. The agent suggests next steps: which playbook would yield interesting first results given the substrate now populated.
+4. The agent suggests next steps: which playbook would yield interesting first results given the structure now populated.
 
-## What `seed` produces
+## What `init` produces
 
 A typical first-install session, with ~10-30 source documents:
 
@@ -119,7 +119,7 @@ Total: 200-400 nodes after a 30-60 minute session.
 
 ## Boundary with `ingest`
 
-After seed, every new document arrival uses `ingest` (one source at a time, full ripple, lint check). Use seed only for the first installation, when the graph is being populated from a backlog of existing documents. Do not re-run seed on a populated graph — that would propose duplicate nodes and damage the audit trail.
+After init, every new document arrival uses `ingest` (one source at a time, full ripple, lint check). Use init only for the first installation, when the graph is being populated from a backlog of existing documents. Do not re-run init on a populated graph — that would propose duplicate nodes and damage the audit trail.
 
 If the user wants to re-process a single source they already ingested (because the document changed), they should:
 
@@ -144,5 +144,5 @@ For the day-to-day case (one document at a time as it arrives), use `ingest`.
 ## References
 
 - `Org/AGENTS.md` — node schemas, invariants, when to register a commitment
-- `skills/ingest/SKILL.md` — the per-document workflow used after seed
-- `skills/lint/SKILL.md` — quality control invoked at the end of seed
+- `skills/ingest/SKILL.md` — the per-document workflow used after init
+- `skills/lint/SKILL.md` — quality control invoked at the end of init

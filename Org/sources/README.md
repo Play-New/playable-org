@@ -8,9 +8,9 @@ Drop documents here in any of these formats: `.pdf`, `.docx`, `.xlsx`, `.pptx`, 
 
 The first time you populate `Org/`, drop everything you have here, then in chat run:
 
-> Seed the structure from `sources/`.
+> Initialize the structure from `sources/`.
 
-The `seed` skill iterates each document, extracts entities, proposes nodes in batches, writes on your confirmation. After this first session, the `ingest` skill handles documents one at a time as they arrive.
+The `init` skill iterates each document, extracts entities, proposes nodes in batches, writes on your confirmation. After this first session, the `ingest` skill handles documents one at a time as they arrive.
 
 ## What goes here
 

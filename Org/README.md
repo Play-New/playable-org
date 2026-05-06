@@ -14,7 +14,7 @@ An AI agent connected via `mcp` that receives a question and looks for relevant 
 
 ## What's inside, in numbers
 
-(All counts at zero in the public template. After running `seed` against your sources, this section reflects your organization.)
+(All counts at zero in the public template. After running `init` against your sources, this section reflects your organization.)
 
 - 0 organizational units
 - 0 activities
@@ -46,7 +46,7 @@ Org/
 ├── AGENTS.md            operational contract for anyone who modifies Org
 ├── README.md            this file
 ├── index.md             content-oriented catalog
-├── log.md               append-only audit
+├── log.md               prepend-only audit
 └── open-questions.md    questions requiring human input from the organization
 ```
 
@@ -66,7 +66,7 @@ For interpretations: `plays/`. Frozen at creation, cited, distinct from the stru
 
 `open-questions.md` lists questions that require a person inside the organization to answer.
 
-When the agent hits an ambiguity during `ingest` or `seed` or playbook authoring, it appends an entry there. None of these are blocking for using the system. They are inputs requested from the people who know the organization from the inside.
+When the agent hits an ambiguity during `init` or `ingest` or playbook authoring, it appends an entry there. None of these are blocking for using the system. They are inputs requested from the people who know the organization from the inside.
 
 ## Constraints on whoever modifies
 

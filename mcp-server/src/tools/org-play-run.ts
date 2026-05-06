@@ -2,7 +2,7 @@
  * org_play_run — execute a playbook pipeline against the bundled Org/.
  *
  * Two modes:
- * - mode="build" — runs the script that walks the substrate and produces
+ * - mode="build" — runs the script that walks the structure and produces
  *   the JSON skeleton (or, for ai-exposure, the embedding match).
  *   Returns the JSON content inline so the agent can read it / fill in
  *   the interpretive fields without having to round-trip the disk.
@@ -33,7 +33,7 @@ const inputSchema = {
       type: 'string',
       enum: ['build', 'render'],
       description:
-        'build: walk substrate, produce skeleton (or full pipeline for ai-exposure). render: take the agent-filled JSON in json_content and produce audit + viewer.',
+        'build: walk structure, produce skeleton (or full pipeline for ai-exposure). render: take the agent-filled JSON in json_content and produce audit + viewer.',
     },
     anchor: {
       type: 'string',
@@ -112,7 +112,7 @@ async function ensureDir(p: string): Promise<void> {
 export const orgPlayRunTool: ToolDefinition = {
   name: 'org_play_run',
   description:
-    'Execute a playbook pipeline (ai-exposure / value-map / reshuffle / world-model). mode=build walks the substrate and returns a JSON skeleton (for ai-exposure: runs the full match + viewer end to end). mode=render takes a filled JSON in json_content, writes it to plays/data/, runs audit.py and viewer.py, and returns the resulting artefact paths plus the audit summary. Spawns python3; requires Python 3 in PATH on the customer machine.',
+    'Execute a playbook pipeline (ai-exposure / value-map / reshuffle / world-model). mode=build walks the structure and returns a JSON skeleton (for ai-exposure: runs the full match + viewer end to end). mode=render takes a filled JSON in json_content, writes it to plays/data/, runs audit.py and viewer.py, and returns the resulting artefact paths plus the audit summary. Spawns python3; requires Python 3 in PATH on the customer machine.',
   inputSchema,
   handler: async (rawArgs, ctx) => {
     const args = ArgsSchema.parse(rawArgs);

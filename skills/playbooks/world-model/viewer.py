@@ -323,9 +323,9 @@ function renderCapabilityModal(c) {{
     html += `<div class="section-label">Perché è ${{c.moat_grade === 'moat' ? 'un moat' : 'commodity'}}</div>`;
     html += `<div class="desc">${{escapeHtml(c.moat_rationale)}}</div>`;
   }}
-  if (c._substrate_evidence && c._substrate_evidence.length) {{
+  if (c._structure_evidence && c._structure_evidence.length) {{
     html += `<div class="section-label">Evidenza nella struttura</div>`;
-    html += c._substrate_evidence.map(p => `<div class="citation">${{escapeHtml(p)}}</div>`).join('');
+    html += c._structure_evidence.map(p => `<div class="citation">${{escapeHtml(p)}}</div>`).join('');
   }}
   return html;
 }}
@@ -385,9 +385,9 @@ function renderInterfaceModal(idx) {{
     html += `<div class="section-label">Capability che attraversa</div>`;
     html += pillList(ifc.surfaces_capabilities, 'surfaces');
   }}
-  if (ifc._substrate) {{
+  if (ifc._structure) {{
     html += `<div class="section-label">Evidenza nella struttura</div>`;
-    html += `<div class="citation">${{escapeHtml(ifc._substrate)}}</div>`;
+    html += `<div class="citation">${{escapeHtml(ifc._structure)}}</div>`;
   }}
   return html;
 }}
@@ -409,9 +409,9 @@ function renderSignalModal(idx) {{
     html += `<div class="section-label">Cosa servirebbe per costruirla</div>`;
     html += `<div class="desc">${{escapeHtml(s.what_would_be_needed)}}</div>`;
   }}
-  if (s.substrate_evidence) {{
+  if (s.structure_evidence) {{
     html += `<div class="section-label">Evidenza che la richiesta nascerebbe</div>`;
-    html += `<div class="citation">${{escapeHtml(s.substrate_evidence)}}</div>`;
+    html += `<div class="citation">${{escapeHtml(s.structure_evidence)}}</div>`;
   }}
   return html;
 }}
@@ -610,7 +610,7 @@ def render_html(d: dict, title: str) -> str:
   <text x="360" y="426" text-anchor="middle" font-size="12" fill="#1a1a1a">sostituire il routing gerarchico delle informazioni con un sistema che accumula intelligenza nel tempo</text>
   <text x="572" y="80" font-size="10" fill="#6b6b6b" font-style="italic">superfici di delivery</text>
   <text x="572" y="162" font-size="10" fill="#6b6b6b" font-style="italic">composer</text>
-  <text x="572" y="244" font-size="10" fill="#6b6b6b" font-style="italic">substrate</text>
+  <text x="572" y="244" font-size="10" fill="#6b6b6b" font-style="italic">structure</text>
   <text x="572" y="326" font-size="10" fill="#6b6b6b" font-style="italic">primitives</text>
 </svg>'''
 

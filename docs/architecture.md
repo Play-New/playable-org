@@ -10,7 +10,7 @@ The pattern was articulated by Andrej Karpathy in May 2026 ([gist](https://gist.
 
 1. **Files are the storage.** Markdown is human-readable. Diffs are line-level. Everything ports across editors, IDEs, GitHub, Obsidian. The file system is the database.
 2. **Citations are mandatory.** Every assertion carries an inline `(source-id)`. The lint refuses citations to non-existent sources. The agent cannot invent without breaking the rule mechanically.
-3. **The agent maintains, the human curates.** Writes are proposed, the human confirms. The audit log is append-only. There is no "automatic update" path that bypasses confirmation.
+3. **The agent maintains, the human curates.** Writes are proposed, the human confirms. The audit log is prepend-only. There is no "automatic update" path that bypasses confirmation.
 
 ## Why files instead of a database
 
@@ -49,7 +49,7 @@ Reason: the schema is productizable across organizations and languages. The cont
 
 ## Why facts in `Org/`, interpretations in `plays/`
 
-The substrate of facts is reusable across many analyses. An interpretation is one analyst's reading at one point in time. Mixing them produces a graph that drifts: every interpretation that "becomes true" overwrites the underlying facts, and the structure ceases to be a stable reference.
+The structure of facts is reusable across many analyses. An interpretation is one analyst's reading at one point in time. Mixing them produces a graph that drifts: every interpretation that "becomes true" overwrites the underlying facts, and the structure ceases to be a stable reference.
 
 The discipline: `Org/` answers *what is*. `plays/` answers *what does this mean, given that*. A play in `plays/` is frozen at creation date. To revise, write a new play. The old plays are not deleted — they are history.
 
@@ -69,11 +69,11 @@ The server is intentionally thin. It does not know about playbooks. It does not 
 
 This separation has two consequences:
 - **Adding a new analytical method = adding a SKILL.md.** No mcp server change required if the method composes existing primitives. (If a new primitive is needed, then the server is updated and a new tool is exposed.)
-- **The mcp server is generic.** Other projects could use it as the bridge to their own substrate. The server makes no assumption about what the markdown files mean.
+- **The mcp server is generic.** Other projects could use it as the bridge to their own structure. The server makes no assumption about what the markdown files mean.
 
 ## The skills layer
 
-`skills/` contains seven recipes (`ingest`, `lint`, `seed`, four playbooks, plus the meta-skill `new-play`) and three cross-cutting docs (`CAPABILITIES.md`, `STYLE.md`, `ROADMAP.md`) plus `design.py`.
+`skills/` contains seven recipes (`init`, `ingest`, `lint`, four playbooks, plus the meta-skill `new-play`) and three cross-cutting docs (`CAPABILITIES.md`, `STYLE.md`, `ROADMAP.md`) plus `design.py`.
 
 Each skill is a `SKILL.md` recipe the agent reads via `org_skill_read`. Some skills (the playbooks) ship with Python scripts (build/audit/viewer). The recipe tells the agent how to compose the scripts via `org_play_run`.
 

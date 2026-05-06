@@ -22,7 +22,7 @@ These constrain every operation. Violation = bug.
 
 5. **Plays are frozen at creation.** Once written, a play records a moment in time. To revise, write a new one. Old plays are never deleted.
 
-**Related rule: `Org/` describes the as-is.** Sources document what is or has been, not what could be. The to-be (proposals, targets, gaps) lives in `plays/`. No `state: current | proposed` field on substrate nodes.
+**Related rule: `Org/` describes the as-is.** Sources document what is or has been, not what could be. The to-be (proposals, targets, gaps) lives in `plays/`. No `state: current | proposed` field on structure nodes.
 
 ## Folders
 
@@ -39,13 +39,13 @@ These constrain every operation. Violation = bug.
 | `commitments/` | Relationships between nodes (5 levels, 3 state dimensions) | Maintained by ingest |
 | `financials/` | Market view of the organization (revenue lines, headcount, costs by division) | Maintained by ingest |
 | `plays/` | Point-in-time playbook executions (interpretations) | Frozen at creation |
-| `log.md` | Append-only audit | Append-only |
+| `log.md` | Prepend-only audit | Prepend-only |
 
 ## Special files at root of `Org/`
 
 - `README.md` — entry point for the organization.
 - `AGENTS.md` — this file. Operational contract.
-- `log.md` — append-only audit. One operation, one line.
+- `log.md` — prepend-only audit. One operation, one line.
 - `index.md` — content-oriented catalog: one page, one link, one-line summary, organized by category. **Updated by the agent on every ingest.** To answer a query, the agent reads `index.md` first to find relevant pages, then accesses them.
 - `open-questions.md` — questions requiring human input from inside the organization.
 
@@ -253,15 +253,15 @@ If a sentence can be cut without loss of meaning, cut it. Empty fields are hones
 
 Workflows are procedures the agent composes using the **mcp tools** of the bundled server in `<repo>/mcp-server/`. The server exposes 12 tools; their schemas are introspectable from the client via `tools/list`. Step-by-step detail for each workflow lives in `<repo>/skills/<name>/SKILL.md`. Here only the high shape.
 
-### seed
+### init
 
-**One-time bulk ingest at first install.** The user drops a folder of source documents into `Org/sources/` (founding charter, organizational charts, role-descriptions, annual report, internal process maps). Then in chat: *seed the structure from sources/*. The agent iterates each document, proposes nodes in batches (5–15 per batch), shows diffs, writes on confirmation, appends one log line per batch. A first-install seeding session typically produces 200–400 nodes in 30–60 minutes.
+**One-time bulk ingest at first install.** The user drops a folder of source documents into `Org/sources/` (founding charter, organizational charts, role-descriptions, annual report, internal process maps). Then in chat: *initialize the structure from sources/*. The agent iterates each document, proposes nodes in batches (5–15 per batch), shows diffs, writes on confirmation, appends one log line per batch. A first-install init session typically produces 200–400 nodes in 30–60 minutes.
 
-Detail: `<repo>/skills/seed/SKILL.md`.
+Detail: `<repo>/skills/init/SKILL.md`.
 
 ### ingest
 
-**Default after seed: one source at a time, human in the loop.** A new document arrives (loaded in chat or moved into `sources/`); the agent verifies its relevance against `identity/`, reads the content, saves the source under a canonicalized name in `sources/<id>.<ext>`, proposes 5–15 substrate updates (only observable facts, no interpretation), shows the diff, applies on confirmation, updates `index.md`, appends to `log.md`.
+**Default after init: one source at a time, human in the loop.** A new document arrives (loaded in chat or moved into `sources/`); the agent verifies its relevance against `identity/`, reads the content, saves the source under a canonicalized name in `sources/<id>.<ext>`, proposes 5–15 structure updates (only observable facts, no interpretation), shows the diff, applies on confirmation, updates `index.md`, appends to `log.md`.
 
 Detail: `<repo>/skills/ingest/SKILL.md`.
 

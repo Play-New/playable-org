@@ -53,7 +53,7 @@ Four base playbooks plus one meta-skill. Each answers one analytical question an
 **What it does.**
 1. Takes a slice (commitment, area, or division).
 2. Inventories every activity in the slice.
-3. The agent classifies each activity's primary constraint type with substrate citations.
+3. The agent classifies each activity's primary constraint type with structure citations.
 4. For each AI use case identified in the slice (typically grounded in AEI matches), the agent classifies it as `tool` or `engine`.
 5. The agent surfaces rebundle candidates: alternative groupings of activities that emerge if specific engines dissolve specific constraints.
 6. Renders an interactive viewer with constraint colour-coding, tool/engine badges, autonomy-coordination axis, coordination-paradox flag.

@@ -78,15 +78,15 @@ Open `playable-org/Org/sources/` in Finder / File Explorer. Drag in any of:
 
 Acceptable formats: `.pdf`, `.docx`, `.xlsx`, `.pptx`, `.md`, `.html`, `.txt`. Use kebab-case filenames (e.g., `articles-of-association-2024.pdf`).
 
-### Run seed
+### Run init
 
 In a new chat in Claude Desktop:
 
-> Seed the structure from `sources/`.
+> Initialize the structure from `sources/`.
 
-Claude follows the `seed` skill. It reads founding documents first to fill the three identity stubs (`mission`, `limits`, `rules`), then iterates through the rest, proposing entities in batches, showing you the diff, writing on confirmation, appending one log line per batch. A first session typically takes 30 to 60 minutes and produces 200 to 400 nodes.
+Claude follows the `init` skill. It reads founding documents first to fill the three identity stubs (`mission`, `limits`, `rules`), then iterates through the rest, proposing entities in batches, showing you the diff, writing on confirmation, appending one log line per batch. A first session typically takes 30 to 60 minutes and produces 200 to 400 nodes.
 
-After seed, run:
+After init, run:
 
 > Run the lint.
 
@@ -94,7 +94,7 @@ To verify the populated structure has no issues (broken citations, orphan nodes,
 
 ## What you can ask
 
-Once seeded, ask Claude in plain language. The system reads from your structure and answers with citations.
+Once initialized, ask Claude in plain language. The system reads from your structure and answers with citations.
 
 **Operational questions** (the kind that today require flipping through role-description documents or the org chart):
 
@@ -133,7 +133,7 @@ Drag the file into the chat and say:
 
 > Ingest this document.
 
-Claude follows the `ingest` skill: it identifies the source, proposes substrate updates, asks for your confirmation before writing. Nothing changes without your approval.
+Claude follows the `ingest` skill: it identifies the source, proposes structure updates, asks for your confirmation before writing. Nothing changes without your approval.
 
 ## Open questions you might want to track
 

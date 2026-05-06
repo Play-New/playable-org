@@ -2,7 +2,7 @@
 """
 reshuffle / build.py — Build a slice skeleton with constraint signals.
 
-Walks substrate edges starting from the slice anchor, enumerates activities
+Walks structure edges starting from the slice anchor, enumerates activities
 in scope, and emits a JSON skeleton ready for the agent to classify each
 activity by primary constraint, dominant knowledge-management cost, and
 tool/engine. Optionally attaches AEI matches and value-map positions.
@@ -141,7 +141,7 @@ def load_node(org_dir: Path, kind: str, node_id: str) -> tuple[dict, str]:
     raise FileNotFoundError(f"{kind} '{node_id}' not found in {org_dir}")
 
 
-# Substrate signals that hint at a constraint type (suggestions, not facts).
+# Structure signals that hint at a constraint type (suggestions, not facts).
 # The agent decides; the audit verifies citation.
 
 CONSTRAINT_HINTS = {
@@ -179,7 +179,7 @@ def attach_aei(components: list[dict], matches_path: Path) -> int:
     by_id = {m["id"]: m for m in matches}
     attached = 0
     for c in components:
-        sid = c.get("_substrate_id")
+        sid = c.get("_structure_id")
         if sid and sid in by_id:
             mm = by_id[sid]
             top = mm.get("matches", [])[:3]
@@ -202,10 +202,10 @@ def attach_aei(components: list[dict], matches_path: Path) -> int:
 
 def attach_value_map(components: list[dict], vmap_path: Path) -> int:
     vmap = json.loads(vmap_path.read_text(encoding="utf-8"))
-    by_sid = {c.get("_substrate_id"): c for c in vmap.get("components", []) if c.get("_substrate_id")}
+    by_sid = {c.get("_structure_id"): c for c in vmap.get("components", []) if c.get("_structure_id")}
     attached = 0
     for c in components:
-        sid = c.get("_substrate_id")
+        sid = c.get("_structure_id")
         if sid and sid in by_sid:
             v = by_sid[sid]
             c["_value_map"] = {
@@ -219,7 +219,7 @@ def attach_value_map(components: list[dict], vmap_path: Path) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build reshuffle slice skeleton from substrate.")
+    parser = argparse.ArgumentParser(description="Build reshuffle slice skeleton from structure.")
     parser.add_argument("--slice", required=True, help="Slice id (commitment or unit)")
     parser.add_argument("--kind", required=True, choices=["commitment", "unit"], help="Slice anchor type")
     parser.add_argument("--org-dir", required=True, help="Path to Org/")
@@ -252,7 +252,7 @@ def main() -> int:
         elif k == "stakeholder":
             scope_stakeholders.append(p)
         else:
-            print(f"Warning: party '{p}' not found in substrate", file=sys.stderr)
+            print(f"Warning: party '{p}' not found in structure", file=sys.stderr)
 
     seen: set[str] = set()
     scope_units = [u for u in scope_units if not (u in seen or seen.add(u))]
@@ -306,7 +306,7 @@ def main() -> int:
         components.append({
             "id": cid,
             "label": a["title"],
-            "_substrate_id": a["id"],
+            "_structure_id": a["id"],
             "_unit": a["unit"],
             "_description": a["description"],
             "_body": a["body"],
@@ -328,7 +328,7 @@ def main() -> int:
         components.append({
             "id": cid,
             "label": get_title(text) or s,
-            "_substrate_id": s,
+            "_structure_id": s,
             "_kind": "stakeholder",
             "_description": fm.get("description", ""),
         })

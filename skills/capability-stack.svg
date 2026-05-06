@@ -48,6 +48,6 @@
   <!-- Side annotations -->
   <text x="616" y="100" font-size="11" fill="#6b6b6b" font-style="italic">delivery surfaces</text>
   <text x="616" y="196" font-size="11" fill="#6b6b6b" font-style="italic">composer</text>
-  <text x="616" y="292" font-size="11" fill="#6b6b6b" font-style="italic">substrate</text>
+  <text x="616" y="292" font-size="11" fill="#6b6b6b" font-style="italic">structure</text>
   <text x="616" y="388" font-size="11" fill="#6b6b6b" font-style="italic">primitives</text>
 </svg>

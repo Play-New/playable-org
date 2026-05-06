@@ -71,7 +71,7 @@ Reports in `lint-report-*.md` and `lint-semantic-report-*.md`.
 - **After every ingest** (part of the ingest workflow, step 8)
 - **After every Pass B** completed
 - **Weekly** as baseline check
-- **Before every `play`** to ensure the substrate is healthy
+- **Before every `play`** to ensure the structure is healthy
 
 ## Triage
 

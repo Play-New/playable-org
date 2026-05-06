@@ -105,7 +105,7 @@ def audit_bundle_state(d: dict) -> list[str]:
         issues.append(f"  bundle_state.current_mode='{mode}' not in {sorted(ALLOWED_MODES)}")
     me = bd.get("mode_evidence") or []
     if not me:
-        issues.append("  bundle_state.mode_evidence missing (cite a substrate document or commitment terms)")
+        issues.append("  bundle_state.mode_evidence missing (cite a structure document or commitment terms)")
 
     # If any component has tool but no engine, the play must acknowledge the coordination paradox
     comps = d.get("components") or []
@@ -170,10 +170,10 @@ def audit_rebundle_candidates(d: dict) -> list[str]:
     return issues
 
 
-def audit_substrate_existence(comps: list[dict], org_dir: Path) -> list[str]:
+def audit_structure_existence(comps: list[dict], org_dir: Path) -> list[str]:
     issues: list[str] = []
     for c in comps:
-        sid = c.get("_substrate_id")
+        sid = c.get("_structure_id")
         if not sid:
             continue
         candidates = [
@@ -183,7 +183,7 @@ def audit_substrate_existence(comps: list[dict], org_dir: Path) -> list[str]:
             org_dir / "nodes" / "stakeholders" / f"{sid}.md",
         ]
         if not any(p.exists() for p in candidates):
-            issues.append(f"  [{c.get('id')} {c.get('label')}] _substrate_id '{sid}' not found")
+            issues.append(f"  [{c.get('id')} {c.get('label')}] _structure_id '{sid}' not found")
     return issues
 
 
@@ -206,7 +206,7 @@ def main() -> int:
     issues.extend(audit_bundle_state(d))
     issues.extend(audit_engine_candidates(d))
     issues.extend(audit_rebundle_candidates(d))
-    issues.extend(audit_substrate_existence(comps, org_dir))
+    issues.extend(audit_structure_existence(comps, org_dir))
 
     # Constraint distribution summary
     dist = {"scarcity": 0, "risk": 0, "coordination": 0, "(unset)": 0}

@@ -438,20 +438,20 @@ def test_repo_root_tooling():
     out = call(d, "org_skills_list", {})
     parsed = json.loads(out)
     names = {s["name"] for s in parsed.get("skills", [])}
-    expected = {"ingest", "lint", "seed",
+    expected = {"init", "ingest", "lint",
                 "ai-exposure", "value-map", "reshuffle", "world-model", "new-play"}
     assertion(f"skills_list exposes all 8 skills (got {len(names)})",
               expected.issubset(names),
               f"missing: {expected - names}")
 
     # ---- org_skill_read (top-level + nested + cross-cuts) ----
-    out = call(d, "org_skill_read", {"name": "seed"})
+    out = call(d, "org_skill_read", {"name": "init"})
     parsed = json.loads(out)
-    assertion("skill_read seed body present",
+    assertion("skill_read init body present",
               len(parsed.get("body", "")) > 500,
               f"body length: {len(parsed.get('body', ''))}")
-    assertion("skill_read seed path is correct",
-              parsed.get("path") == "skills/seed/SKILL.md",
+    assertion("skill_read init path is correct",
+              parsed.get("path") == "skills/init/SKILL.md",
               parsed.get("path"))
 
     out = call(d, "org_skill_read", {"name": "world-model"})

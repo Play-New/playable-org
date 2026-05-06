@@ -847,7 +847,7 @@ def main() -> int:
     parser.add_argument(
         "--area-descriptions",
         help="Optional JSON dict {area_id: 'high-level scope description'} shown at the top of each area section. "
-             "Substrate-grounded one-liners.",
+             "Structure-grounded one-liners.",
     )
     parser.add_argument(
         "--org-description",
