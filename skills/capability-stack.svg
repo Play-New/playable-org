@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 540" width="100%" style="max-width: 720px; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;">
+  <defs>
+    <marker id="arrow-up" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 5 9 L 10 0 Z" fill="#6b6b6b" transform="rotate(180 5 5)"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="720" height="540" fill="#faf9f6"/>
+
+  <!-- Title -->
+  <text x="360" y="36" text-anchor="middle" font-size="14" fill="#6b6b6b" font-weight="500" letter-spacing="1px">THE FOUR-PART OPERATING MODEL</text>
+
+  <!-- Layer 1: Interfaces (top) -->
+  <rect x="120" y="64" width="480" height="64" rx="6" fill="#dde7f8" stroke="#9ab1d8" stroke-width="1"/>
+  <text x="360" y="88" text-anchor="middle" font-size="16" fill="#1a1a1a" font-weight="600">Interfaces</text>
+  <text x="360" y="110" text-anchor="middle" font-size="12" fill="#5a5a5a">where value reaches stakeholders (web, app, physical, telephone)</text>
+
+  <!-- Arrow up to Interfaces -->
+  <line x1="360" y1="160" x2="360" y2="134" stroke="#6b6b6b" stroke-width="1.5" marker-end="url(#arrow-up)"/>
+
+  <!-- Layer 2: Intelligence layer -->
+  <rect x="120" y="160" width="480" height="64" rx="6" fill="#e1ddec" stroke="#a59cc4" stroke-width="1"/>
+  <text x="360" y="184" text-anchor="middle" font-size="16" fill="#1a1a1a" font-weight="600">Intelligence layer</text>
+  <text x="360" y="206" text-anchor="middle" font-size="12" fill="#5a5a5a">composes capabilities into solutions for specific stakeholders</text>
+
+  <!-- Arrow up -->
+  <line x1="360" y1="256" x2="360" y2="230" stroke="#6b6b6b" stroke-width="1.5" marker-end="url(#arrow-up)"/>
+
+  <!-- Layer 3: World model -->
+  <rect x="120" y="256" width="480" height="64" rx="6" fill="#dee7d8" stroke="#a0bf95" stroke-width="1"/>
+  <text x="360" y="280" text-anchor="middle" font-size="16" fill="#1a1a1a" font-weight="600">World model</text>
+  <text x="360" y="302" text-anchor="middle" font-size="12" fill="#5a5a5a">shared knowledge of operations + stakeholder signal</text>
+
+  <!-- Arrow up -->
+  <line x1="360" y1="352" x2="360" y2="326" stroke="#6b6b6b" stroke-width="1.5" marker-end="url(#arrow-up)"/>
+
+  <!-- Layer 4: Capabilities (bottom) -->
+  <rect x="120" y="352" width="480" height="64" rx="6" fill="#ede4ce" stroke="#c8b88a" stroke-width="1"/>
+  <text x="360" y="376" text-anchor="middle" font-size="16" fill="#1a1a1a" font-weight="600">Capabilities</text>
+  <text x="360" y="398" text-anchor="middle" font-size="12" fill="#5a5a5a">atomic invocable functions, hard to acquire, composable</text>
+
+  <!-- Shared principle (bottom standalone box) -->
+  <rect x="60" y="448" width="600" height="60" rx="6" fill="#fbe8dd" stroke="#c47558" stroke-width="1.5"/>
+  <text x="360" y="472" text-anchor="middle" font-size="13" fill="#8c4a30" font-weight="500" letter-spacing="0.5px">SHARED PRINCIPLE</text>
+  <text x="360" y="492" text-anchor="middle" font-size="13" fill="#1a1a1a">Replace hierarchical information routing with compounding intelligence</text>
+
+  <!-- Side annotations -->
+  <text x="616" y="100" font-size="11" fill="#6b6b6b" font-style="italic">delivery surfaces</text>
+  <text x="616" y="196" font-size="11" fill="#6b6b6b" font-style="italic">composer</text>
+  <text x="616" y="292" font-size="11" fill="#6b6b6b" font-style="italic">substrate</text>
+  <text x="616" y="388" font-size="11" fill="#6b6b6b" font-style="italic">primitives</text>
+</svg>

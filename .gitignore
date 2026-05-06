@@ -1,0 +1,37 @@
+# macOS junk
+.DS_Store
+._*
+
+# Node
+node_modules/
+mcp-server/dist/
+*.tsbuildinfo
+
+# Lint output (auto-generated, dated)
+lint-report-*.md
+lint-semantic-report-*.md
+
+# Editor swap/backup
+*~
+*.swp
+*.swo
+*.bak
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Test artifacts
+/tmp/
+test-output/
+
+# Embedding caches (large, regenerated on first matcher run)
+.embeddings-cache.npz
+
+# Generated viewers (rebuildable from match output)
+*-viewer.html
+
+# Claude Code working state
+.claude/
+playable-org-*.zip
