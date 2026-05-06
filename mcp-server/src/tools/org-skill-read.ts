@@ -20,7 +20,7 @@ const inputSchema = {
     name: {
       type: 'string',
       description:
-        'Skill name (e.g., "ingest", "lint", "ai-exposure", "world-model", "new-play") or one of the cross-cutting docs ("CAPABILITIES", "STYLE", "ROADMAP"). Resolves to skills/<name>/SKILL.md, skills/playbooks/<name>/SKILL.md, or the top-level skills/<name>.md.',
+        'Skill name (e.g., "ingest", "lint", "ai-exposure", "world-model", "new-playbook") or one of the cross-cutting docs ("CAPABILITIES", "STYLE", "ROADMAP"). Resolves to skills/<name>/SKILL.md, skills/playbooks/<name>/SKILL.md, or the top-level skills/<name>.md.',
     },
   },
   required: ['name'],

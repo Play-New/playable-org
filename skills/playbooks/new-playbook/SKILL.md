@@ -1,9 +1,9 @@
 ---
-name: new-play
+name: new-playbook
 description: "Meta-skill. Authors a new analytical playbook for the organization. Walks the user through five design decisions, picks the closest of the four base playbooks as scaffold, generates the new skill folder. Output: skills/playbooks/<name>/ with SKILL.md, build.py, audit.py, viewer.py wired to the structure, ready for the first run."
 ---
 
-# Skill: new-play (meta)
+# Skill: new-playbook (meta)
 
 The four base playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`) are not a closed list. Any organization that adopts the structure will want questions of its own. This skill is the recipe for adding one.
 
@@ -156,7 +156,7 @@ Create `skills/playbooks/<name>/` with:
   - the primitive-rendering function (replace fields per Q5)
   - the modal content (per Q5)
 
-Each TODO marker has the form `# TODO(new-play): replace with <field>` — searchable, reviewable, removable when filled.
+Each TODO marker has the form `# TODO(new-playbook): replace with <field>` — searchable, reviewable, removable when filled.
 
 ### 5. Update ROADMAP.md
 
@@ -215,7 +215,7 @@ Three structural rules.
 
 - **The question is one-shot.** Write a play directly under `org/plays/data/` without a skill folder.
 - **The question is the same as an existing playbook with a different filter or anchor.** Run the existing playbook with that anchor instead. Do not fork.
-- **The question is about structure health.** Use the `lint` skill, not `new-play`.
+- **The question is about structure health.** Use the `lint` skill, not `new-playbook`.
 - **The question requires altering the structure.** Use `org_write_node` directly, plus the `ingest` skill if the change comes from a source.
 
 ## References

@@ -17,7 +17,7 @@ playable-org/
 │   ├── ingest/           one-source-at-a-time ingest workflow
 │   ├── lint/             quality control workflow
 │   ├── init/             one-time bulk ingest (first install)
-│   └── playbooks/        ai-exposure, value-map, reshuffle, world-model, new-play
+│   └── playbooks/        ai-exposure, value-map, reshuffle, world-model, new-playbook
 ├── docs/                 architecture, playbooks reference, extension guide
 ├── install.{sh,command,bat,ps1}  installers
 ├── lint.py, lint-semantic.py  Tier 1 + Tier 2 lint

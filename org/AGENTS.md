@@ -288,7 +288,7 @@ Playbooks are named for what they do, never for the author. Four base playbooks:
 - `reshuffle` — diagnoses which constraints hold a bundle together (scarcity / risk / coordination) and classifies AI uses as tools or engines.
 - `world-model` — re-reads the organization as a stack of capability + world model + intelligence layer + interfaces; produces a roadmap from failure signals.
 
-Plus a meta-skill `new-play` (5-question interview that scaffolds a new playbook by forking the closest base). See `<repo>/skills/ROADMAP.md` for the order, and `<repo>/skills/playbooks/<name>/SKILL.md` for each.
+Plus a meta-skill `new-playbook` (5-question interview that scaffolds a new playbook by forking the closest base). See `<repo>/skills/ROADMAP.md` for the order, and `<repo>/skills/playbooks/<name>/SKILL.md` for each.
 
 ## Format of `log.md`
 

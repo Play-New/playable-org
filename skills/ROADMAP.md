@@ -12,7 +12,7 @@ Author names appear here because `skills/` is the productizable layer. They neve
 | 2 | value-map      | process mapping & redesign     | Simon Wardley                               | done    |
 | 3 | reshuffle      | design                         | Sangeet Choudary                            | done    |
 | 4 | world-model    | operating-model design         | Jack Dorsey + Roelof Botha (Block, 2026)    | done    |
-| 5 | new-play       | meta — author your own skill   | (no source — composition of the other four) | done    |
+| 5 | new-playbook       | meta — author your own skill   | (no source — composition of the other four) | done    |
 
 The four together form a sequence: observe where AI presses (1) → map where each component sits in evolution (2) → propose new bundles around the constraints that remain (3) → recompose around capabilities and co-creators (4).
 
@@ -119,7 +119,7 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 **Open question.**
 - Calibration of the four-part model to a non-profit foundation. Block's frame is built on transactional businesses where money is "the most honest signal in the world". For an organization, the equivalent honest signals are donation patterns, grant outcomes, testator pre-mortem behavior. The skill should adapt the customer-world-model section to whatever signals the structure actually has.
 
-## 5 — new-play
+## 5 — new-playbook
 
 **What it does.** Meta-skill. Lets a person interacting via mcp author a new analytical playbook for their organization, scaffolded from the patterns of the existing four. The output is a new `skills/playbooks/<name>/` folder with a SKILL.md, a build skeleton, an audit gate, and a viewer template — all populated with the user's question, scope, and signal source.
 

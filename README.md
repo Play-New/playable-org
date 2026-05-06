@@ -6,16 +6,24 @@ Represent an organization as a navigable graph of cited markdown files, then run
 
 - `org/` — your structure, as a folder of markdown files. One file per organizational unit, person, role, activity, stakeholder, commitment, financial summary. Each file is short. Each claim cites its source.
 - `mcp-server/` — a TypeScript stdio mcp server that exposes 12 tools to Claude Desktop. Read tools (read, search, list, neighbors). Write tools (write_node, save_source, log_append). Meta tools (skills_list, skill_read, lint_run, play_run, open).
-- `skills/` — workflow recipes and analytical playbooks, plus the productizable design system. Three operational skills (`init`, `ingest`, `lint`), four analytical playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`), one meta-skill (`new-play`).
+- `skills/` — workflow recipes and analytical playbooks, plus the productizable design system. Three operational skills (`init`, `ingest`, `lint`), four analytical playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`), one meta-skill (`new-playbook`).
 - `install.command` / `install.bat` — clickable installers. They build the mcp server and register it in Claude Desktop's config. No admin privileges required.
 
 After install, you chat with Claude in plain language. *Show me the structure of marketing.* *Where is the legacy pipeline going on the evolution curve?* *Run the world-model on the customer-facing division.* The artefacts land on your disk and open in your default browser.
 
-## Why it exists
+## Why "Playable"
 
-LLMs change what kind of "data" a system can manage. Before, structured data was needed because the only thing reading it was code. Now an LLM can read prose. That means a knowledge representation can be: a folder of markdown files, with a thin schema in YAML frontmatter, and citations everywhere. Persistence is the filesystem. Schema validation is a lint pass. Query is the agent reading the relevant files. Audit is a prepend-only log.
+Organizations are opaque even to themselves. Who does what, who owes what to whom, where the load-bearing commitments are — most of this lives in people's heads, in role-description PDFs nobody reads twice, in org charts stale within days of a reorg. You can't play a game whose rules and pieces you can't see.
 
-This pattern was articulated by Andrej Karpathy in May 2026 as the "LLM Wiki" idea. Playable Org is one application of the pattern: a representation of an organization, with analytical playbooks on top.
+Playable Org is legibility first, then play.
+
+**Legible**: a folder of cited markdown files, maintained by an LLM agent against the documents you already have. The graph re-renders as the documents change. You read it like prose, query it like a database, audit it like a ledger.
+
+**Playable**: each analytical pass over the graph is a *play* — a what-if simulation of the organization under a specific hypothesis, grounded in cited facts. Run it. Freeze the result. Run a different hypothesis. Compare across time as the organization evolves.
+
+You play with the graph the way you play with a board: pieces visible, rules explicit, moves recorded, positions reproducible.
+
+Without legibility, the plays have no ground. Without the plays, the graph is a static reference.
 
 ## What's in the box
 
@@ -35,7 +43,7 @@ Seven skills:
 - `value-map` — position the components of a slice on the evolution × visibility plane, with AI overlay.
 - `reshuffle` — diagnose which constraints hold a process bundle together; classify AI uses as tool or engine.
 - `world-model` — re-read the organization as a platform of capabilities + world model + intelligence layer + interfaces. Surface failure signals as roadmap.
-- `new-play` — meta-skill: scaffold a new playbook from a five-question interview.
+- `new-playbook` — meta-skill: scaffold a new playbook from a five-question interview.
 
 Each playbook produces a self-contained interactive HTML report. The design system uses Inter Variable, sober typography, hairline rules, monochrome palette with state accents only.
 

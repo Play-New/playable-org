@@ -439,7 +439,7 @@ def test_repo_root_tooling():
     parsed = json.loads(out)
     names = {s["name"] for s in parsed.get("skills", [])}
     expected = {"init", "ingest", "lint",
-                "ai-exposure", "value-map", "reshuffle", "world-model", "new-play"}
+                "ai-exposure", "value-map", "reshuffle", "world-model", "new-playbook"}
     assertion(f"skills_list exposes all 8 skills (got {len(names)})",
               expected.issubset(names),
               f"missing: {expected - names}")

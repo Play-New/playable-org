@@ -73,11 +73,11 @@ This separation has two consequences:
 
 ## The skills layer
 
-`skills/` contains seven recipes (`init`, `ingest`, `lint`, four playbooks, plus the meta-skill `new-play`) and three cross-cutting docs (`CAPABILITIES.md`, `STYLE.md`, `ROADMAP.md`) plus `design.py`.
+`skills/` contains seven recipes (`init`, `ingest`, `lint`, four playbooks, plus the meta-skill `new-playbook`) and three cross-cutting docs (`CAPABILITIES.md`, `STYLE.md`, `ROADMAP.md`) plus `design.py`.
 
 Each skill is a `SKILL.md` recipe the agent reads via `org_skill_read`. Some skills (the playbooks) ship with Python scripts (build/audit/viewer). The recipe tells the agent how to compose the scripts via `org_play_run`.
 
-The four base playbooks all use `design.py` for visual identity. Adding a new playbook via `new-play` inherits the same design system automatically.
+The four base playbooks all use `design.py` for visual identity. Adding a new playbook via `new-playbook` inherits the same design system automatically.
 
 ## What this is not
 

@@ -84,7 +84,7 @@ Four base playbooks plus one meta-skill. Each answers one analytical question an
 
 **Detail.** [`skills/playbooks/world-model/SKILL.md`](../skills/playbooks/world-model/SKILL.md).
 
-## new-play (meta-skill)
+## new-playbook (meta-skill)
 
 **Question.** What's a new analytical question we want to ask repeatedly about this organization, and what's the smallest scaffold that lets us answer it?
 
@@ -98,7 +98,7 @@ Four base playbooks plus one meta-skill. Each answers one analytical question an
 
 The meta-skill validates the design (refuses one-shot questions, refuses ungrounded primitive fields), picks the closest base playbook, and scaffolds a new `skills/playbooks/<name>/` folder.
 
-**Detail.** [`skills/playbooks/new-play/SKILL.md`](../skills/playbooks/new-play/SKILL.md).
+**Detail.** [`skills/playbooks/new-playbook/SKILL.md`](../skills/playbooks/new-playbook/SKILL.md).
 
 ## How to invoke
 

@@ -7,16 +7,16 @@ Three extension points. Read them in order.
 The base playbooks are extension targets, not closed. To author a new analytical question:
 
 ```
-"Voglio creare un playbook nuovo: <name>. <one-sentence question>. Avvia l'intervista new-play."
+"Voglio creare un playbook nuovo: <name>. <one-sentence question>. Avvia l'intervista new-playbook."
 ```
 
 In English:
 
 ```
-"I want to create a new playbook: <name>. <one-sentence question>. Start the new-play interview."
+"I want to create a new playbook: <name>. <one-sentence question>. Start the new-playbook interview."
 ```
 
-Claude follows `skills/playbooks/new-play/SKILL.md`. Five questions:
+Claude follows `skills/playbooks/new-playbook/SKILL.md`. Five questions:
 
 1. **What question does the playbook answer?** Must pass the repeatability test (would the org re-run this every quarter / after each restructuring?). One-shot questions are refused.
 2. **What is the anchor?** `full-org` | `commitment` | `unit` | `activity-set` | `stakeholder-set`.

@@ -12,7 +12,7 @@ This `CLAUDE.md` is working memory for whoever maintains the template (me, futur
 - `org/log.md` — prepend-only audit. Most-recent on top.
 - `org/index.md` — content-oriented catalog (link + one-line summary). Updated by the agent on every ingest.
 - `mcp-server/` — TypeScript stdio mcp server. 12 tools (4 read + 3 write + 1 meta + 4 executors), full e2e test suite at `mcp-server/test-e2e.py` against fixture in `mcp-server/test-fixtures/sample-org/`.
-- `skills/` — agent workflows + analytical playbooks + design system. Three operational skills (`init`, `ingest`, `lint`), four analytical playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`), one meta-skill (`new-play`). Cross-cutting docs: `CAPABILITIES.md` (the four-property frame), `STYLE.md` (anti-rhetoric charter), `ROADMAP.md` (the playbook order), `design.py` (single source of truth for the visual language), `_assets/fonts/inter-variable.woff2` (embedded font).
+- `skills/` — agent workflows + analytical playbooks + design system. Three operational skills (`init`, `ingest`, `lint`), four analytical playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`), one meta-skill (`new-playbook`). Cross-cutting docs: `CAPABILITIES.md` (the four-property frame), `STYLE.md` (anti-rhetoric charter), `ROADMAP.md` (the playbook order), `design.py` (single source of truth for the visual language), `_assets/fonts/inter-variable.woff2` (embedded font).
 - `docs/` — public-facing architecture, playbooks reference, extension guide.
 - `CLAUDE.md` (this file) — working memory. Not exposed to customers.
 
@@ -49,7 +49,7 @@ When prose is in a language other than English, prefer the local equivalent over
 - 12 mcp tools.
 - 3 operational skills: `init`, `ingest`, `lint`.
 - 4 analytical playbooks: `ai-exposure`, `value-map`, `reshuffle`, `world-model`. All four use `design.py` primitives via inheritance through their viewer.py modules. Each ships with build.py + audit.py + viewer.py.
-- 1 meta-skill: `new-play`. Five-question interview that scaffolds a new playbook.
+- 1 meta-skill: `new-playbook`. Five-question interview that scaffolds a new playbook.
 - `org/` empty: 3 identity stubs (`# REPLACE ME`), zero other content. Lint Tier 1 reports 3 expected warnings on the stubs (empty `sources` arrays); these go to 0 after init.
 - mcp-server e2e: 84/84 PASS against `mcp-server/test-fixtures/sample-org/` (a tiny generic Acme fixture: 1 mission, 2 units, 1 person, 1 stakeholder, 1 commitment, 1 source).
 - TypeScript build: clean.
