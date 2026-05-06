@@ -7,7 +7,7 @@ description: "Assess where coordination tax is paid in a slice of an organizatio
 
 ## How this playbook is run (read this first)
 
-This playbook **must** produce a persistent file artefact under `Org/plays/data/`, not an in-chat widget.
+This playbook **must** produce a persistent file artefact under `org/plays/data/`, not an in-chat widget.
 
 **Required tooling**: `org_play_run` (mcp tool). Two calls per run:
 
@@ -39,7 +39,7 @@ All consumer-facing text produced by this skill (play body, viewer copy, modals,
 4. **Autonomy-coordination position**: is the current bundle on the see-saw (zero-sum trade-off between team autonomy and cross-team alignment) or in flywheel mode (mutually reinforcing)?
 5. **Rebundle candidates**: new aggregations that emerge when AI dissolves the binding constraint.
 
-The deliverable is a frozen `play` in `Org/plays/reshuffle-<slice>-<date>.md`, with companion JSON and an interactive HTML viewer.
+The deliverable is a frozen `play` in `org/plays/reshuffle-<slice>-<date>.md`, with companion JSON and an interactive HTML viewer.
 
 ## Output language — mandatory
 
@@ -142,7 +142,7 @@ Pick one:
 python3 skills/playbooks/reshuffle/build.py \
   --slice <id> \
   --kind commitment|unit \
-  --org-dir Org \
+  --org-dir org \
   [--ai-exposure-matches <path-to-matches.json>] \
   [--value-map <path-to-value-map.json>] \
   --out <slice-skeleton.json>
@@ -221,7 +221,7 @@ The HTML viewer renders:
 ```bash
 python3 skills/playbooks/reshuffle/audit.py \
   --map <slice-map.json> \
-  --org-dir Org
+  --org-dir org
 ```
 
 The audit verifies:
@@ -239,7 +239,7 @@ Exit code: 0 = pass, 1 = fail. Same contract as `audit.py` of the other skills.
 
 > **Reminder**: this is consumer-facing output. Apply the [Output language](#output-language--mandatory) policy strictly. The play must read clearly to someone who knows neither the organization nor any organizational framework. Run the acid test before saving.
 
-In `Org/plays/reshuffle-<slice>-<date>.md`:
+In `org/plays/reshuffle-<slice>-<date>.md`:
 
 ```yaml
 ---
@@ -254,10 +254,10 @@ references:
   - builder: skills/playbooks/reshuffle/build.py
   - viewer: skills/playbooks/reshuffle/viewer.py
   - audit: skills/playbooks/reshuffle/audit.py
-  - map_json: Org/plays/data/reshuffle-<slice>-<date>.json
-  - map_html: Org/plays/data/reshuffle-<slice>-<date>.html
-  - ai_exposure_play: Org/plays/ai-exposure-<scope>-<date>.md  # if applicable
-  - value_map_play: Org/plays/value-map-<anchor>-<date>.md     # if applicable
+  - map_json: org/plays/data/reshuffle-<slice>-<date>.json
+  - map_html: org/plays/data/reshuffle-<slice>-<date>.html
+  - ai_exposure_play: org/plays/ai-exposure-<scope>-<date>.md  # if applicable
+  - value_map_play: org/plays/value-map-<anchor>-<date>.md     # if applicable
 ---
 ```
 

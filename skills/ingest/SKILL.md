@@ -1,11 +1,11 @@
 ---
 name: ingest
-description: Ingest a new source into Org/. One source at a time, with scope check, paraphrased citation, full ripple (units, activities, roles, language, stakeholders, commitments, index, log).
+description: Ingest a new source into org/. One source at a time, with scope check, paraphrased citation, full ripple (units, activities, roles, language, stakeholders, commitments, index, log).
 ---
 
 # Skill: ingest
 
-Recipe for ingesting a source (organizational chart, statute, paper, slide deck, dataset) into `Org/`. Codifies the Pass B practice applied 22 times during the pilot project.
+Recipe for ingesting a source (organizational chart, statute, paper, slide deck, dataset) into `org/`. Codifies the Pass B practice applied 22 times during the pilot project.
 
 ## Pre-conditions
 
@@ -36,9 +36,9 @@ When the user drags a binary document into the Claude Desktop chat, Claude recei
 This is **honest** but not always desirable. Two approaches:
 
 - **Text-only ingest (default).** Save the extracted text as `<canonicalized-name>.md` via `content`. Tell the user explicitly that the binary original is not preserved by this flow. Do not pretend `.pdf`, `.docx`, etc. when only text is available.
-- **Preserve original binary.** Ask the user to copy the original file into `Org/sources/` directly via Finder / file manager **before** the chat ingest. Then call `org_save_source` only if needed for the text extraction sidecar. The original binary is preserved alongside.
+- **Preserve original binary.** Ask the user to copy the original file into `org/sources/` directly via Finder / file manager **before** the chat ingest. Then call `org_save_source` only if needed for the text extraction sidecar. The original binary is preserved alongside.
 
-If the user did not copy the binary manually and only dragged it in chat, **say so explicitly** in the ingest summary: *"il file originale non è stato salvato come binario; in `sources/` c'è la sola estrazione testo. Per preservarlo, copialo manualmente nella cartella `Org/sources/`."*
+If the user did not copy the binary manually and only dragged it in chat, **say so explicitly** in the ingest summary: *"il file originale non è stato salvato come binario; in `sources/` c'è la sola estrazione testo. Per preservarlo, copialo manualmente nella cartella `org/sources/`."*
 
 Never guess the original extension. If the content is text, save with `.md` extension. If you actually have base64 bytes (rare in Claude Desktop drag-and-drop, possible with a filesystem mcp tool), save with the correct binary extension.
 
@@ -57,7 +57,7 @@ Read the source content. Identify:
 - **Stakeholders** mentioned (donors, suppliers, institutions, peer orgs)
 - **Commitments** documented (cardinal, cross-area, role-role, etc. — apply the AGENTS.md "When to register a commitment" policy)
 - **Domain terms** organization-specific not yet in `language/`
-- **Discrepancies** vs what already exists in `Org/`
+- **Discrepancies** vs what already exists in `org/`
 
 For each entity, **cite the source inline**: `(<source-id>)` or `(<source-id> §X.Y)`.
 
@@ -73,7 +73,7 @@ For each candidate entity: `org_search` by id and by description. Decide:
 
 For each node to create/update:
 
-- Complete frontmatter for the type (see `Org/AGENTS.md` schema)
+- Complete frontmatter for the type (see `org/AGENTS.md` schema)
 - Body in the org's working language: paraphrase the source, **don't copy verbatim** (invariant #3). Verbatim quotes allowed as short blockquote (≤3 lines) with `(source-id)` attribution
 - Cross-references via standard markdown: `[text](../path/to/node.md)`
 - Inline source citations: `(source-id)`
@@ -162,7 +162,7 @@ Opt-in mode. Same workflow per source, BUT ripple cascade and lint run **only on
 
 ## References
 
-- `Org/AGENTS.md` — node schemas, invariants, locked vocabulary
-- `Org/AGENTS.md` "When to register a commitment" — 3 tests in AND
+- `org/AGENTS.md` — node schemas, invariants, locked vocabulary
+- `org/AGENTS.md` "When to register a commitment" — 3 tests in AND
 - `lint.py` (Tier 1) and `lint-semantic.py` (Tier 2) at repo root
-- `Org/open-questions.md` — discrepancies and open questions
+- `org/open-questions.md` — discrepancies and open questions

@@ -2,7 +2,7 @@
 
 Four base playbooks plus one meta-skill. This file outlines what each does, what it consumes, what it produces, and the order they compose in.
 
-Author names appear here because `skills/` is the productizable layer. They never appear inside `Org/` artifacts (structure or plays).
+Author names appear here because `skills/` is the productizable layer. They never appear inside `org/` artifacts (structure or plays).
 
 ## Status
 
@@ -36,12 +36,12 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 - Optional: the matching ai-exposure play, to overlay AI pressure on the map.
 
 **Outputs.**
-- `Org/plays/value-map-<anchor>-<date>.md` — frozen play with:
+- `org/plays/value-map-<anchor>-<date>.md` — frozen play with:
   - User need at the top, value chain decomposed into components, each placed on the evolution axis.
   - Climatic-pattern checklist (everything-evolves-toward-commodity, co-evolution of practice, Peace/War/Wonder phase, punctuated equilibrium).
   - Doctrine gaps (which of the ~40 doctrines the org is missing or mis-applying for this anchor).
-- `Org/plays/data/value-map-<anchor>.svg` — the visible map.
-- `Org/plays/data/value-map-<anchor>.json` — structured map (components, positions, links) for re-rendering.
+- `org/plays/data/value-map-<anchor>.svg` — the visible map.
+- `org/plays/data/value-map-<anchor>.json` — structured map (components, positions, links) for re-rendering.
 
 **Key concepts borrowed.**
 - Five-factor model: purpose, landscape, climate, doctrine, leadership.
@@ -59,15 +59,15 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 
 ## 3 — reshuffle
 
-**What it does.** Takes a slice of Org and asks: which constraints hold this bundle together, which of those constraints AI dissolves, what the new bundle looks like. Outputs three artifacts: a constraint inventory, a reshuffle proposal, and a risk-of-reshuffle score.
+**What it does.** Takes a slice of org and asks: which constraints hold this bundle together, which of those constraints AI dissolves, what the new bundle looks like. Outputs three artifacts: a constraint inventory, a reshuffle proposal, and a risk-of-reshuffle score.
 
 **Inputs.**
-- A slice of Org: a Direzione, an area, or a value chain anchored on a commitment.
+- A slice of org: a Direzione, an area, or a value chain anchored on a commitment.
 - The matching ai-exposure play (gives the AI pressure per activity).
 - Optional: the matching value-map play (gives the evolution stage per component).
 
 **Outputs.**
-- `Org/plays/reshuffle-<slice>-<date>.md` with:
+- `org/plays/reshuffle-<slice>-<date>.md` with:
   - Constraint inventory: each activity tagged with the constraint type that holds it inside the current bundle (scarcity-based, risk-based, coordination-based, regulatory).
   - Unbundle table: which activities AI separates from the bundle, and why (which constraint is dissolving).
   - Componentize table: which separated activities become reusable components (and at what evolution stage they'd land — links back to value-map).
@@ -99,8 +99,8 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 - Optional: a reshuffle play (its componentized building blocks become a strong starting point for the capabilities layer).
 
 **Outputs.**
-- A frozen play in `Org/plays/world-model-<scope>-<date>.md`.
-- A JSON map in `Org/plays/data/world-model-<scope>-<date>.json` with four sections: capabilities, world-model (company-side + customer-side), intelligence layer, interfaces. Plus a "failure signals" section for compositions the layer can't yet produce.
+- A frozen play in `org/plays/world-model-<scope>-<date>.md`.
+- A JSON map in `org/plays/data/world-model-<scope>-<date>.json` with four sections: capabilities, world-model (company-side + customer-side), intelligence layer, interfaces. Plus a "failure signals" section for compositions the layer can't yet produce.
 - An interactive HTML viewer following the project style charter, with click-to-detail on each capability and intelligence-layer composition.
 
 **Key concepts borrowed.**
@@ -157,7 +157,7 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 ## Constraints that apply to all three
 
 - English skill content. Italian content lives in plays and structure, not in skills.
-- Author names allowed in skill body; not allowed in any artifact under `Org/`.
+- Author names allowed in skill body; not allowed in any artifact under `org/`.
 - Structure-first: every numerical or structural claim in a play traces to structure.
 - One play, one date, frozen at creation.
 - A standalone audit script that another agent can run before commit.

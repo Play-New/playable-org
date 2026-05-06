@@ -2,7 +2,7 @@
 """
 world-model / build.py — Build a structure skeleton for the four-part analysis.
 
-Walks Org/ and emits a JSON skeleton that the agent fills with capability
+Walks org/ and emits a JSON skeleton that the agent fills with capability
 contracts, world-model observations, intelligence-layer compositions, and
 failure signals. The builder does not invent capabilities — it surfaces
 candidates and provides the structure paths the agent will use as evidence.
@@ -161,7 +161,7 @@ def aei_summary(matches_path: Path | None, activities: list[dict]) -> dict[str, 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build world-model structure skeleton.")
-    parser.add_argument("--org-dir", required=True, help="Path to Org/")
+    parser.add_argument("--org-dir", required=True, help="Path to org/")
     parser.add_argument("--ai-exposure-matches", help="Optional matches.json from skills/playbooks/ai-exposure")
     parser.add_argument("--scope", help="Optional unit id to scope analysis (default: whole org)")
     parser.add_argument("--out", required=True, help="Output JSON path")
@@ -169,7 +169,7 @@ def main() -> int:
 
     org_dir = Path(args.org_dir)
     if not org_dir.exists():
-        print(f"Org directory not found: {org_dir}", file=sys.stderr)
+        print(f"org directory not found: {org_dir}", file=sys.stderr)
         return 1
 
     structure = collect_structure(org_dir, args.scope)

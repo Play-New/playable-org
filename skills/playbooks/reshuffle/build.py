@@ -222,7 +222,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Build reshuffle slice skeleton from structure.")
     parser.add_argument("--slice", required=True, help="Slice id (commitment or unit)")
     parser.add_argument("--kind", required=True, choices=["commitment", "unit"], help="Slice anchor type")
-    parser.add_argument("--org-dir", required=True, help="Path to Org/")
+    parser.add_argument("--org-dir", required=True, help="Path to org/")
     parser.add_argument("--ai-exposure-matches", help="Optional matches.json from skills/playbooks/ai-exposure")
     parser.add_argument("--value-map", help="Optional value-map JSON to overlay positions")
     parser.add_argument("--out", required=True, help="Output JSON path")
@@ -230,7 +230,7 @@ def main() -> int:
 
     org_dir = Path(args.org_dir)
     if not org_dir.exists():
-        print(f"Org directory not found: {org_dir}", file=sys.stderr)
+        print(f"org directory not found: {org_dir}", file=sys.stderr)
         return 1
 
     anchor_fm, anchor_title = load_node(org_dir, args.kind, args.slice)

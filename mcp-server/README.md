@@ -1,13 +1,13 @@
 # mcp-server
 
-TypeScript stdio MCP server that exposes a Playable Org folder as tools to any MCP-compatible client (Claude Desktop, Claude Code, etc.).
+TypeScript stdio MCP server that exposes a Playable org folder as tools to any MCP-compatible client (Claude Desktop, Claude Code, etc.).
 
 ## What it exposes
 
 12 tools across four categories.
 
 **Read**
-- `org_read(id)` — read a node's frontmatter + body. Resolves bare ids by globbing `nodes/`, `identity/`, `language/`, `commitments/`, `financials/`, `plays/`, plus root-level Org docs (`log`, `index`, `AGENTS`, `README`, `open-questions`).
+- `org_read(id)` — read a node's frontmatter + body. Resolves bare ids by globbing `nodes/`, `identity/`, `language/`, `commitments/`, `financials/`, `plays/`, plus root-level org docs (`log`, `index`, `AGENTS`, `README`, `open-questions`).
 - `org_search(query, type?)` — text search across nodes, optional type filter.
 - `org_list(type?, path?)` — list nodes by type or path prefix. Returns id, path, type, title.
 - `org_neighbors(id, depth?)` — graph neighborhood via frontmatter id arrays (`parent`, `head_role`, `unit`, `performer`, `parties_committing`, `parties_benefiting`, `related`, `sources`, etc.) plus reverse edges.
@@ -18,7 +18,7 @@ TypeScript stdio MCP server that exposes a Playable Org folder as tools to any M
 - `org_log_append(entry, date?)` — append a line to `log.md` (most recent on top).
 
 **Meta**
-- `org_skills_list()` — list skills available alongside `Org/`. Returns name + description for each. Resolves both top-level (`skills/<name>/SKILL.md`) and nested playbooks (`skills/playbooks/<name>/SKILL.md`).
+- `org_skills_list()` — list skills available alongside `org/`. Returns name + description for each. Resolves both top-level (`skills/<name>/SKILL.md`) and nested playbooks (`skills/playbooks/<name>/SKILL.md`).
 - `org_skill_read(name)` — return the full body of a skill SKILL.md (or one of the cross-cutting docs `CAPABILITIES`, `STYLE`, `ROADMAP`).
 
 **Executors**
@@ -37,7 +37,7 @@ npm run build
 Verify:
 
 ```bash
-node dist/index.js --data-dir ../Org
+node dist/index.js --data-dir ../org
 ```
 
 The process starts and waits on stdio. Kill it with Ctrl+C.
@@ -57,7 +57,7 @@ Windows: `%APPDATA%\Claude\claude_desktop_config.json`
       "args": [
         "/path/to/playable-org/mcp-server/dist/index.js",
         "--data-dir",
-        "/path/to/playable-org/Org"
+        "/path/to/playable-org/org"
       ]
     }
   }

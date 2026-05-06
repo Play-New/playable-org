@@ -1,6 +1,6 @@
 # plays/
 
-Point-in-time interpretations of the structure, produced by playbooks. Distinct from the cited facts in the rest of `Org/`.
+Point-in-time interpretations of the structure, produced by playbooks. Distinct from the cited facts in the rest of `org/`.
 
 A play is the output of one playbook applied to one slice of the structure on one date. It is **frozen at creation**: once written, it records that interpretation at that moment. To revise an analysis, write a new play with today's date. Old plays are not deleted.
 

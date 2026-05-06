@@ -95,7 +95,7 @@ git fetch upstream
 git merge upstream/main
 ```
 
-The public template never modifies `Org/` content beyond the three identity stubs, so merge conflicts are unlikely.
+The public template never modifies `org/` content beyond the three identity stubs, so merge conflicts are unlikely.
 
 ## See also
 

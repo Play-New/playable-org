@@ -1,5 +1,5 @@
 /**
- * org_log_append — append a line to Org/log.md.
+ * org_log_append — append a line to org/log.md.
  *
  * The log is append-only per AGENTS.md. Each entry is one line, prefixed
  * with the current date in ISO format (YYYY-MM-DD). The caller passes the
@@ -41,7 +41,7 @@ function todayISO(): string {
 export const orgLogAppendTool: ToolDefinition = {
   name: 'org_log_append',
   description:
-    'Append one line to Org/log.md (append-only audit). Prefixes the entry with current date (YYYY-MM-DD) and "—". Newlines in the entry are collapsed to spaces.',
+    'Append one line to org/log.md (append-only audit). Prefixes the entry with current date (YYYY-MM-DD) and "—". Newlines in the entry are collapsed to spaces.',
   inputSchema,
   handler: async (rawArgs, ctx) => {
     const { entry, date } = ArgsSchema.parse(rawArgs);

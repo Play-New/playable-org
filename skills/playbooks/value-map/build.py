@@ -234,14 +234,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Build WardleyMap skeleton from structure.")
     parser.add_argument("--anchor", required=True, help="Anchor id (commitment or unit)")
     parser.add_argument("--kind", required=True, choices=["commitment", "unit"], help="Anchor type")
-    parser.add_argument("--org-dir", required=True, help="Path to Org/")
+    parser.add_argument("--org-dir", required=True, help="Path to org/")
     parser.add_argument("--ai-exposure-matches", help="Optional matches.json from skills/playbooks/ai-exposure")
     parser.add_argument("--out", required=True, help="Output JSON path for the skeleton")
     args = parser.parse_args()
 
     org_dir = Path(args.org_dir)
     if not org_dir.exists():
-        print(f"Org directory not found: {org_dir}", file=sys.stderr)
+        print(f"org directory not found: {org_dir}", file=sys.stderr)
         return 1
 
     anchor_fm, anchor_title = load_node(org_dir, args.kind, args.anchor)

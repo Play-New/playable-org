@@ -9,7 +9,7 @@ Build a value-chain map for an anchor in the organization. The map answers two q
 
 ## How this playbook is run (read this first)
 
-This playbook **must** produce a persistent file artefact under `Org/plays/data/`, not an in-chat widget. The agent's job is to drive the bundled tooling, not to render the map manually inside the conversation.
+This playbook **must** produce a persistent file artefact under `org/plays/data/`, not an in-chat widget. The agent's job is to drive the bundled tooling, not to render the map manually inside the conversation.
 
 **Required tooling**: `org_play_run` (mcp tool). Two calls per run:
 
@@ -44,13 +44,13 @@ The output uses the same JSON schema as the play-new-dashboard's `WardleyMap` ty
 
 ## Output schema
 
-The play produces three artefacts under `Org/plays/data/`:
+The play produces three artefacts under `org/plays/data/`:
 
 - `value-map-<anchor>-<date>.json` — the WardleyMap (schema below)
 - `value-map-<anchor>-<date>.svg` — static rendering of the map (same visual style as the dashboard)
 - `value-map-<anchor>-<date>.html` — optional interactive HTML companion
 
-The frozen play in `Org/plays/value-map-<anchor>-<date>.md` references these artefacts and adds the structure citations and the operational interpretation.
+The frozen play in `org/plays/value-map-<anchor>-<date>.md` references these artefacts and adds the structure citations and the operational interpretation.
 
 ### JSON schema
 
@@ -127,10 +127,10 @@ Inherited from the dashboard's convention:
 
 ## Pre-conditions
 
-- Structure `Org/` healthy (lint Tier 1 + Tier 2 = 0)
+- Structure `org/` healthy (lint Tier 1 + Tier 2 = 0)
 - Anchor exists in the structure:
-  - `commitment` anchor: a node under `Org/commitments/`
-  - `unit` anchor: a node under `Org/nodes/units/`
+  - `commitment` anchor: a node under `org/commitments/`
+  - `unit` anchor: a node under `org/nodes/units/`
 - Optional but recommended: a matching `ai-exposure` play already produced — the `ai_effect` and `evolution_target` fields are grounded in AEI matches by reference
 
 ## What the map measures (and what it does NOT measure)
@@ -174,7 +174,7 @@ Write the **anchors** (user needs) — what the end users want, verbatim if poss
 python3 skills/playbooks/value-map/build.py \
   --anchor <anchor-id> \
   --kind commitment|unit \
-  --org-dir Org \
+  --org-dir org \
   [--ai-exposure-matches <path-to-matches.json>] \
   --out <chain.json>
 ```
@@ -241,7 +241,7 @@ The optional `--svg` flag also produces a standalone SVG file useful for embeddi
 ```bash
 python3 skills/playbooks/value-map/audit.py \
   --map <chain.json> \
-  --org-dir Org \
+  --org-dir org \
   [--ai-exposure-matches <path-to-matches.json>]
 ```
 
@@ -258,7 +258,7 @@ Exit code: 0 = pass, 1 = fail. Same contract as `audit.py` for ai-exposure plays
 
 ### 7. Write the play
 
-In `Org/plays/value-map-<anchor>-<date>.md`:
+In `org/plays/value-map-<anchor>-<date>.md`:
 
 ```yaml
 ---
@@ -273,9 +273,9 @@ references:
   - builder: skills/playbooks/value-map/build.py
   - viewer: skills/playbooks/value-map/viewer.py
   - audit: skills/playbooks/value-map/audit.py
-  - map_json: Org/plays/data/value-map-<anchor>-<date>.json
-  - map_svg: Org/plays/data/value-map-<anchor>-<date>.svg
-  - ai_exposure_play: Org/plays/ai-exposure-<scope>-<date>.md  # if applicable
+  - map_json: org/plays/data/value-map-<anchor>-<date>.json
+  - map_svg: org/plays/data/value-map-<anchor>-<date>.svg
+  - ai_exposure_play: org/plays/ai-exposure-<scope>-<date>.md  # if applicable
 ---
 ```
 
@@ -325,4 +325,4 @@ The agent generates narrative around audited structure; the agent does not asser
 
 ## Author-name policy
 
-Per project rules: framework author names (the surnames historically associated with this kind of map, with platform reshuffle, with capability composition, etc.) **never appear** in the play body or in any artefact under `Org/`. They may appear in this `SKILL.md` for productizable documentation but are stripped from output.
+Per project rules: framework author names (the surnames historically associated with this kind of map, with platform reshuffle, with capability composition, etc.) **never appear** in the play body or in any artefact under `org/`. They may appear in this `SKILL.md` for productizable documentation but are stripped from output.

@@ -16,7 +16,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
-ORG_DIR="$REPO_ROOT/Org"
+ORG_DIR="$REPO_ROOT/org"
 MCP_DIR="$REPO_ROOT/mcp-server"
 CONFIG_DIR="$HOME/Library/Application Support/Claude"
 CONFIG_FILE="$CONFIG_DIR/claude_desktop_config.json"
@@ -78,13 +78,13 @@ ok "Build OK ($MCP_DIR/dist/)"
 cd "$REPO_ROOT"
 
 # ----------------------------------------------------------------------------
-# 3. Verify Org/
+# 3. Verify org/
 # ----------------------------------------------------------------------------
 
 if [[ ! -d "$ORG_DIR" ]]; then
-  fail "Org/ folder not found at $REPO_ROOT. Incomplete repo?"
+  fail "org/ folder not found at $REPO_ROOT. Incomplete repo?"
 fi
-ok "Org/ present"
+ok "org/ present"
 
 # ----------------------------------------------------------------------------
 # 4. Configure Claude Desktop
@@ -159,7 +159,7 @@ Next steps:
 
   4. Try:
        "Show me the organization chart."
-     Expected: the agent reads from the bundled Org/ via mcp.
+     Expected: the agent reads from the bundled org/ via mcp.
 
 If something doesn't work, see SETUP.md (or ask the maintainer).
 EOF

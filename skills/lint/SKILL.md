@@ -1,11 +1,11 @@
 ---
 name: lint
-description: "Periodic health check on Org/. Composes Tier 1 (mechanical structure) + Tier 2 (semantics). Output: markdown report at repo root + chat summary."
+description: "Periodic health check on org/. Composes Tier 1 (mechanical structure) + Tier 2 (semantics). Output: markdown report at repo root + chat summary."
 ---
 
 # Skill: lint
 
-Health check on `Org/` at two levels. Implemented as 2 Python scripts at repo root, run sequentially by the agent.
+Health check on `org/` at two levels. Implemented as 2 Python scripts at repo root, run sequentially by the agent.
 
 ## Tier 1 — mechanical (`lint.py`)
 
@@ -97,11 +97,11 @@ On a stable corpus (no ongoing ingest), Tier 1 + Tier 2 should stabilize at 0 wi
 ## When NOT to use
 
 - During an ongoing ingest (run **after**, not during)
-- On `Org/` modified concurrently by multiple sessions — may produce transient false positives
+- On `org/` modified concurrently by multiple sessions — may produce transient false positives
 
 ## References
 
 - `lint.py` — Tier 1 implementation
 - `lint-semantic.py` — Tier 2 implementation
-- `Org/AGENTS.md` schema — defines required fields per type
-- `Org/AGENTS.md` invariants — constraints the lint protects
+- `org/AGENTS.md` schema — defines required fields per type
+- `org/AGENTS.md` invariants — constraints the lint protects

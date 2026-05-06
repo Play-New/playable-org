@@ -47,15 +47,15 @@ The schema (folder names, YAML keys, internal identifiers like `level: division 
 
 Reason: the schema is productizable across organizations and languages. The content is specific to one organization. Keeping them in different languages makes the boundary explicit and prevents the productizable layer from accreting language-specific assumptions.
 
-## Why facts in `Org/`, interpretations in `plays/`
+## Why facts in `org/`, interpretations in `plays/`
 
 The structure of facts is reusable across many analyses. An interpretation is one analyst's reading at one point in time. Mixing them produces a graph that drifts: every interpretation that "becomes true" overwrites the underlying facts, and the structure ceases to be a stable reference.
 
-The discipline: `Org/` answers *what is*. `plays/` answers *what does this mean, given that*. A play in `plays/` is frozen at creation date. To revise, write a new play. The old plays are not deleted — they are history.
+The discipline: `org/` answers *what is*. `plays/` answers *what does this mean, given that*. A play in `plays/` is frozen at creation date. To revise, write a new play. The old plays are not deleted — they are history.
 
 ## Why the log is prepend-only
 
-Each write to `Org/` appends one line to `log.md`. The line goes at the top, not the bottom. Most-recent first.
+Each write to `org/` appends one line to `log.md`. The line goes at the top, not the bottom. Most-recent first.
 
 Two reasons:
 - **Audit**: when something goes wrong, the recent context is what you need. Reading the top is faster than scrolling.
@@ -83,7 +83,7 @@ The four base playbooks all use `design.py` for visual identity. Adding a new pl
 
 - Not a database replacement for production transactional systems.
 - Not Notion. No web app, no real-time collaboration.
-- Not an org chart tool. The structure of `Org/` is richer than a tree of boxes.
+- Not an org chart tool. The structure of `org/` is richer than a tree of boxes.
 - Not a CMS. The agent is the maintainer, not a publishing pipeline.
 
 ## See also
@@ -92,4 +92,4 @@ The four base playbooks all use `design.py` for visual identity. Adding a new pl
 - [`SETUP.md`](../SETUP.md) — installation guide.
 - [`docs/playbooks.md`](playbooks.md) — reference for the four base playbooks.
 - [`docs/extending.md`](extending.md) — how to add a new playbook or new mcp tool.
-- [`Org/AGENTS.md`](../Org/AGENTS.md) — operational contract for `Org/`.
+- [`org/AGENTS.md`](../org/AGENTS.md) — operational contract for `org/`.

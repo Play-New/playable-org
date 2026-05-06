@@ -1,18 +1,18 @@
 ---
 name: init
-description: "Initialize the structure of Org/ by bulk-ingesting source documents at first install. One-time operation. Walks the agent through reading every file in Org/sources/, extracting nodes in batches, writing on confirmation. Output: a populated graph (typically 200-400 nodes after one session) ready for queries and playbook runs. After init, the regular `ingest` skill handles new documents one at a time."
+description: "Initialize the structure of org/ by bulk-ingesting source documents at first install. One-time operation. Walks the agent through reading every file in org/sources/, extracting nodes in batches, writing on confirmation. Output: a populated graph (typically 200-400 nodes after one session) ready for queries and playbook runs. After init, the regular `ingest` skill handles new documents one at a time."
 ---
 
 # Skill: init
 
-The first thing a new instance of Playable Org needs is content. The user has just installed the bundle. The graph has three empty identity stubs in `Org/identity/`. The structure under `nodes/`, `commitments/`, `financials/`, `language/` is empty.
+The first thing a new instance of Playable Org needs is content. The user has just installed the bundle. The graph has three empty identity stubs in `org/identity/`. The structure under `nodes/`, `commitments/`, `financials/`, `language/` is empty.
 
 The `init` skill is the recipe for populating it from raw documents in one session. It is a one-time operation. After init, the regular `ingest` skill handles new documents one at a time as they arrive.
 
 ## Pre-conditions
 
-- The mcp server is connected (Claude Desktop reads `Org/`).
-- The user has dropped source documents into `Org/sources/` via Finder / file manager. Acceptable formats: PDF, DOCX, XLSX, PPTX, MD, HTML, TXT.
+- The mcp server is connected (Claude Desktop reads `org/`).
+- The user has dropped source documents into `org/sources/` via Finder / file manager. Acceptable formats: PDF, DOCX, XLSX, PPTX, MD, HTML, TXT.
 - The user knows what kind of organization is being represented (so the agent can scope-check against `identity/` later).
 - Lint Tier 1 reports 3 frontmatter issues on the unmodified starter (the three `identity/` stubs ship with empty `sources: []` arrays because they haven't been pointed at a source yet). After init fills the identity from real founding documents, those three warnings go away and Tier 1 should land at 0.
 
@@ -35,7 +35,7 @@ For each file, the agent classifies it into one of these archetypes:
 |---|---|---|
 | **Founding** | charter, statute, articles of association, governance charter | identity (mission/limits/rules), 1-2 organizational units, governance commitments |
 | **Operational** | role-description per division/area, process map, internal SOP | many units, activities, roles, sub-team structure |
-| **Org chart** | organizational chart (current or historical) | units (the chart itself), people (named individuals), roles |
+| **org chart** | organizational chart (current or historical) | units (the chart itself), people (named individuals), roles |
 | **Stakeholder** | partner agreement, supplier contract, MOU | stakeholder, commitment (org-stakeholder or inter-org) |
 | **Financial** | annual report, audited statements, financial summary | financial-summary nodes, commitments to funders |
 | **Code-of-conduct** | ethics code, compliance framework, risk management framework | rules, governance commitments |
@@ -143,6 +143,6 @@ For the day-to-day case (one document at a time as it arrives), use `ingest`.
 
 ## References
 
-- `Org/AGENTS.md` — node schemas, invariants, when to register a commitment
+- `org/AGENTS.md` — node schemas, invariants, when to register a commitment
 - `skills/ingest/SKILL.md` — the per-document workflow used after init
 - `skills/lint/SKILL.md` — quality control invoked at the end of init

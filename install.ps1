@@ -20,7 +20,7 @@ function Write-Fail  { param($msg); Write-Host "FAIL " -ForegroundColor Red -NoN
 function Write-Bold  { param($msg); Write-Host $msg -ForegroundColor White }
 
 $RepoRoot   = $PSScriptRoot
-$OrgDir     = Join-Path $RepoRoot "Org"
+$OrgDir     = Join-Path $RepoRoot "org"
 $McpDir     = Join-Path $RepoRoot "mcp-server"
 $ConfigDir  = Join-Path $env:APPDATA "Claude"
 $ConfigFile = Join-Path $ConfigDir "claude_desktop_config.json"
@@ -79,12 +79,12 @@ finally {
     Pop-Location
 }
 
-# 3. Verify Org/ --------------------------------------------------------------
+# 3. Verify org/ --------------------------------------------------------------
 
 if (-not (Test-Path $OrgDir)) {
-    Write-Fail "Org\ folder not found at $RepoRoot. Incomplete repo?"
+    Write-Fail "org\ folder not found at $RepoRoot. Incomplete repo?"
 }
-Write-Ok "Org\ present"
+Write-Ok "org\ present"
 
 # 4. Configure Claude Desktop -------------------------------------------------
 
@@ -166,7 +166,7 @@ Next steps:
 
   4. Try:
        "Show me the organization chart."
-     Expected: the agent reads from the bundled Org\ via mcp.
+     Expected: the agent reads from the bundled org\ via mcp.
 
 If something doesn't work, see SETUP.md (or ask the maintainer).
 "@

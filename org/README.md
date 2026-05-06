@@ -1,4 +1,4 @@
-# Org/
+# org/
 
 Representation of an organization as a navigable graph of markdown files. Content language is the organization's working language. The schema is in English. Curated by humans, maintained by agents.
 
@@ -30,7 +30,7 @@ An AI agent connected via `mcp` that receives a question and looks for relevant 
 ## Structure
 
 ```
-Org/
+org/
 ├── identity/            mission, limits, rules — what the org is and is not (3 files)
 ├── language/            organization-specific glossary
 ├── nodes/
@@ -43,7 +43,7 @@ Org/
 ├── financials/          market view — annual snapshot, revenue lines, headcount, costs
 ├── sources/             raw immutable source documents
 ├── plays/               point-in-time interpretations, frozen at creation (artefacts in plays/data/)
-├── AGENTS.md            operational contract for anyone who modifies Org
+├── AGENTS.md            operational contract for anyone who modifies org
 ├── README.md            this file
 ├── index.md             content-oriented catalog
 ├── log.md               prepend-only audit
@@ -58,7 +58,7 @@ For organization-specific vocabulary: `language/`. Each term has a canonical def
 
 For who does what: start at `nodes/units/<area>.md`, descend to the linked `nodes/activities/<area>-*.md`. Each activity has a verbatim quote from the role-description document plus a short paraphrase and cross-references.
 
-For cardinal commitments: `commitments/`. Org-stakeholder commitments are typically the cardinal ones; cross-area commitments document internal coordination; inter-organization commitments document partnerships.
+For cardinal commitments: `commitments/`. org-stakeholder commitments are typically the cardinal ones; cross-area commitments document internal coordination; inter-organization commitments document partnerships.
 
 For interpretations: `plays/`. Frozen at creation, cited, distinct from the structure.
 

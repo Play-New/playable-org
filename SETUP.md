@@ -66,7 +66,7 @@ The graph ships empty. Before you can ask meaningful questions, you need to feed
 
 ### Drop your sources
 
-Open `playable-org/Org/sources/` in Finder / File Explorer. Drag in any of:
+Open `playable-org/org/sources/` in Finder / File Explorer. Drag in any of:
 
 - founding documents (charter, articles of association, statute)
 - governance documents (governance charter, code of ethics, compliance framework)
@@ -137,10 +137,10 @@ Claude follows the `ingest` skill: it identifies the source, proposes structure 
 
 ## Open questions you might want to track
 
-The agent appends to `Org/open-questions.md` whenever it hits an ambiguity that needs an internal answer (an unclear acronym, a discrepancy between two sources, a gap in the chart). Open the file when you have 30 minutes:
+The agent appends to `org/open-questions.md` whenever it hits an ambiguity that needs an internal answer (an unclear acronym, a discrepancy between two sources, a gap in the chart). Open the file when you have 30 minutes:
 
 ```
-playable-org/Org/open-questions.md
+playable-org/org/open-questions.md
 ```
 
 It opens in your default text editor (Notepad on Windows, TextEdit on macOS).

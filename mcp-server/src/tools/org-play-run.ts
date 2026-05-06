@@ -1,5 +1,5 @@
 /**
- * org_play_run — execute a playbook pipeline against the bundled Org/.
+ * org_play_run — execute a playbook pipeline against the bundled org/.
  *
  * Two modes:
  * - mode="build" — runs the script that walks the structure and produces

@@ -1,7 +1,7 @@
 {
   "name": "@playable-org/mcp-server",
   "version": "0.1.0",
-  "description": "MCP server exposing org data and skills as tools. Reads/writes a tenant's Org/ folder.",
+  "description": "MCP server exposing org data and skills as tools. Reads/writes a tenant's org/ folder.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

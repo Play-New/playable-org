@@ -238,7 +238,7 @@ STRINGS = {
         "modal_category": "Anthropic category for the sample",
         "modal_no_rich": "Below the minimum activity count for stable estimates. The square is shown as 'no data'.",
         "modal_chain": "What this card actually says",
-        "modal_chain_text": "Org activity → closest O*NET task by semantic similarity → category assigned by Anthropic to that task's Claude.ai conversations. The category labels the conversation sample, not your activity.",
+        "modal_chain_text": "org activity → closest O*NET task by semantic similarity → category assigned by Anthropic to that task's Claude.ai conversations. The category labels the conversation sample, not your activity.",
         "area_summary_label": "Snapshot",
         "area_distribution": "Distribution",
         "area_avg_confidence": "Avg. top-1 confidence",
@@ -702,7 +702,7 @@ function render() {{
   const content = document.getElementById('content');
   const overview = document.getElementById('org-overview');
 
-  // Org overview only when no specific area filter is active.
+  // org overview only when no specific area filter is active.
   overview.innerHTML = (currentArea === 'all') ? renderOrgOverview() : '';
 
   summary.textContent = S.summary.replace('{{n}}', items.length).replace('{{total}}', data.length);

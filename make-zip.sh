@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# make-zip.sh — Build the customer-facing Playable Org bundle.
+# make-zip.sh — Build the customer-facing Playable org bundle.
 #
 # Uses `git archive HEAD` so only committed files end up in the zip.
 # `.gitattributes` already strips CLAUDE.md / .gitignore / .gitattributes

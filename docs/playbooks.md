@@ -1,6 +1,6 @@
 # Playbooks reference
 
-Four base playbooks plus one meta-skill. Each answers one analytical question and produces a frozen artefact under `Org/plays/data/`.
+Four base playbooks plus one meta-skill. Each answers one analytical question and produces a frozen artefact under `org/plays/data/`.
 
 ## ai-exposure
 
@@ -17,9 +17,9 @@ Four base playbooks plus one meta-skill. Each answers one analytical question an
 6. Renders an interactive HTML report grouped by area.
 
 **Output.**
-- `Org/plays/data/all-org-matches-<date>.json` — raw matches with metrics.
-- `Org/plays/data/area-notes.json` — per-area qualitative notes.
-- `Org/plays/data/ai-exposure-<date>.html` — interactive viewer.
+- `org/plays/data/all-org-matches-<date>.json` — raw matches with metrics.
+- `org/plays/data/area-notes.json` — per-area qualitative notes.
+- `org/plays/data/ai-exposure-<date>.html` — interactive viewer.
 
 **Detail.** [`skills/playbooks/ai-exposure/SKILL.md`](../skills/playbooks/ai-exposure/SKILL.md).
 
@@ -38,9 +38,9 @@ Four base playbooks plus one meta-skill. Each answers one analytical question an
 6. Renders an interactive map (HTML) plus a static SVG fallback.
 
 **Output.**
-- `Org/plays/data/value-map-<anchor>-<date>.json`
-- `Org/plays/data/value-map-<anchor>-<date>.html`
-- `Org/plays/data/value-map-<anchor>-<date>.svg`
+- `org/plays/data/value-map-<anchor>-<date>.json`
+- `org/plays/data/value-map-<anchor>-<date>.html`
+- `org/plays/data/value-map-<anchor>-<date>.svg`
 
 **Detail.** [`skills/playbooks/value-map/SKILL.md`](../skills/playbooks/value-map/SKILL.md).
 
@@ -59,8 +59,8 @@ Four base playbooks plus one meta-skill. Each answers one analytical question an
 6. Renders an interactive viewer with constraint colour-coding, tool/engine badges, autonomy-coordination axis, coordination-paradox flag.
 
 **Output.**
-- `Org/plays/data/reshuffle-<slice>-<date>.json`
-- `Org/plays/data/reshuffle-<slice>-<date>.html`
+- `org/plays/data/reshuffle-<slice>-<date>.json`
+- `org/plays/data/reshuffle-<slice>-<date>.html`
 
 **Detail.** [`skills/playbooks/reshuffle/SKILL.md`](../skills/playbooks/reshuffle/SKILL.md).
 
@@ -79,8 +79,8 @@ Four base playbooks plus one meta-skill. Each answers one analytical question an
 6. Renders the layered stack with modals on every chip.
 
 **Output.**
-- `Org/plays/data/world-model-<scope>-<date>.json`
-- `Org/plays/data/world-model-<scope>-<date>.html`
+- `org/plays/data/world-model-<scope>-<date>.json`
+- `org/plays/data/world-model-<scope>-<date>.html`
 
 **Detail.** [`skills/playbooks/world-model/SKILL.md`](../skills/playbooks/world-model/SKILL.md).
 

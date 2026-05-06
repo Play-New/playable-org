@@ -4,7 +4,7 @@ Represent an organization as a navigable graph of cited markdown files, then run
 
 ## What you install
 
-- `Org/` — your structure, as a folder of markdown files. One file per organizational unit, person, role, activity, stakeholder, commitment, financial summary. Each file is short. Each claim cites its source.
+- `org/` — your structure, as a folder of markdown files. One file per organizational unit, person, role, activity, stakeholder, commitment, financial summary. Each file is short. Each claim cites its source.
 - `mcp-server/` — a TypeScript stdio mcp server that exposes 12 tools to Claude Desktop. Read tools (read, search, list, neighbors). Write tools (write_node, save_source, log_append). Meta tools (skills_list, skill_read, lint_run, play_run, open).
 - `skills/` — workflow recipes and analytical playbooks, plus the productizable design system. Three operational skills (`init`, `ingest`, `lint`), four analytical playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`), one meta-skill (`new-play`).
 - `install.command` / `install.bat` — clickable installers. They build the mcp server and register it in Claude Desktop's config. No admin privileges required.
@@ -16,16 +16,6 @@ After install, you chat with Claude in plain language. *Show me the structure of
 LLMs change what kind of "data" a system can manage. Before, structured data was needed because the only thing reading it was code. Now an LLM can read prose. That means a knowledge representation can be: a folder of markdown files, with a thin schema in YAML frontmatter, and citations everywhere. Persistence is the filesystem. Schema validation is a lint pass. Query is the agent reading the relevant files. Audit is a prepend-only log.
 
 This pattern was articulated by Andrej Karpathy in May 2026 as the "LLM Wiki" idea. Playable Org is one application of the pattern: a representation of an organization, with analytical playbooks on top.
-
-## Who it is for
-
-Three readers benefit.
-
-A consultant who works with organizations and wants a structure to ground analysis in cited facts, instead of slide decks that go stale.
-
-An in-house operations or strategy lead who wants to think about their own organization as a system: where the work happens, where commitments are load-bearing, where AI changes structure rather than speed.
-
-A developer building knowledge tools who wants a reference implementation of the markdown-corpus pattern with mcp integration and analytical layers.
 
 ## What's in the box
 
@@ -55,7 +45,7 @@ This is not a database replacement for production applications. The pattern work
 
 This is not Notion. There is no rich-text editor. No real-time collaboration. No web app. The graph is a folder. You edit it through the agent, or by opening files in any text editor.
 
-This is not an org chart tool. The structure of `Org/` is richer than a tree of boxes: it has stakeholders, commitments, activities, language terms. The org chart is a thin slice of what's modelled.
+This is not an org chart tool. The structure of `org/` is richer than a tree of boxes: it has stakeholders, commitments, activities, language terms. The org chart is a thin slice of what's modelled.
 
 ## Theoretical lineage
 
@@ -66,7 +56,7 @@ The four playbooks have explicit roots. They are compositions of patterns from o
 - `reshuffle` — Sangeet Paul Choudary, *Reshuffle* (2024). Tool vs engine, three constraint types, autonomy-coordination tradeoff.
 - `world-model` — Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026). Capability + world model + intelligence layer + interfaces.
 
-The pattern itself — an LLM-maintained markdown corpus governed by an `AGENTS.md` contract, with `index.md` as catalog and `log.md` as audit — is from Andrej Karpathy, *Building an LLM Wiki* (gist, May 2026). We keep the pattern; we call our artefact `Org/`, not a wiki. The term "structure" for the cited-graph layer is borrowed from Simone Cicero, *[What is an organization today?](https://through-the-boundary.simonecicero.com/p/ttb-1-what-is-an-organization-today)* (Through The Boundary, April 2026), which contrasts the foundational *structure* of an organization (topology, taxonomy, shared context, promise chains) with the *superstructure* — hierarchical management and bureaucracy — that AI eliminates.
+The pattern itself — an LLM-maintained markdown corpus governed by an `AGENTS.md` contract, with `index.md` as catalog and `log.md` as audit — is from Andrej Karpathy, *Building an LLM Wiki* (gist, May 2026). We keep the pattern; we call our artefact `org/`, not a wiki. The term "structure" for the cited-graph layer is borrowed from Simone Cicero, *[What is an organization today?](https://through-the-boundary.simonecicero.com/p/ttb-1-what-is-an-organization-today)* (Through The Boundary, April 2026), which contrasts the foundational *structure* of an organization (topology, taxonomy, shared context, promise chains) with the *superstructure* — hierarchical management and bureaucracy — that AI eliminates.
 
 ## Quick start
 
@@ -74,7 +64,7 @@ The pattern itself — an LLM-maintained markdown corpus governed by an `AGENTS.
 2. Make sure Claude Desktop is installed (https://claude.ai/download) and Node.js is on your PATH.
 3. Double-click `install.command` (macOS) or `install.bat` (Windows). The installer builds the mcp server and registers it in Claude Desktop.
 4. Restart Claude Desktop.
-5. Drop founding documents (charter, organizational charts, role-descriptions, annual report) into `Org/sources/`.
+5. Drop founding documents (charter, organizational charts, role-descriptions, annual report) into `org/sources/`.
 6. In Claude Desktop, in a new chat: *initialize the structure from sources/*.
 7. After ~30–60 minutes you have a populated graph. From there, ask questions, ingest new documents as they arrive, run playbooks.
 

@@ -21,7 +21,7 @@ const inputSchema = {
     path: {
       type: 'string',
       description:
-        'Path to the file to open, relative to the repo root (e.g. "Org/plays/data/value-map-X-2026-05-05.html"). Must resolve inside the bundled repo; absolute paths or paths escaping the repo are rejected.',
+        'Path to the file to open, relative to the repo root (e.g. "org/plays/data/value-map-X-2026-05-05.html"). Must resolve inside the bundled repo; absolute paths or paths escaping the repo are rejected.',
     },
   },
   required: ['path'],
@@ -43,7 +43,7 @@ function openCommand(): { cmd: string; args: (p: string) => string[] } {
 export const orgOpenTool: ToolDefinition = {
   name: 'org_open',
   description:
-    "Open a file from the bundled repo in the user's default OS application (browser for HTML, image viewer for SVG/PNG, PDF reader for PDF). Use this when the user asks to see/open the artefact a playbook has just produced. The path argument is the path returned by org_play_run (e.g. \"Org/plays/data/...html\"); it must be inside the repo. Returns ok with the resolved absolute path, or an error if the file does not exist or is outside the repo.",
+    "Open a file from the bundled repo in the user's default OS application (browser for HTML, image viewer for SVG/PNG, PDF reader for PDF). Use this when the user asks to see/open the artefact a playbook has just produced. The path argument is the path returned by org_play_run (e.g. \"org/plays/data/...html\"); it must be inside the repo. Returns ok with the resolved absolute path, or an error if the file does not exist or is outside the repo.",
   inputSchema,
   handler: async (rawArgs, ctx) => {
     const { path } = ArgsSchema.parse(rawArgs);

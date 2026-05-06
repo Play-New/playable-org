@@ -15,7 +15,7 @@ All consumer-facing text the new playbook produces (the SKILL.md it generates, t
 
 ## Pre-conditions
 
-- `Org/` structure healthy: lint Tier 1 and Tier 2 = 0
+- `org/` structure healthy: lint Tier 1 and Tier 2 = 0
 - The user can articulate an analytical question — not a one-shot lookup
 - At least one of the four base playbooks is conceptually close to what the user wants
 
@@ -37,7 +37,7 @@ The agent asks the user these five questions before writing any file. Each answe
 
 One sentence. Form: "Which / where / what is X in this organization?".
 
-Repeatability test: the question must be one the organization will want to re-ask — every quarter, after each restructuring, when a new commitment is added. If the answer is "we ask it once and we are done", **stop**. Write the answer as a one-off play under `Org/plays/data/`, not as a new skill. Skills exist because the question recurs.
+Repeatability test: the question must be one the organization will want to re-ask — every quarter, after each restructuring, when a new commitment is added. If the answer is "we ask it once and we are done", **stop**. Write the answer as a one-off play under `org/plays/data/`, not as a new skill. Skills exist because the question recurs.
 
 ### Q2 — What is the anchor?
 
@@ -173,8 +173,8 @@ The playbook stays `pending` until the first run audit-passes against a real anc
 The meta-skill does not run the new playbook itself. The user picks an anchor (the smallest meaningful one) and runs:
 
 ```bash
-python3 skills/playbooks/<name>/build.py --anchor <id> --org-dir Org > Org/plays/data/<name>-<anchor>-<date>.json
-python3 skills/playbooks/<name>/audit.py --map Org/plays/data/<name>-<anchor>-<date>.json --org-dir Org
+python3 skills/playbooks/<name>/build.py --anchor <id> --org-dir org > org/plays/data/<name>-<anchor>-<date>.json
+python3 skills/playbooks/<name>/audit.py --map org/plays/data/<name>-<anchor>-<date>.json --org-dir org
 python3 skills/playbooks/<name>/viewer.py --map ... --html ...
 ```
 
@@ -213,7 +213,7 @@ Three structural rules.
 
 ## When NOT to use this skill
 
-- **The question is one-shot.** Write a play directly under `Org/plays/data/` without a skill folder.
+- **The question is one-shot.** Write a play directly under `org/plays/data/` without a skill folder.
 - **The question is the same as an existing playbook with a different filter or anchor.** Run the existing playbook with that anchor instead. Do not fork.
 - **The question is about structure health.** Use the `lint` skill, not `new-play`.
 - **The question requires altering the structure.** Use `org_write_node` directly, plus the `ingest` skill if the change comes from a source.

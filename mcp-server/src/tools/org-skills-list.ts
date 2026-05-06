@@ -1,8 +1,8 @@
 /**
- * org_skills_list — list workflow skills available alongside the Org bundle.
+ * org_skills_list — list workflow skills available alongside the org bundle.
  *
  * Skills are recipes that compose the mcp tools. They live in `<repo>/skills/<name>/SKILL.md`
- * (NOT inside Org/). This tool walks the skills/ directory adjacent to the dataDir
+ * (NOT inside org/). This tool walks the skills/ directory adjacent to the dataDir
  * and returns the metadata of each SKILL.md (name, description from frontmatter).
  *
  * Pairs with the built-in MCP `tools/list` method:
@@ -31,10 +31,10 @@ interface SkillEntry {
 export const orgSkillsListTool: ToolDefinition = {
   name: 'org_skills_list',
   description:
-    'List workflow skills available alongside Org/. Skills are recipes (markdown files in <repo>/skills/<name>/SKILL.md) that compose the mcp primitives. Use this together with the built-in tools/list to know both what primitives and what workflows are available.',
+    'List workflow skills available alongside org/. Skills are recipes (markdown files in <repo>/skills/<name>/SKILL.md) that compose the mcp primitives. Use this together with the built-in tools/list to know both what primitives and what workflows are available.',
   inputSchema,
   handler: async (_rawArgs, ctx) => {
-    // skills/ lives at the repo root, sibling to Org/
+    // skills/ lives at the repo root, sibling to org/
     const repoRoot = dirname(ctx.dataDir);
     const skillsRoot = resolve(repoRoot, 'skills');
 

@@ -1,5 +1,5 @@
 /**
- * Filesystem helpers for walking the Org folder and parsing frontmatter.
+ * Filesystem helpers for walking the org folder and parsing frontmatter.
  */
 
 import { readFile } from 'node:fs/promises';

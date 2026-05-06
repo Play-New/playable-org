@@ -1,12 +1,12 @@
 # sources/
 
-Raw source documents. Immutable. Source of truth. Everything else in `Org/` is paraphrase cited from these.
+Raw source documents. Immutable. Source of truth. Everything else in `org/` is paraphrase cited from these.
 
 ## How to populate
 
 Drop documents here in any of these formats: `.pdf`, `.docx`, `.xlsx`, `.pptx`, `.md`, `.html`, `.txt`. Use kebab-case filenames (e.g., `articles-of-association-2024.pdf`, `org-chart-2026-q1.docx`).
 
-The first time you populate `Org/`, drop everything you have here, then in chat run:
+The first time you populate `org/`, drop everything you have here, then in chat run:
 
 > Initialize the structure from `sources/`.
 

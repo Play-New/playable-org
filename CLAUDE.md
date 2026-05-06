@@ -6,11 +6,11 @@ This `CLAUDE.md` is working memory for whoever maintains the template (me, futur
 
 ## Where things live
 
-- `Org/` — the organization instance bundle. Empty in the public template (3 identity stubs only). Forks populate it.
-- `Org/AGENTS.md` — operational contract for `Org/`. **Read this before any write to `Org/`.**
-- `Org/README.md` — entry point for whoever opens `Org/`.
-- `Org/log.md` — prepend-only audit. Most-recent on top.
-- `Org/index.md` — content-oriented catalog (link + one-line summary). Updated by the agent on every ingest.
+- `org/` — the organization instance bundle. Empty in the public template (3 identity stubs only). Forks populate it.
+- `org/AGENTS.md` — operational contract for `org/`. **Read this before any write to `org/`.**
+- `org/README.md` — entry point for whoever opens `org/`.
+- `org/log.md` — prepend-only audit. Most-recent on top.
+- `org/index.md` — content-oriented catalog (link + one-line summary). Updated by the agent on every ingest.
 - `mcp-server/` — TypeScript stdio mcp server. 12 tools (4 read + 3 write + 1 meta + 4 executors), full e2e test suite at `mcp-server/test-e2e.py` against fixture in `mcp-server/test-fixtures/sample-org/`.
 - `skills/` — agent workflows + analytical playbooks + design system. Three operational skills (`init`, `ingest`, `lint`), four analytical playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`), one meta-skill (`new-play`). Cross-cutting docs: `CAPABILITIES.md` (the four-property frame), `STYLE.md` (anti-rhetoric charter), `ROADMAP.md` (the playbook order), `design.py` (single source of truth for the visual language), `_assets/fonts/inter-variable.woff2` (embedded font).
 - `docs/` — public-facing architecture, playbooks reference, extension guide.
@@ -18,26 +18,26 @@ This `CLAUDE.md` is working memory for whoever maintains the template (me, futur
 
 ## Locked vocabulary
 
-- **Node** — an entity (unit, person, role, activity, stakeholder, financial-summary), under `Org/nodes/` or `Org/financials/`.
+- **Node** — an entity (unit, person, role, activity, stakeholder, financial-summary), under `org/nodes/` or `org/financials/`.
 - **Commitment** — relation between nodes. 5 levels × 3 state dimensions.
 - **Source** — immutable raw document, under `sources/`.
 - **Playbook** — analytical procedure (template, named, reusable). In `skills/playbooks/`.
-- **Play** — point-in-time execution of a playbook on a slice of `Org/`. In `Org/plays/`. Frozen at creation.
-- **Structure** — the cited-graph layer in `Org/`, distinct from interpretations in `plays/`. Term from Simone Cicero, *[What is an organization today?](https://through-the-boundary.simonecicero.com/p/ttb-1-what-is-an-organization-today)* (Through The Boundary, April 2026): the *structure* (topology, taxonomy, shared context, promise chains) is what AI makes more necessary; the *superstructure* (hierarchies, bureaucracy) is what AI eliminates.
+- **Play** — point-in-time execution of a playbook on a slice of `org/`. In `org/plays/`. Frozen at creation.
+- **Structure** — the cited-graph layer in `org/`, distinct from interpretations in `plays/`. Term from Simone Cicero, *[What is an organization today?](https://through-the-boundary.simonecicero.com/p/ttb-1-what-is-an-organization-today)* (Through The Boundary, April 2026): the *structure* (topology, taxonomy, shared context, promise chains) is what AI makes more necessary; the *superstructure* (hierarchies, bureaucracy) is what AI eliminates.
 
-Forbidden words in any context: *wiki*, *lens / lente / lenti*, *diagnosis / diagnosi*, *frame*, *view*, *lettura*, *datato/datata/datati/datate*, *substrate / substrato* (renamed to *structure* throughout — including the JSON schema keys, formerly `_substrate_id` / `_substrate_evidence` / `_substrate`, now `_structure_id` / `_structure_evidence` / `_structure`). Author names of analytical-framework authors (Wardley, Sangeet, Cicero, Burgess, Dorsey, Botha, Karpathy, ...) never appear in any content under `Org/`. They may appear in `skills/` documentation, in `docs/`, in `README.md`, in `CONTRIBUTING.md`, in `CLAUDE.md`.
+Forbidden words in any context: *wiki*, *lens / lente / lenti*, *diagnosis / diagnosi*, *frame*, *view*, *lettura*, *datato/datata/datati/datate*, *substrate / substrato* (renamed to *structure* throughout — including the JSON schema keys, formerly `_substrate_id` / `_substrate_evidence` / `_substrate`, now `_structure_id` / `_structure_evidence` / `_structure`). Author names of analytical-framework authors (Wardley, Sangeet, Cicero, Burgess, Dorsey, Botha, Karpathy, ...) never appear in any content under `org/`. They may appear in `skills/` documentation, in `docs/`, in `README.md`, in `CONTRIBUTING.md`, in `CLAUDE.md`.
 
 When prose is in a language other than English, prefer the local equivalent over an English loan where natural (parafrasare not paraphrase, alla lettera not verbatim, verifica di pertinenza not scope check). Technical / code terms can stay English (markdown, YAML, frontmatter, kebab-case, mcp, tool, log).
 
 ## Locked decisions
 
-- **Structure vs interpretation.** `Org/` contains only observable, cited facts. Interpretations live in `plays/`, frozen at creation.
+- **Structure vs interpretation.** `org/` contains only observable, cited facts. Interpretations live in `plays/`, frozen at creation.
 - **Capability is not structure.** It's an interpretive grouping of activities. Structure has `nodes/activities/`; capability decompositions are plays of kind `world-model` or `value-map`.
 - **As-is only.** No `state: proposed` on structure nodes. To-be lives in plays.
 - **English schema, content in the org's working language.** Folder names and YAML keys in English (productizable). Free-text values in whatever language the organization actually uses.
 - **Cross-references**: standard markdown links `[text](../path/to/node.md)` in body for nodes; frontmatter id arrays for structured relations; `(source-id)` for source citations. No wikilinks.
-- **No inbox.** Sources arrive via chat upload (one at a time after init) or via Finder drop into `Org/sources/` (bulk during init).
-- **Tools vs workflows.** Tools = mcp primitives (server). Workflows = recipes that compose tools, defined in `skills/<name>/SKILL.md`. `Org/AGENTS.md` describes workflow shape; details live in skills.
+- **No inbox.** Sources arrive via chat upload (one at a time after init) or via Finder drop into `org/sources/` (bulk during init).
+- **Tools vs workflows.** Tools = mcp primitives (server). Workflows = recipes that compose tools, defined in `skills/<name>/SKILL.md`. `org/AGENTS.md` describes workflow shape; details live in skills.
 - **No length budgets** on nodes. Anti-bloat is qualitative ("cut what you can"), not numeric.
 - **Anti-hallucination discipline**: every play must pass `audit.py` (deterministic numerical + citation gate) before commit. Computed content is generated by scripts; agent narrative is clearly demarcated as interpretation.
 - **Log convention**: prepend-only (most recent on top). Equivalent stability guarantee to append-only, better readability.
@@ -50,7 +50,7 @@ When prose is in a language other than English, prefer the local equivalent over
 - 3 operational skills: `init`, `ingest`, `lint`.
 - 4 analytical playbooks: `ai-exposure`, `value-map`, `reshuffle`, `world-model`. All four use `design.py` primitives via inheritance through their viewer.py modules. Each ships with build.py + audit.py + viewer.py.
 - 1 meta-skill: `new-play`. Five-question interview that scaffolds a new playbook.
-- `Org/` empty: 3 identity stubs (`# REPLACE ME`), zero other content. Lint Tier 1 reports 3 expected warnings on the stubs (empty `sources` arrays); these go to 0 after init.
+- `org/` empty: 3 identity stubs (`# REPLACE ME`), zero other content. Lint Tier 1 reports 3 expected warnings on the stubs (empty `sources` arrays); these go to 0 after init.
 - mcp-server e2e: 84/84 PASS against `mcp-server/test-fixtures/sample-org/` (a tiny generic Acme fixture: 1 mission, 2 units, 1 person, 1 stakeholder, 1 commitment, 1 source).
 - TypeScript build: clean.
 
@@ -76,7 +76,7 @@ When changing the design system:
 
 When the public template gets new features that downstream forks should pull in:
 1. Commit on `main` of `playable-org`.
-2. Forks (instance repos) merge `upstream/main`. The public template never modifies `Org/` content beyond the 3 identity stubs, so merge conflicts are minimal.
+2. Forks (instance repos) merge `upstream/main`. The public template never modifies `org/` content beyond the 3 identity stubs, so merge conflicts are minimal.
 
 ## Lineage
 
@@ -84,4 +84,4 @@ Direct: Andrej Karpathy's *Building an LLM Wiki* gist (https://gist.github.com/k
 
 The four base playbooks are explicit compositions of established frames: Anthropic Economic Index (ai-exposure), Wardley (value-map), Choudary (reshuffle), Dorsey + Botha (world-model). The term "structure" instead of "substrate" follows Simone Cicero, *What is an organization today?* (Through The Boundary, April 2026) — see the vocabulary entry above for the URL.
 
-We borrow the pattern; we call our artefact `Org/`, not a wiki.
+We borrow the pattern; we call our artefact `org/`, not a wiki.

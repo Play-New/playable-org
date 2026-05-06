@@ -7,7 +7,7 @@ description: "Read an organization through the four-part frame from Block (Dorse
 
 ## How this playbook is run (read this first)
 
-This playbook **must** produce a persistent file artefact under `Org/plays/data/`, not an in-chat widget.
+This playbook **must** produce a persistent file artefact under `org/plays/data/`, not an in-chat widget.
 
 **Required tooling**: `org_play_run` (mcp tool). Two calls per run:
 
@@ -40,7 +40,7 @@ For an organization in scope, the skill produces a structured analysis of:
 5. **Interfaces**: delivery surfaces (web, app, physical channels, telephone, post). Not where value is created; where it's delivered.
 6. **Failure signals**: compositions an intelligence layer would attempt that fail because a capability is missing. Each failure signal is a roadmap item.
 
-The deliverable is a frozen `play` in `Org/plays/world-model-<scope>-<date>.md` with companion JSON and an interactive HTML viewer that renders the four parts as a layered stack.
+The deliverable is a frozen `play` in `org/plays/world-model-<scope>-<date>.md` with companion JSON and an interactive HTML viewer that renders the four parts as a layered stack.
 
 ## What this skill does that's different
 
@@ -55,7 +55,7 @@ The first three help an organization understand specific aspects of itself. This
 
 ## Pre-conditions
 
-- Structure `Org/` healthy (lint Tier 1 + Tier 2 = 0).
+- Structure `org/` healthy (lint Tier 1 + Tier 2 = 0).
 - Activities, units, commitments, stakeholders fully populated.
 - Optional but recommended: completed `ai-exposure` matches and at least one `value-map` play, to inform the customer-side world model and the failure-signal analysis.
 - The agent has read [skills/CAPABILITIES.md](../../CAPABILITIES.md). The methodology there is non-negotiable for this skill.
@@ -155,7 +155,7 @@ Failure signals are the roadmap. They are concrete; each should map to a specifi
 ```bash
 python3 skills/playbooks/world-model/audit.py \
   --map <world-model.json> \
-  --org-dir Org
+  --org-dir org
 ```
 
 The audit verifies:
@@ -189,7 +189,7 @@ Click any element for full detail in a modal. Apply the style charter: every ter
 
 ### 9. Write the play
 
-In `Org/plays/world-model-<scope>-<date>.md`. Frontmatter:
+In `org/plays/world-model-<scope>-<date>.md`. Frontmatter:
 
 ```yaml
 ---
@@ -205,8 +205,8 @@ references:
   - builder: skills/playbooks/world-model/build.py
   - viewer: skills/playbooks/world-model/viewer.py
   - audit: skills/playbooks/world-model/audit.py
-  - map_json: Org/plays/data/world-model-<scope>-<date>.json
-  - map_html: Org/plays/data/world-model-<scope>-<date>.html
+  - map_json: org/plays/data/world-model-<scope>-<date>.json
+  - map_html: org/plays/data/world-model-<scope>-<date>.html
 ---
 ```
 

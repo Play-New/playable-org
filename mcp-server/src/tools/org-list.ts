@@ -33,7 +33,7 @@ const ArgsSchema = z.object({
 export const orgListTool: ToolDefinition = {
   name: 'org_list',
   description:
-    'List Org/ nodes filtered by type or path prefix. Returns shallow metadata (id, path, title, type) without body. Use to discover what exists before drilling in with org_read.',
+    'List org/ nodes filtered by type or path prefix. Returns shallow metadata (id, path, title, type) without body. Use to discover what exists before drilling in with org_read.',
   inputSchema,
   handler: async (rawArgs, ctx) => {
     const { type, path, limit = 200 } = ArgsSchema.parse(rawArgs);

@@ -360,7 +360,7 @@ def test_org_read_search_list_neighbors():
     assertion("read path traversal blocked",
               "Node not found" in out, out)
 
-    # Root-level Org docs are readable as bare ids
+    # Root-level org docs are readable as bare ids
     for doc_id in ("log", "index"):
         out = call(d, "org_read", {"id": doc_id})
         assertion(f"read root doc {doc_id}.md",
@@ -429,9 +429,9 @@ def test_org_read_search_list_neighbors():
 
 def test_repo_root_tooling():
     """Tools that resolve via dirname(dataDir) need dataDir to be a direct
-    child of the repo root. Use the empty Org/ starter for those.
+    child of the repo root. Use the empty org/ starter for those.
     """
-    real_org = REPO_ROOT / "Org"
+    real_org = REPO_ROOT / "org"
     d = str(real_org)
 
     # ---- org_skills_list ----
@@ -481,7 +481,7 @@ def test_repo_root_tooling():
               parsed.get("tier1", {}).get("stderr", "")[:200])
 
     # ---- org_open ----
-    out = call(d, "org_open", {"path": "Org/log.md"})
+    out = call(d, "org_open", {"path": "org/log.md"})
     parsed = json.loads(out)
     assertion("org_open ok on existing file",
               parsed.get("ok") is True, out[:200])
@@ -494,7 +494,7 @@ def test_repo_root_tooling():
               "escapes the repo root" in out or "does not exist" in out,
               out[:200])
 
-    out = call(d, "org_open", {"path": "Org/nonexistent-file-xyz.md"})
+    out = call(d, "org_open", {"path": "org/nonexistent-file-xyz.md"})
     assertion("org_open missing file errors cleanly",
               "does not exist" in out, out[:200])
 

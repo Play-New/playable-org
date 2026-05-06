@@ -7,9 +7,9 @@ description: "For each activity of an organization, classify AI exposure by inte
 
 ## How this playbook is run (read this first)
 
-This playbook produces persistent file artefacts under `Org/plays/data/`, not in-chat widgets.
+This playbook produces persistent file artefacts under `org/plays/data/`, not in-chat widgets.
 
-After running `match.py` against your activity set the full-org match lands in `Org/plays/data/all-org-matches-<date>.json` (18510 O*NET tasks scored against your N activities). The HTML viewer at `Org/plays/data/ai-exposure-<date>.html` opens in any browser.
+After running `match.py` against your activity set the full-org match lands in `org/plays/data/all-org-matches-<date>.json` (18510 O*NET tasks scored against your N activities). The HTML viewer at `org/plays/data/ai-exposure-<date>.html` opens in any browser.
 
 For analyses on a slice (single area / single Direzione), run `match.py` from a terminal as documented in §1-§3 of the workflow below; an `org_play_run` mode for re-running the embedding match against a fresh subset is not yet exposed (the embedding model load is multi-second). The audit + viewer rerun on the existing matches.json works fine via `org_play_run(playbook="ai-exposure", mode="render", json_content=<matches JSON>)` — useful when you want to regenerate the HTML after changing the viewer template.
 
@@ -24,7 +24,7 @@ All consumer-facing text produced by this skill (play body, viewer copy, modals,
 - **Layer 1 — observed usage signal** from the Anthropic Economic Index (descriptive, derived from the dataset)
 - **Layer 2 — organization-specific constraints** that require or suggest human work (judgment cited from external sources)
 
-Output: a `play` in `Org/plays/ai-exposure-<scope>-<date>.md`, frozen at creation.
+Output: a `play` in `org/plays/ai-exposure-<scope>-<date>.md`, frozen at creation.
 
 The mapping from activities to O*NET tasks is **embedding-based**, not manual. The agent does not pick matches by reading; matches are produced by cosine similarity between multilingual sentence embeddings. This is reproducible and auditable.
 
@@ -40,7 +40,7 @@ The mapping from activities to O*NET tasks is **embedding-based**, not manual. T
   - `anthropic-aei-onet-<release>.csv` — rich subset (per-task `ai_autonomy_mean`, `ai_education_years_mean`, `human_education_years_mean`, `count`, `pct`). Currently 2026-03-24 release, 3,259 tasks with rich metrics.
   - `anthropic-task-penetration.csv` — fallback for tasks not in rich subset. 17,998 tasks with simple penetration score.
 - Python ≥ 3.10 with `sentence-transformers` installed (`pip3 install --user sentence-transformers`).
-- Structure `Org/` healthy (lint Tier 1 + Tier 2 = 0).
+- Structure `org/` healthy (lint Tier 1 + Tier 2 = 0).
 - Activities in scope have textual description (frontmatter `description` + body).
 
 ## What the Anthropic data measures (and what it does NOT measure)
@@ -76,7 +76,7 @@ Example builder (Python):
 import json, re
 from pathlib import Path
 out = []
-for p in sorted(Path("Org/nodes/activities").glob("<area-prefix>-*.md")):
+for p in sorted(Path("org/nodes/activities").glob("<area-prefix>-*.md")):
     text = p.read_text()
     desc_m = re.search(r'^description:\s*"([^"]+)"', text, re.M)
     body_m = re.search(r'^# .+?\n\n(.+?)(?=\n\n)', text, re.M | re.S)
@@ -205,7 +205,7 @@ Page structure, top to bottom:
 
 4. **Activity card**: title, ID + area, short description, **closest O*NET task block** (top-1 task with confidence % and autonomy /5; supports an optional Italian translation when `--task-translations` provided), 5×5 grid of squares (one per top-K match) clustered by category color (verde → viola → azzurro → beige) with hover tooltip and click-to-modal, and a stat line showing the per-category breakdown (e.g., "X automated · Y augmented · Z assistive · W no data").
 
-5. **Modal (on square click)**: full O*NET task text (and translation if available), confidence, autonomy, sample size with warning if `< 100`, category, and a chain-of-inference disclaimer ("Org activity → closest O*NET task → category labels the conversation sample, not the activity").
+5. **Modal (on square click)**: full O*NET task text (and translation if available), confidence, autonomy, sample size with warning if `< 100`, category, and a chain-of-inference disclaimer ("org activity → closest O*NET task → category labels the conversation sample, not the activity").
 
 The viewer is consumer-facing: the leader/decision-maker opens it in a browser, scans the org snapshot, drills into an area, opens individual cards. The markdown play remains the audit trail; the HTML is the navigable consumer surface.
 
@@ -220,7 +220,7 @@ The viewer is consumer-facing: the leader/decision-maker opens it in a browser, 
 
 ### 9. Write the play
 
-In `Org/plays/ai-exposure-<scope>-<date>.md`:
+In `org/plays/ai-exposure-<scope>-<date>.md`:
 
 ```yaml
 ---

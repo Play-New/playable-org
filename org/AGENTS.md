@@ -1,12 +1,12 @@
-# AGENTS.md — operational contract for `Org/`
+# AGENTS.md — operational contract for `org/`
 
-Any agent (LLM or human) that reads or writes `Org/` follows this contract. Read it before any operation.
+Any agent (LLM or human) that reads or writes `org/` follows this contract. Read it before any operation.
 
-## What `Org/` is
+## What `org/` is
 
 A folder of markdown files representing one organization. Each entity (unit, person, role, activity, stakeholder) and each relationship (commitment) is one file with YAML frontmatter. The folder structure is the schema.
 
-`Org/` contains **only observable, cited facts**. Interpretations are produced by applying playbooks and live in `plays/` as point-in-time artefacts, frozen at creation.
+`org/` contains **only observable, cited facts**. Interpretations are produced by applying playbooks and live in `plays/` as point-in-time artefacts, frozen at creation.
 
 ## Five invariants
 
@@ -22,7 +22,7 @@ These constrain every operation. Violation = bug.
 
 5. **Plays are frozen at creation.** Once written, a play records a moment in time. To revise, write a new one. Old plays are never deleted.
 
-**Related rule: `Org/` describes the as-is.** Sources document what is or has been, not what could be. The to-be (proposals, targets, gaps) lives in `plays/`. No `state: current | proposed` field on structure nodes.
+**Related rule: `org/` describes the as-is.** Sources document what is or has been, not what could be. The to-be (proposals, targets, gaps) lives in `plays/`. No `state: current | proposed` field on structure nodes.
 
 ## Folders
 
@@ -41,7 +41,7 @@ These constrain every operation. Violation = bug.
 | `plays/` | Point-in-time playbook executions (interpretations) | Frozen at creation |
 | `log.md` | Prepend-only audit | Prepend-only |
 
-## Special files at root of `Org/`
+## Special files at root of `org/`
 
 - `README.md` — entry point for the organization.
 - `AGENTS.md` — this file. Operational contract.
@@ -51,7 +51,7 @@ These constrain every operation. Violation = bug.
 
 ## Node schemas
 
-Every node has `id` (kebab-case, unique in `Org/`, equal to the file name without extension) and `type` (equal to the folder name).
+Every node has `id` (kebab-case, unique in `org/`, equal to the file name without extension) and `type` (equal to the folder name).
 
 ### unit
 
@@ -204,7 +204,7 @@ Market view of the organization: annual snapshot, revenue lines, headcount, oper
 
 ## Frontmatter conventions
 
-- `id`: kebab-case, unique across `Org/`. Filename = `<id>.md`.
+- `id`: kebab-case, unique across `org/`. Filename = `<id>.md`.
 - `description`: ≤150 characters, plain language, no marketing tone.
 - Inline citations: `(source-id)` or `(source-id §X.Y)`. The `source-id` values used must appear in the `sources:` frontmatter array.
 - Keys in English. Free-text values in the organization's working language.
@@ -230,7 +230,7 @@ Implicit reciprocal-backup commitment between [alice](../nodes/people/alice.md) 
 
 Relative paths from the current file's folder. Standard markdown: renders everywhere (Claude.ai, GitHub, IDE, Obsidian) without proprietary conventions. Clickable by humans, navigable by agents.
 
-**Dual resolution**: the link reads both as a filesystem path (the agent opens the file) and as an id (the `id` is unique in `Org/`, the agent can search via the mcp tool `org_read(id)` if needed).
+**Dual resolution**: the link reads both as a filesystem path (the agent opens the file) and as an id (the `id` is unique in `org/`, the agent can search via the mcp tool `org_read(id)` if needed).
 
 **Path-based brittleness**: links break if files move. Mitigation: the folder structure is fixed; the lint workflow catches broken links.
 
@@ -243,8 +243,8 @@ Relative paths from the current file's folder. Standard markdown: renders everyw
 5. Specifics over generics.
 6. Lists for atoms, prose for relationships and reasons.
 7. No editorializing.
-8. **No author names of analytical frameworks in `Org/`.** Frameworks are visible only as named playbooks.
-9. System vocabulary: *Org*, *playbook*, *play*, *point-in-time*, *frozen at creation*. Terms outside this list are not used to describe the system.
+8. **No author names of analytical frameworks in `org/`.** Frameworks are visible only as named playbooks.
+9. System vocabulary: *org*, *playbook*, *play*, *point-in-time*, *frozen at creation*. Terms outside this list are not used to describe the system.
 10. Inline citations to sources: `(source-id)`. Cross-references to nodes: standard markdown link `[text](../path/to/node.md)`.
 
 If a sentence can be cut without loss of meaning, cut it. Empty fields are honest, not failures.
@@ -255,7 +255,7 @@ Workflows are procedures the agent composes using the **mcp tools** of the bundl
 
 ### init
 
-**One-time bulk ingest at first install.** The user drops a folder of source documents into `Org/sources/` (founding charter, organizational charts, role-descriptions, annual report, internal process maps). Then in chat: *initialize the structure from sources/*. The agent iterates each document, proposes nodes in batches (5–15 per batch), shows diffs, writes on confirmation, appends one log line per batch. A first-install init session typically produces 200–400 nodes in 30–60 minutes.
+**One-time bulk ingest at first install.** The user drops a folder of source documents into `org/sources/` (founding charter, organizational charts, role-descriptions, annual report, internal process maps). Then in chat: *initialize the structure from sources/*. The agent iterates each document, proposes nodes in batches (5–15 per batch), shows diffs, writes on confirmation, appends one log line per batch. A first-install init session typically produces 200–400 nodes in 30–60 minutes.
 
 Detail: `<repo>/skills/init/SKILL.md`.
 
@@ -277,9 +277,9 @@ Detail: `<repo>/skills/lint/SKILL.md`.
 
 ### play
 
-Application of a named playbook to a slice of `Org/` → produces a structured JSON + interactive HTML artefact under `plays/data/`, and (when materialized) a frozen markdown summary at the root of `plays/`.
+Application of a named playbook to a slice of `org/` → produces a structured JSON + interactive HTML artefact under `plays/data/`, and (when materialized) a frozen markdown summary at the root of `plays/`.
 
-Playbooks (procedure templates) live in `<repo>/skills/playbooks/`, outside `Org/`. They are product, not content.
+Playbooks (procedure templates) live in `<repo>/skills/playbooks/`, outside `org/`. They are product, not content.
 
 Playbooks are named for what they do, never for the author. Four base playbooks:
 

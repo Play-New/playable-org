@@ -231,7 +231,7 @@ def audit_structure_existence(components: list[dict], org_dir: Path) -> list[str
 def main() -> int:
     parser = argparse.ArgumentParser(description="Audit a WardleyMap JSON before commit.")
     parser.add_argument("--map", required=True, help="WardleyMap JSON path")
-    parser.add_argument("--org-dir", required=True, help="Path to Org/")
+    parser.add_argument("--org-dir", required=True, help="Path to org/")
     parser.add_argument("--ai-exposure-matches", help="Optional matches.json (already attached as _aei in skeleton)")
     args = parser.parse_args()
 

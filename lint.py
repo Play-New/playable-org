@@ -8,12 +8,12 @@ from collections import defaultdict
 import datetime
 
 ROOT = Path(__file__).parent
-ORG = ROOT / "Org"
+ORG = ROOT / "org"
 REPORT = ROOT / f"lint-report-{datetime.date.today()}.md"
 
 
 def all_md_files():
-    """All .md files under Org/, excluding sources/, and excluding log.md."""
+    """All .md files under org/, excluding sources/, and excluding log.md."""
     for p in ORG.rglob("*.md"):
         rel = p.relative_to(ORG)
         if rel.parts and rel.parts[0] == "sources":

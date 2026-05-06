@@ -79,7 +79,7 @@ function scoreNode(node: NodeFile, tokens: string[]): { score: number; snippet: 
 export const orgSearchTool: ToolDefinition = {
   name: 'org_search',
   description:
-    'Text search across all Org/ nodes. Matches frontmatter (id, title, description) and body. Returns ranked hits with snippets. Use this before org_read when you do not know the exact node id, or to find all nodes touching a topic.',
+    'Text search across all org/ nodes. Matches frontmatter (id, title, description) and body. Returns ranked hits with snippets. Use this before org_read when you do not know the exact node id, or to find all nodes touching a topic.',
   inputSchema,
   handler: async (rawArgs, ctx) => {
     const { query, type, limit = 20 } = ArgsSchema.parse(rawArgs);

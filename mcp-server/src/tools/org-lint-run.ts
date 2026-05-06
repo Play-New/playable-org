@@ -62,7 +62,7 @@ function parseTier1Summary(stdout: string): Record<string, number | string> {
 export const orgLintRunTool: ToolDefinition = {
   name: 'org_lint_run',
   description:
-    "Run the lint scripts (Tier 1 = structural, Tier 2 = semantic) on the bundled Org/. Spawns python3 against the bundled lint.py and lint-semantic.py. Returns parsed counts per check and the path to the dated lint report file. Requires Python 3 in PATH on the customer machine; if missing, returns a clear error so the agent can ask the user to install it.",
+    "Run the lint scripts (Tier 1 = structural, Tier 2 = semantic) on the bundled org/. Spawns python3 against the bundled lint.py and lint-semantic.py. Returns parsed counts per check and the path to the dated lint report file. Requires Python 3 in PATH on the customer machine; if missing, returns a clear error so the agent can ask the user to install it.",
   inputSchema,
   handler: async (rawArgs, ctx) => {
     const tier = (rawArgs as { tier?: string })?.tier ?? 'both';

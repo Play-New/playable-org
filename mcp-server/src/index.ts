@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * MCP server entry point.
- * Exposes an Org folder as tools to MCP-compatible clients (Claude Desktop, Claude Code).
+ * Exposes an org folder as tools to MCP-compatible clients (Claude Desktop, Claude Code).
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
@@ -21,7 +21,7 @@ function parseArgs(argv: string[]): { dataDir: string } {
     }
   }
   if (!dataDir) {
-    console.error('Usage: playable-org-mcp --data-dir <path-to-Org-folder>');
+    console.error('Usage: playable-org-mcp --data-dir <path-to-org-folder>');
     process.exit(1);
   }
   const resolved = resolve(dataDir);

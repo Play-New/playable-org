@@ -190,7 +190,7 @@ def audit_structure_existence(comps: list[dict], org_dir: Path) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Audit a reshuffle slice JSON.")
     parser.add_argument("--map", required=True, help="Slice JSON path")
-    parser.add_argument("--org-dir", required=True, help="Path to Org/")
+    parser.add_argument("--org-dir", required=True, help="Path to org/")
     args = parser.parse_args()
 
     d = json.loads(Path(args.map).read_text(encoding="utf-8"))

@@ -1,7 +1,7 @@
 /**
  * org_read — read a node's content + frontmatter by id.
  *
- * The id resolves to a markdown file in the Org folder via:
+ * The id resolves to a markdown file in the org folder via:
  *   1. Direct path lookup if id contains "/" (e.g., "nodes/units/personale")
  *   2. Glob search if id is bare (e.g., "personale" → finds nodes/units/personale.md)
  */
@@ -20,7 +20,7 @@ const inputSchema = {
     id: {
       type: 'string',
       description:
-        'Node id (kebab-case, e.g., "personale", "rogledi") or relative path (e.g., "nodes/units/personale.md"). Bare ids are searched across nodes/, identity/, language/, commitments/, financials/, plays/. The root-level Org docs ("log", "index", "AGENTS", "README", "open-questions") are also resolvable as bare ids.',
+        'Node id (kebab-case, e.g., "personale", "rogledi") or relative path (e.g., "nodes/units/personale.md"). Bare ids are searched across nodes/, identity/, language/, commitments/, financials/, plays/. The root-level org docs ("log", "index", "AGENTS", "README", "open-questions") are also resolvable as bare ids.',
     },
   },
   required: ['id'],
@@ -28,7 +28,7 @@ const inputSchema = {
 
 const ArgsSchema = z.object({ id: z.string() });
 
-// Root-level Org meta-docs: not nodes per se, but legitimate read targets.
+// Root-level org meta-docs: not nodes per se, but legitimate read targets.
 const ROOT_DOCS = new Set(['log', 'index', 'AGENTS', 'README', 'open-questions']);
 
 async function findNodeFile(dataDir: string, id: string): Promise<string | null> {
@@ -49,7 +49,7 @@ async function findNodeFile(dataDir: string, id: string): Promise<string | null>
     }
   }
 
-  // Bare id resolving to a root-level Org doc
+  // Bare id resolving to a root-level org doc
   if (ROOT_DOCS.has(id)) {
     let candidate: string;
     try {
@@ -83,7 +83,7 @@ async function findNodeFile(dataDir: string, id: string): Promise<string | null>
 export const orgReadTool: ToolDefinition = {
   name: 'org_read',
   description:
-    'Read a node\'s frontmatter and body by id. Returns YAML frontmatter parsed as JSON plus the markdown body. Use this to access any node in Org/: units, people, roles, activities, stakeholders, language-terms, commitments, identity files, plays.',
+    'Read a node\'s frontmatter and body by id. Returns YAML frontmatter parsed as JSON plus the markdown body. Use this to access any node in org/: units, people, roles, activities, stakeholders, language-terms, commitments, identity files, plays.',
   inputSchema,
   handler: async (rawArgs, ctx) => {
     const { id } = ArgsSchema.parse(rawArgs);

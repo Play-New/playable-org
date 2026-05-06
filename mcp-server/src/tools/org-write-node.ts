@@ -1,5 +1,5 @@
 /**
- * org_write_node — create or update a node in Org/.
+ * org_write_node — create or update a node in org/.
  *
  * Writes to nodes/, identity/, language/, commitments/, plays/.
  * Refuses to write to sources/ (immutable per AGENTS.md invariant #1).
@@ -69,7 +69,7 @@ async function fileExists(p: string): Promise<boolean> {
 export const orgWriteNodeTool: ToolDefinition = {
   name: 'org_write_node',
   description:
-    'Create or update a node markdown file in Org/. Writes are restricted to nodes/, identity/, language/, commitments/, plays/. Refuses sources/ (immutable). Refuses identity/ unless force_identity=true (slow-changing). Validates frontmatter has id+type and id matches filename slug.',
+    'Create or update a node markdown file in org/. Writes are restricted to nodes/, identity/, language/, commitments/, plays/. Refuses sources/ (immutable). Refuses identity/ unless force_identity=true (slow-changing). Validates frontmatter has id+type and id matches filename slug.',
   inputSchema,
   handler: async (rawArgs, ctx) => {
     const args = ArgsSchema.parse(rawArgs);
