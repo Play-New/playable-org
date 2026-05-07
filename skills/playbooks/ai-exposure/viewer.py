@@ -231,7 +231,7 @@ STRINGS = {
         "level_low_confidence": "Low confidence",
         "summary": "{n} of {total} activities",
         "no_match": "No activities match the current filter.",
-        "footer": "Source: Anthropic Economic Index (release 2026-03-24, 18,510 O*NET tasks). Embedding: paraphrase-multilingual-MiniLM-L12-v2. Min top-1 similarity threshold: 0.55.",
+        "footer": "Source: Anthropic's public release of how Claude was used across a sample of conversations (March 2026 release, around 18,500 work-task descriptions from the public US occupational catalog). The matching uses a multilingual sentence-similarity model. Activities are kept only when the closest match is at least 55% similar; below that the read isn't reliable.",
         "closest_match": "Closest O*NET task",
         "confidence": "Confidence",
         "automation": "Automation",
@@ -442,9 +442,9 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
             items.append(f'<div class="decision"><div class="question">{q}</div>{ans_paragraphs}{src_html}</div>')
         decisions_eyebrow = "How to read this map" if lang == "en" else "Come leggere questa mappa"
         decisions_lead = (
-            "Each square above is one of the top-K closest O*NET tasks; the decisions below translate the pattern into moves the leader could make."
+            "Each square above is one of the closest matches in the public catalog of work; the decisions below translate the pattern into moves the leader could make."
             if lang == "en"
-            else "Ogni quadratino sopra è una delle mansioni del catalogo americano più vicine all'attività; le decisioni qui sotto traducono il pattern in mosse che chi guida l'organizzazione può fare."
+            else "Ogni quadratino sopra è una delle attività più vicine nel catalogo pubblico del lavoro; le decisioni qui sotto traducono il pattern in mosse che chi guida l'organizzazione può fare."
         )
         decisions_html = f"""
     <div class="section" id="decisions">
