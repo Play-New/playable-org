@@ -177,18 +177,19 @@ python3 skills/playbooks/world-model/viewer.py \
   [--decisions <decisions.json>]
 ```
 
-The HTML is the **primary consumer artefact** — a self-contained interactive document the leader opens in a browser. **This shape is frozen**; the canonical Outline & Co. play under `mcp-server/test-fixtures/sample-org/plays/data/world-model-outline-2026-05-07.html` is the reference render. Page structure, in order:
+The HTML is the **primary consumer artefact** — a self-contained interactive document the leader opens in a browser. **This shape is frozen**; the canonical Outline & Co. play under `mcp-server/test-fixtures/sample-org/plays/data/world-model-outline-2026-05-07.html` is the reference render. Every block on the page lives in the same centered 820px column inside the 1240px container — nothing escapes the editorial grid. Page structure, in order:
 
-1. **Header** (eyebrow `world model` + h1 title + lead), centered in a 820px column inside the 1240px container.
-2. **Intro** (820px centered): one paragraph framing what the page does, plus a pull-quote naming the central insight (the value compounds at the bottom layers; replacing the coordination work with shared knowledge is the move that ages well).
-3. **Frame diagram** (full container): a 720×540 SVG schematic of the five layers, top-down, with plain-language captions per layer and a coral pull at the bottom for the shared principle.
-4. **The stack** (full container) — five layer blocks, each with the same shape:
-   - Layer head: 2-column grid (`1fr 1.1fr`) — name + thin coloured rule on the left, plain-language hint on the right.
-   - Layer body: the actual data for that layer.
-   - Layers, top to bottom: **Stakeholders** (pill-style cards), **Interfaces** (chip cards), **Intelligence layer** (2-column grid: held-together-by-people-today / could-be-held-together-by-systems), **World model** (2-column grid: about-itself / about-the-people-it-serves), **Capabilities** (grid of cards).
-5. **Principle block** (820px centered): coral-bordered pull-quote — the shared principle.
-6. **Failure-signals block** (full container): h2 + lead in a 720px-max prose, then a grid of failure-signal cards (each with trigger + missing capability).
-7. **Decisions section** "How to read this map" (820px centered): h2 + lead + each decision rendered as `.question` + `.answer` + `.source` citation. The load-bearing interpretive surface.
+1. **Header** (820px centered): eyebrow `world model` + h1 title + one-paragraph lead.
+2. **Intro** (820px centered): one paragraph framing what the page does (the structure under the org-chart: who the org serves, where it meets them, how it composes responses, what it knows, what it can do — and the pieces that aren't there yet), plus a pull-quote with the central insight (the value compounds at the bottom layers; replacing the alignment cost with shared knowledge is the move that ages well).
+3. **The stack** (820px centered) — five layer blocks, each with the same shape:
+   - Layer head: layer name with a thin coloured rule on the left + plain-language hint paragraph below it.
+   - Layer body: the actual data for that layer, rendered inside the 820px column.
+   - Layers, top to bottom: **Stakeholders** (row of hairline-bordered cards), **Interfaces** (row of hairline-bordered chips), **Intelligence layer** (2-column grid side-by-side: held-together-by-people-today | could-be-held-together-by-systems — the contrast is the whole point of the layer), **World model** (2-column grid side-by-side: about-itself | about-the-people-it-serves — same contrast logic), **Capabilities** (grid of cards, ~3 per row in the 820px column).
+4. **Principle block** (820px centered): coral-bordered pull-quote naming the shared principle.
+5. **"What to build next"** block (820px centered): h2 + lead + a vertical column of cards. Each card names a request the organization would already try to handle and where the response would fall short because one needed piece of the chain isn't there yet. The list comes from the demand the structure already produces — not from a three-year plan made at the top.
+6. **Decisions section** "How to read this map" (820px centered): h2 + lead + each decision rendered as `.question` + `.answer` (one or more paragraphs) + `.source` citation. The load-bearing interpretive surface — the map shows the layers, this section says what to do about it.
+
+**No frame diagram**. An earlier shape included a schematic 5-layer SVG above the intro; removed because it duplicated the actual stack below. The hint paragraph under each layer name carries the same explanatory weight in plain language without the tutorial decoration.
 
 **Visual code (frozen)**:
 
@@ -196,17 +197,26 @@ The HTML is the **primary consumer artefact** — a self-contained interactive d
 - **Colour = state / role**: hairline border = standard / commodity; coral border (`--ds-coral`) = differentiated / moat (capabilities) or emerging (any future `is_new` item — value-map convention). The shape never changes when an item is differentiated or emerging — only the border colour does.
 - **No left-rule cards**. Every card has a full hairline border.
 
-**Click on any card** opens a small floating popover (never a modal) next to the clicked element. The popover contains:
+**Click on any card** opens a small floating popover (never a modal). The popover opens **below** the clicked card, **centered horizontally on it**, and flips above when there isn't room below. Always clamped inside the viewport. The popover contains:
 
-- Eyebrow with the kind ("capability · differentiated" / "capability · standard" / "stakeholder" / "interface" / "a piece to build" / "held together by people today" / "could be held together by systems").
+- Eyebrow with the kind ("capability · differentiated" / "capability · standard" / "stakeholder" / "interface" / "a piece to build" / "held together by people today" / "could be held together by systems" / "what the org knows about itself").
 - The full label as h3.
 - A description paragraph.
-- Per-kind sections: for capabilities, the contract (`Takes` / `Returns` / `How called`), `Can be called by`, `Held today by`, and a "Why differentiated" or "Why standard" rationale. For stakeholders, what-they-get / what-they-give-back / honest-signal / fragmentation. For failure-signals, what's-missing + what-it-would-take-to-build.
+- Per-kind sections: for capabilities, the contract (`Takes` / `Returns` / `How called`), `Can be called by`, `Held today by`, and a "Why differentiated" or "Why standard" rationale. For stakeholders, what-they-get / what-they-give-back / honest-signal / fragmentation. For company-side world-model entries, where-this-knowledge-lives / how-mature-the-picture-is / what's-missing. For pieces-to-build, what's-missing + what-it-would-take-to-build.
 - Footer citation: the `_structure_id` if present.
 
-Esc / click outside / close button dismisses. Position relative to click target, viewport-edge clamped.
+Every card on the page is clickable — no card is a display-only block. The hover signal (border darkens to `--fg`) is consistent across all clickable cards. Esc / click outside / close button dismisses.
 
-**Plain-language discipline (frozen)**. The framework's layer names (Stakeholders, Interfaces, Intelligence layer, World model, Capabilities) stay as the framework defines them — they are the primitives, not jargon. Below each layer name, the hint paragraph translates the primitive into plain English. **Inside the popover and the prose**, no framework vocabulary leaks: `moat` becomes "differentiated", `commodity` becomes "standard", `judgment density` and `capability stack` never appear. Decisions are reviewed by `autoresearch.py` against this discipline.
+**Plain-language discipline (frozen)**. The framework's layer names (Stakeholders, Interfaces, Intelligence layer, World model, Capabilities) stay as the framework defines them — they are the primitives, not jargon. Below each layer name, the hint paragraph translates the primitive into plain English. **Inside the popover and the prose**, no framework vocabulary leaks. Words to never use in user-visible strings:
+
+- `moat` → "differentiated"
+- `commodity` → "standard"
+- `judgment density`, `capability stack` → never appear
+- `coordination tax` → "the cost of keeping everyone aligned" or "alignment cost"
+- `failure-signal` → "a piece to build" or "a place where the response would fall short"
+- `the structure is thin` → "what to build next" or "the pieces that aren't there yet" — never the word `thin` in user-visible prose. It's metaphorical and the leader stops on it.
+
+Decisions are reviewed by `autoresearch.py` against the deterministic jargon list; the editorial words above are caught by hand on every release.
 
 **`--decisions <list.json>`** merges a JSON list of `{question, answer, source}` into the map's `decisions[]` field before rendering. **Required** for a shippable play — autoresearch fails without it.
 
