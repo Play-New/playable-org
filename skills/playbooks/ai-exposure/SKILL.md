@@ -191,30 +191,44 @@ python3 skills/playbooks/ai-exposure/viewer.py \
   --title "<title>"
 ```
 
-Output: a single self-contained HTML file (vanilla HTML/CSS/JS, no external deps). Visual style is the Play New design system, **identical chrome to the value-map viewer**: pure white surface, editorial Inter Variable typography, hairlines, single accent. One uniform container width (1240px) is applied to every block on the page; prose elements (h1, lead, decision answers, footer copy) wrap at an inner readable line length while the block-level frame stays constant.
+Output: a single self-contained HTML file (vanilla HTML/CSS/JS, no external deps). Visual style is the Play New design system, **identical chrome to the value-map viewer**: pure white surface, editorial Inter Variable typography, hairlines, single accent. One uniform container width (1240px) is applied to every block on the page; editorial prose blocks (header, intro, decisions, footer) sit in a centered 820px column inside the 1240px container; data-heavy blocks (legend, filters, org-overview, per-area cards) span the same 820px column too. The result is a single vertical edge down the page — nothing escapes the column.
 
-Page structure, top to bottom — same shape across every fork of this template:
+**This shape is frozen.** The reference Outline & Co. artefact is the canonical render. Any fork producing this skill must match the structure below, in this order, with no additions or omissions:
 
-1. **Header** (centered in the container): an eyebrow `ai exposure` + h1 with the play title + a one-paragraph lead explaining how to read the map.
+1. **Header** (820px centered): eyebrow `ai exposure` + h1 with the play title + a one-sentence lead. The lead is a punch, not a paragraph — the long explanation lives in the next block.
 
-2. **Legend**: the four Anthropic category swatches (automated / augmented / assistive / no-data) with their plain-language labels.
+2. **"How to read this map" intro** (820px centered): an h2 + three short paragraphs. The intro answers three questions every leader has on first open:
+   - *What is the matching doing?* — every activity matched against ~18,500 work-task descriptions in a public catalogue; colours describe how Claude was used in the public sample, not what the activity is in this organization.
+   - *Why five squares per activity, not one?* — picking the single closest match is fragile because it's often only partially right. Five squares show whether the pattern holds across nearby tasks: five greens = solid read, mixed colours = noisier signal, take with caution. Anti cherry-pick.
+   - *What does clicking do?* — open the matched task verbatim, the similarity, observed Claude usage, and sample size.
 
-3. **Filters**: search box, signal level (high signal / some signal / low signal / no signal / low confidence — these are activity-level levels derived from the per-task category counts; see thresholds in §4), area filter pills.
+3. **Legend** (820px centered): four colour swatches with plain-language labels. No autonomy numbers shown here; those live in the popover.
+   - 🟢 sage — Claude worked autonomously on the matched task (observed)
+   - 🟣 lilac — Claude assisted under supervision (observed)
+   - 🔵 slate — Claude used as a punctual tool (observed)
+   - 🟤 sand — task is outside the observed sample
 
-4. **Organization snapshot** (only when no specific area filter is active): free-text description + summary numbers + a horizontal distribution bar showing the org-wide split across the four Anthropic categories + legend with percentages.
+4. **Filters** (820px centered): search box, signal-level pills (high signal / some signal / low signal / no signal / low confidence — activity-level rollups from the per-task category counts; thresholds in §4), area filter pills. Restyled as inline editorial controls — no chunky borders.
 
-5. **Per-area sections** (when "All areas" is active, group by area; otherwise show only the selected area). Each section starts with a hairline and uses a **two-column area-head** that spans the container width:
-   - Left column: area heading + scope description (structure-grounded one-liner from the area's `nodes/units/<area>.md` perimeter) + the interpretive **commentary note** (free prose authored by the agent, audited by `audit-notes.py`).
-   - Right column: distribution bar specific to that area + dist legend with percentages.
-   - Below the head: grid of activity cards (cards have no frame — bare title + closest-match pull-quote with hairline accent + 5×5 task-square grid + stat line).
+5. **Organization snapshot** (820px centered, only when no area filter is active): the free-text `--org-description` (1-2 lines describing the organization), a counts row (N activities · N matches · avg confidence · total sample size), an org-wide horizontal distribution bar with percentages legend.
 
-6. **Activity card**: title, ID + area, short description, **closest O*NET task block** (top-1 task with confidence % and autonomy /5; supports an optional Italian translation when `--task-translations` provided), 5×5 grid of squares (one per top-K match) clustered by category color with hover tooltip and click-to-popover, and a stat line showing the per-category breakdown.
+6. **Per-area sections** (when "All areas" is active, grouped by area; otherwise show only the selected area). Each section starts with a hairline and uses a **two-column area-head** at 820px:
+   - Left column: area heading + scope description (structure-grounded one-liner from the area's `nodes/units/<area>.md` frontmatter `description`) + interpretive commentary note (free prose authored by the agent, audited by `audit-notes.py`).
+   - Right column: distribution bar specific to that area + dist legend.
+   - Below the head: grid of activity cards. Cards have a full hairline border (no border-left rule) with 18-20px padding inside.
 
-7. **Decisions section** ("How to read this map"): an h2 above the list, a one-line lead, then each decision rendered as `.question` (display-weight) + `.answer` (paragraph prose, possibly multi-paragraph) + `.source` (mono-font citation). This is the leader-facing reading of the map. It is the load-bearing interpretive surface — the deterministic numbers come from `match.py`, the page chrome comes from the design system, but the *meaning* of the map for this org lives in this section.
+7. **Activity card** (full-bordered, hairline frame + 4px radius, `.card-title` display weight + `.card-id` mono + `.card-desc` muted):
+   - **Closest-match pull-quote**: a tinted block (`bg-alt`, no border) with the top-1 matched task verbatim, similarity %, observed autonomy /5, sample size if known, plus a fragility note when the sample is below 100 conversations.
+   - **Task-square grid**: exactly `d.matches.length` squares (top-K = 5 by default → 5 squares in a row, the grid wraps after 5 if K > 5). **No padding to a fixed grid size**. Each square is colour-coded per the legend, has a hover tooltip with the matched task + similarity + observation, and is click-to-popover.
+   - **Stat line**: per-category counts ("X automated · Y augmented · Z assistive · W no data") or, for low-confidence activities, the low-confidence hint instead of the grid.
 
-8. **Footer**: dataset reference, embedding model, similarity threshold.
+8. **Decisions section** "How to read this map" (820px centered): h2 + lead + each decision rendered as `.question` (display-weight) + `.answer` (one or more paragraphs) + `.source` (mono-font citation). This is the leader-facing reading of the map. It is the load-bearing interpretive surface — the deterministic numbers come from `match.py`, the page chrome comes from the design system, but the *meaning* of the map for this org lives in this section.
 
-**Click on a task-square** opens a small **floating popover** (not a modal) next to the clicked square: eyebrow with the area, the activity title, the matched O*NET task, confidence + autonomy + sample size + category, and a chain-of-inference disclaimer ("org activity → closest O*NET task → category labels the conversation sample, not the activity"). Esc, click outside, or the close button dismisses. The popover positions itself relative to the click target and clamps to the viewport edges.
+9. **Footer** (820px centered): dataset reference in plain language. **Not** a technical citation line — the leader reads "Source: Anthropic's public release of how Claude was used across a sample of conversations (March 2026 release, around 18,500 work-task descriptions from the public US occupational catalog). The matching uses a multilingual sentence-similarity model. Activities are kept only when the closest match is at least 55% similar; below that the read isn't reliable." — no model names, no acronyms, no raw thresholds.
+
+**Click on a task-square** opens a small **floating popover** (never a modal) next to the clicked square: eyebrow with the area, the activity title, the matched task, confidence + autonomy + sample size + category, and a one-sentence chain-of-inference disclaimer ("this org's activity → closest match in the public catalog → category from how Claude was used on that catalog task in the Anthropic sample. The category describes that sample, not your activity."). Esc / click outside / close button dismisses. The popover positions itself relative to the click target and clamps to the viewport edges.
+
+**Plain-language discipline (frozen)**. No user-visible string in the rendered HTML may use any of: `O*NET`, `AEI`, `embedding`, `cosine similarity`, `MiniLM`, `paraphrase-multilingual`, `top-K`, `top-1`, `p25`, `p75`, raw autonomy thresholds (`3.21`, `3.57`), framework field names (`ai_autonomy_mean`, `ai_education_years_mean`, `penetration`). The autoresearch.py jargon-list dimension catches these on the decisions text; the same discipline applies by hand to the hardcoded prose in the viewer's STRINGS dict and the SVG diagram captions.
 
 The viewer is the **consumer surface**: the leader/decision-maker opens it in a browser, reads the header, scans the org snapshot, drills into an area, opens individual cards, then reads the decisions section to land on what to do. The markdown play remains the audit trail; the HTML is the navigable consumer artefact.
 
