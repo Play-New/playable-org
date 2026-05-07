@@ -59,14 +59,20 @@ EXTRA_CSS = """
 
 body { background: #FFFFFF; color: var(--fg); }
 
+/* One container width, applied uniformly to every block on the page.
+   Header, legend, org-overview, area-section, decisions, footer all
+   share the same horizontal frame. Text inside a block can still wrap
+   at a readable length via inline max-width on the prose element, but
+   the block itself is always container-width. */
 .container { max-width: 1240px; margin: 0 auto; padding: 80px 40px 96px; }
+@media (max-width: 900px) { .container { padding: 56px 24px 80px; } }
 
-header { margin: 0 auto 40px; max-width: 820px; }
+header { margin: 0 0 40px; }
 header .eyebrow { font-family: var(--font-display); font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 16px; }
-header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); }
-header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0 0 8px; max-width: 720px; }
+header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); max-width: 920px; }
+header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0; max-width: 720px; }
 
-.legend-wrap { max-width: 820px; margin: 0 auto 40px; }
+.legend-wrap { margin: 0 0 40px; }
 .legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 0.82rem; color: var(--fg-muted); align-items: center; }
 .legend-item { display: flex; align-items: center; gap: 7px; }
 .legend-square { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
@@ -75,8 +81,8 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .legend-square.assistive { background: var(--assistive); }
 .legend-square.no-data { background: var(--no-data); }
 
-/* Filter row — restyled as inline editorial controls, no chunky borders. */
-.controls { max-width: 820px; margin: 0 auto 40px; display: flex; flex-direction: column; gap: 14px; }
+/* Filter row — inline editorial controls, no chunky borders. */
+.controls { margin: 0 0 40px; display: flex; flex-direction: column; gap: 14px; }
 .control-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .control-label { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; min-width: 60px; font-weight: 500; }
 .search-box { flex: 1; min-width: 240px; padding: 8px 14px; border: 1px solid var(--fg-hairline); border-radius: 3px; font-size: 0.9rem; background: #FFFFFF; font-family: inherit; color: var(--fg); }
@@ -86,13 +92,13 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .pill:hover { border-color: var(--fg); }
 .pill.active { background: var(--fg); color: #FFFFFF; border-color: var(--fg); }
 
-.summary { max-width: 820px; margin: 0 auto 24px; font-size: 0.82rem; color: var(--fg-muted); }
+.summary { margin: 0 0 24px; font-size: 0.82rem; color: var(--fg-muted); }
 
-/* Org snapshot — editorial block, not a card. */
-.org-overview { max-width: 820px; margin: 0 auto 56px; }
+/* Org snapshot — editorial block at container width. */
+.org-overview { margin: 0 0 64px; }
 .org-overview .label { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 14px; font-weight: 500; }
 .org-overview .org-desc { font-size: 0.95rem; line-height: 1.7; margin-bottom: 22px; color: var(--fg); max-width: 720px; }
-.org-overview .stats-row { display: flex; gap: 28px; flex-wrap: wrap; font-size: 0.85rem; color: var(--fg-muted); margin-bottom: 18px; }
+.org-overview .stats-row { display: flex; gap: 36px; flex-wrap: wrap; font-size: 0.85rem; color: var(--fg-muted); margin-bottom: 18px; }
 .org-overview .stats-row strong { color: var(--fg); font-weight: 500; }
 
 .dist-bar { display: flex; height: 12px; border-radius: 2px; overflow: hidden; margin: 10px 0; }
@@ -109,16 +115,21 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .dist-legend .swatch.assistive { background: var(--assistive); }
 .dist-legend .swatch.no-data { background: var(--no-data); }
 
-/* Per-area sections. The section header sits in the editorial column;
-   the grid spans the full container width below. */
-.area-section { margin: 0 0 64px; }
-.area-section .area-head { max-width: 820px; margin: 0 auto 20px; padding-top: 36px; border-top: 1px solid var(--fg-hairline); }
+/* Per-area sections. The head spans the container width with a
+   two-column layout: title + scope on the left, distribution on the
+   right. The card grid below fills the full container with smaller
+   cards so more fit per row on wide displays. */
+.area-section { margin: 0 0 72px; padding-top: 36px; border-top: 1px solid var(--fg-hairline); }
+.area-section .area-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 56px; margin: 0 0 28px; align-items: start; }
+@media (max-width: 1100px) { .area-section .area-head { grid-template-columns: 1fr; gap: 24px; } }
+.area-section .area-head-left { min-width: 0; }
+.area-section .area-head-right { min-width: 0; }
 .area-section h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; margin: 0 0 14px; letter-spacing: -0.02em; }
-.area-section .area-desc { font-size: 0.95rem; color: var(--fg); line-height: 1.7; max-width: 720px; margin: 0 0 18px; }
-.area-section .desc-label, .area-section .summary-label, .area-section .area-notes-label { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 6px; font-weight: 500; }
-.area-section .area-notes { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--fg-hairline); font-size: 0.92rem; line-height: 1.7; color: var(--fg); max-width: 720px; }
+.area-section .area-desc { font-size: 0.95rem; color: var(--fg); line-height: 1.7; margin: 0 0 0; }
+.area-section .desc-label, .area-section .summary-label, .area-section .area-notes-label { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 8px; font-weight: 500; }
+.area-section .area-notes { margin-top: 18px; font-size: 0.92rem; line-height: 1.7; color: var(--fg); }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 28px 24px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px 28px; }
 .card { background: transparent; border: 0; padding: 0; }
 .card-title { font-family: var(--font-display); font-size: 1.0rem; font-weight: 500; margin: 0 0 4px; line-height: 1.35; color: var(--fg); letter-spacing: -0.01em; }
 .card-id { font-family: ui-monospace, SF Mono, Menlo, monospace; font-size: 0.68rem; color: var(--fg-muted); margin-bottom: 12px; }
@@ -152,8 +163,9 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .card.low-confidence .task-grid::before { content: "Low confidence — top-1 similarity below threshold."; grid-column: 1 / -1; font-size: 0.76rem; color: var(--fg-muted); padding: 8px 10px; background: var(--bg-alt); border-radius: 2px; }
 .card.low-confidence .task-grid { max-width: none; }
 
-/* Decisions section — same shape as value-map. */
-.section { margin: 80px auto 0; padding-top: 36px; border-top: 1px solid var(--fg-hairline); max-width: 820px; }
+/* Decisions section — at container width. The prose inside still wraps
+   at a readable line length via max-width on the inner elements. */
+.section { margin: 96px 0 0; padding-top: 40px; border-top: 1px solid var(--fg-hairline); }
 .section h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 20px; }
 .section p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; max-width: 720px; }
 .section .lead { font-size: 0.95rem; color: var(--fg-muted); line-height: 1.65; max-width: 720px; margin: 0 0 28px; }
@@ -183,7 +195,8 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 
 .empty { text-align: center; padding: 64px 0; color: var(--fg-muted); font-size: 0.95rem; }
 
-.footer { max-width: 820px; margin: 80px auto 0; padding-top: 20px; border-top: 1px solid var(--fg-hairline); color: var(--fg-muted); font-size: 0.78rem; line-height: 1.6; }
+.footer { margin: 80px 0 0; padding-top: 20px; border-top: 1px solid var(--fg-hairline); color: var(--fg-muted); font-size: 0.78rem; line-height: 1.6; }
+.footer p { margin: 0; max-width: 720px; }
 """
 
 P25 = 3.21
@@ -489,7 +502,7 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
 
     {decisions_html}
 
-    <div class="footer">{S["footer"]}</div>
+    <div class="footer"><p>{S["footer"]}</p></div>
   </div>
 
   <div class="popover" id="popover">
@@ -606,13 +619,14 @@ function renderOrgOverview() {{
 }}
 
 function renderAreaSummary(area, items) {{
+  // Returns {{left, right}} so the caller can place each column in the
+  // two-column .area-head layout.
   const dist = categoryDistribution(items);
   const description = AREA_DESCRIPTIONS[area];
   const descHtml = description
     ? `<div class="desc-label">${{S.area_description_label}}</div><div class="area-desc">${{escapeHtml(description)}}</div>`
     : '';
-  const distLabel = `<div class="desc-label" style="margin-top:4px">${{S.task_distribution_label}}</div>`;
-  // Optional commentary.
+  const distLabel = `<div class="desc-label">${{S.task_distribution_label}}</div>`;
   const note = AREA_NOTES[area];
   let noteRendered = '';
   if (note) {{
@@ -620,12 +634,10 @@ function renderAreaSummary(area, items) {{
     safe = safe.replace(/\\*([^*\\n]+?)\\*/g, '<em>$1</em>');
     noteRendered = `<div class="area-notes"><div class="area-notes-label">${{S.area_notes_label}}</div>${{safe}}</div>`;
   }}
-  return `
-    ${{descHtml}}
-    ${{distLabel}}
-    ${{renderDistBar(dist.cats, dist.total)}}
-    ${{renderDistLegend(dist.cats, dist.total)}}
-    ${{noteRendered}}`;
+  return {{
+    left:  `${{descHtml}}${{noteRendered}}`,
+    right: `${{distLabel}}${{renderDistBar(dist.cats, dist.total)}}${{renderDistLegend(dist.cats, dist.total)}}`,
+  }};
 }}
 
 function fmtNum(value, decimals) {{
@@ -741,19 +753,36 @@ function render() {{
     const sortedAreas = Object.keys(groups).sort();
     content.innerHTML = sortedAreas.map(area => {{
       const cards = groups[area].map(renderCard).join('');
-      const summaryHtml = renderAreaSummary(area, groups[area]);
+      const summary = renderAreaSummary(area, groups[area]);
       return `
         <div class="area-section">
           <div class="area-head">
-            <h2>${{escapeHtml(area)}}</h2>
-            ${{summaryHtml}}
+            <div class="area-head-left">
+              <h2>${{escapeHtml(area)}}</h2>
+              ${{summary.left}}
+            </div>
+            <div class="area-head-right">
+              ${{summary.right}}
+            </div>
           </div>
           <div class="grid">${{cards}}</div>
         </div>`;
     }}).join('');
   }} else if (currentArea !== 'all') {{
-    const summaryHtml = renderAreaSummary(currentArea, items);
-    content.innerHTML = `<div class="area-head">${{summaryHtml}}</div><div class="grid">${{items.map(renderCard).join('')}}</div>`;
+    const summary = renderAreaSummary(currentArea, items);
+    content.innerHTML = `
+      <div class="area-section">
+        <div class="area-head">
+          <div class="area-head-left">
+            <h2>${{escapeHtml(currentArea)}}</h2>
+            ${{summary.left}}
+          </div>
+          <div class="area-head-right">
+            ${{summary.right}}
+          </div>
+        </div>
+        <div class="grid">${{items.map(renderCard).join('')}}</div>
+      </div>`;
   }} else {{
     content.innerHTML = `<div class="grid">${{items.map(renderCard).join('')}}</div>`;
   }}
