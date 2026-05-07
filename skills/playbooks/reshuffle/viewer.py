@@ -98,9 +98,12 @@ header .anchor-line { font-family: ui-monospace, SF Mono, Menlo, monospace; font
 .intro ul li { margin-bottom: 6px; }
 .intro ul li strong { font-weight: 500; }
 
-/* Data zones — full container width */
-.panel, .ledger, .candidates { margin: 0 0 64px; padding-top: 36px; border-top: 1px solid var(--fg-hairline); }
-.panel-head, .ledger-head, .candidates-head { max-width: 820px; margin: 0 auto 28px; }
+/* All sections live in the same 820px centered column inside the
+   1240px container — headers, dist-bar, group cards, activity cards,
+   candidate cards all align to the same vertical edge. Nothing
+   escapes the editorial grid. */
+.panel, .ledger, .candidates { max-width: 820px; margin: 0 auto 64px; padding-top: 36px; border-top: 1px solid var(--fg-hairline); }
+.panel-head, .ledger-head, .candidates-head { margin: 0 0 28px; }
 .panel h2, .ledger h2, .candidates h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 12px; }
 .panel-hint, .ledger-hint, .candidates-hint { font-size: 0.95rem; color: var(--fg-muted); margin: 0; line-height: 1.65; }
 
@@ -109,22 +112,22 @@ header .anchor-line { font-family: ui-monospace, SF Mono, Menlo, monospace; font
 .dist-bar .seg.scarcity { background: var(--scarcity); }
 .dist-bar .seg.risk { background: var(--risk); }
 .dist-bar .seg.coordination { background: var(--coordination); }
-.dist-legend { display: grid; gap: 12px; font-size: 0.88rem; color: var(--fg); margin-top: 14px; max-width: 820px; }
+.dist-legend { display: grid; gap: 12px; font-size: 0.88rem; color: var(--fg); margin-top: 14px; }
 .dist-legend .item { display: flex; gap: 12px; align-items: flex-start; }
 .dist-legend .swatch { width: 12px; height: 12px; border-radius: 2px; margin-top: 5px; flex-shrink: 0; }
 .dist-legend strong { font-weight: 500; color: var(--fg); }
 .dist-legend .count { color: var(--fg-muted); }
 
-.bundle-state { max-width: 820px; margin: 28px auto 0; }
+.bundle-state { margin: 28px 0 0; }
 .bundle-state .key { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 8px; font-weight: 500; }
 .bundle-state .text { font-size: 0.95rem; color: var(--fg); line-height: 1.65; margin: 0 0 14px; }
 
 .group { margin: 32px 0; }
-.group-header { max-width: 820px; margin: 0 auto 16px; display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--fg-hairline); }
+.group-header { margin: 0 0 16px; display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--fg-hairline); }
 .group-header .swatch { width: 12px; height: 12px; border-radius: 2px; }
 .group-header h3 { font-family: var(--font-display); margin: 0; font-size: 1.1rem; font-weight: 500; color: var(--fg); letter-spacing: -0.01em; }
 .group-header .count { font-size: 0.8rem; color: var(--fg-muted); margin-left: auto; }
-.group-explain { max-width: 820px; margin: 0 auto 18px; font-size: 0.92rem; color: var(--fg-muted); line-height: 1.65; }
+.group-explain { margin: 0 0 18px; font-size: 0.92rem; color: var(--fg-muted); line-height: 1.65; }
 
 /* All clickable items render as full-bordered cards. The engine accent
    is the full border in the data-viz coral, not a left rule. Hover
