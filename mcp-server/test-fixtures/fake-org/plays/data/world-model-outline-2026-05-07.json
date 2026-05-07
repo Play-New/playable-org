@@ -1,0 +1,683 @@
+{
+  "_scope": "whole-org",
+  "_structure_summary": {
+    "units_total": 5,
+    "activities_total": 14,
+    "stakeholders_total": 4,
+    "commitments_total": 4,
+    "divisions": [],
+    "areas": [
+      "client-services",
+      "design",
+      "digital-product",
+      "operations",
+      "strategy"
+    ]
+  },
+  "_aei_summary": {
+    "available": false
+  },
+  "_structure": {
+    "units": [
+      {
+        "id": "client-services",
+        "title": "Client services",
+        "level": "area",
+        "parent": "null",
+        "description": "Client services area. Kickoff workshops, weekly check-ins, asset handovers, scoping for new pitches.",
+        "_path": "fake-org/nodes/units/client-services.md"
+      },
+      {
+        "id": "design",
+        "title": "Design",
+        "level": "area",
+        "parent": "null",
+        "description": "Brand identity area. Identity systems, visual languages, brand books, motion systems.",
+        "_path": "fake-org/nodes/units/design.md"
+      },
+      {
+        "id": "digital-product",
+        "title": "Digital product",
+        "level": "area",
+        "parent": "null",
+        "description": "Digital product area. UI design for B2B web and apps; design systems for client product teams; embedded UX research.",
+        "_path": "fake-org/nodes/units/digital-product.md"
+      },
+      {
+        "id": "operations",
+        "title": "Operations",
+        "level": "area",
+        "parent": "null",
+        "description": "Operations area. Studio finance, hiring, light HR, vendor management. Does not produce client work.",
+        "_path": "fake-org/nodes/units/operations.md"
+      },
+      {
+        "id": "strategy",
+        "title": "Strategy",
+        "level": "area",
+        "parent": "null",
+        "description": "Brand strategy area. Positioning, audience research, naming, narrative workshops, competitive audits.",
+        "_path": "fake-org/nodes/units/strategy.md"
+      }
+    ],
+    "activities": [
+      {
+        "id": "asset-handover",
+        "title": "Asset handover",
+        "unit": "client-services",
+        "description": "Run the asset-handover ritual at the end of each engagement: delivery of all artefacts, sign-off, archival.",
+        "inputs": [
+          "brand-book-deliverable",
+          "identity-system",
+          "design-system",
+          "ui-screens"
+        ],
+        "outputs": [
+          "client-handoff"
+        ],
+        "_path": "fake-org/nodes/activities/asset-handover.md"
+      },
+      {
+        "id": "audience-research",
+        "title": "Audience research",
+        "unit": "strategy",
+        "description": "Interview the client's customers and stakeholders, transcribe and synthesise into an insights document feeding positioning.",
+        "inputs": [
+          "engagement-scope"
+        ],
+        "outputs": [
+          "insights-document"
+        ],
+        "_path": "fake-org/nodes/activities/audience-research.md"
+      },
+      {
+        "id": "brand-book",
+        "title": "Brand book",
+        "unit": "design",
+        "description": "Author the brand book — the studio's signature artefact. Built personally by the design lead on every engagement.",
+        "inputs": [
+          "identity-system"
+        ],
+        "outputs": [
+          "brand-book-deliverable"
+        ],
+        "_path": "fake-org/nodes/activities/brand-book.md"
+      },
+      {
+        "id": "brand-positioning",
+        "title": "Brand positioning",
+        "unit": "strategy",
+        "description": "Author the positioning document for an engagement: how the client should be understood, against whom, with what proof points.",
+        "inputs": [
+          "insights-document",
+          "market-map"
+        ],
+        "outputs": [
+          "positioning-brief"
+        ],
+        "_path": "fake-org/nodes/activities/brand-positioning.md"
+      },
+      {
+        "id": "competitive-audit",
+        "title": "Competitive audit",
+        "unit": "strategy",
+        "description": "Map a client's competitive landscape: who else exists in the category, what they sound like, where the white space is.",
+        "inputs": [
+          "engagement-scope"
+        ],
+        "outputs": [
+          "market-map"
+        ],
+        "_path": "fake-org/nodes/activities/competitive-audit.md"
+      },
+      {
+        "id": "design-system-build",
+        "title": "Design system build",
+        "unit": "digital-product",
+        "description": "Build a design system for clients who maintain their own product engineering. Documented system, ready for client handoff.",
+        "inputs": [
+          "identity-system",
+          "ui-screens"
+        ],
+        "outputs": [
+          "design-system"
+        ],
+        "_path": "fake-org/nodes/activities/design-system-build.md"
+      },
+      {
+        "id": "identity-system-build",
+        "title": "Identity system build",
+        "unit": "design",
+        "description": "Build the full identity system for an engagement: typography, colour, grid, motion, illustration direction, photo direction.",
+        "inputs": [
+          "visual-system"
+        ],
+        "outputs": [
+          "identity-system"
+        ],
+        "_path": "fake-org/nodes/activities/identity-system-build.md"
+      },
+      {
+        "id": "kickoff-workshop",
+        "title": "Kickoff workshop",
+        "unit": "client-services",
+        "description": "Run the kickoff workshop for every engagement: scope agreement, calendar, weekly cadence, single point of contact on client side.",
+        "inputs": [],
+        "outputs": [
+          "engagement-scope"
+        ],
+        "_path": "fake-org/nodes/activities/kickoff-workshop.md"
+      },
+      {
+        "id": "quarterly-finance-review",
+        "title": "Quarterly finance review",
+        "unit": "operations",
+        "description": "Founder-led quarterly review of studio finances: P&L, vendor spend, engagement margin, runway.",
+        "inputs": [
+          "financial-records"
+        ],
+        "outputs": [
+          "finance-decisions"
+        ],
+        "_path": "fake-org/nodes/activities/quarterly-finance-review.md"
+      },
+      {
+        "id": "ui-design",
+        "title": "UI design",
+        "unit": "digital-product",
+        "description": "UI design for B2B web and apps: screens, components, interactions, accessibility, paired with client front-end engineers.",
+        "inputs": [
+          "identity-system"
+        ],
+        "outputs": [
+          "ui-screens"
+        ],
+        "_path": "fake-org/nodes/activities/ui-design.md"
+      },
+      {
+        "id": "ux-research",
+        "title": "UX research",
+        "unit": "digital-product",
+        "description": "Embedded UX research with the client product team: usability testing, observation, synthesis.",
+        "inputs": [
+          "engagement-scope"
+        ],
+        "outputs": [
+          "user-insights"
+        ],
+        "_path": "fake-org/nodes/activities/ux-research.md"
+      },
+      {
+        "id": "vendor-invoicing",
+        "title": "Vendor invoicing",
+        "unit": "operations",
+        "description": "Process vendor partner invoices on a 14-day cycle so the studio can honour its 30-day-payment commitment to the network.",
+        "inputs": [
+          "vendor-invoices"
+        ],
+        "outputs": [
+          "vendor-payments"
+        ],
+        "_path": "fake-org/nodes/activities/vendor-invoicing.md"
+      },
+      {
+        "id": "visual-language",
+        "title": "Visual language",
+        "unit": "design",
+        "description": "Define the visual language for an engagement: typography, colour, imagery direction, motion logic, on top of the positioning brief.",
+        "inputs": [
+          "positioning-brief"
+        ],
+        "outputs": [
+          "visual-system"
+        ],
+        "_path": "fake-org/nodes/activities/visual-language.md"
+      },
+      {
+        "id": "weekly-check-in",
+        "title": "Weekly check-in",
+        "unit": "client-services",
+        "description": "Run the weekly check-in call on each active engagement: progress, blockers, next-week scope confirmation.",
+        "inputs": [
+          "engagement-scope"
+        ],
+        "outputs": [
+          "weekly-status"
+        ],
+        "_path": "fake-org/nodes/activities/weekly-check-in.md"
+      }
+    ],
+    "stakeholders": [
+      {
+        "id": "enterprise-clients",
+        "title": "Enterprise clients",
+        "description": "Larger clients running 6-9 month engagements with embedded studio presence; one or two such relationships per year by design.",
+        "_path": "fake-org/nodes/stakeholders/enterprise-clients.md"
+      },
+      {
+        "id": "mid-market-clients",
+        "title": "Mid-market clients",
+        "description": "Mid-market companies that engage the studio for the strategy → identity → digital product flow on fixed-price 12-16 week scopes.",
+        "_path": "fake-org/nodes/stakeholders/mid-market-clients.md"
+      },
+      {
+        "id": "strategic-partners",
+        "title": "Strategic partners",
+        "description": "Other studios and research firms in the network the studio refers to when client need exceeds capacity or scope.",
+        "_path": "fake-org/nodes/stakeholders/strategic-partners.md"
+      },
+      {
+        "id": "studio-vendors",
+        "title": "Studio vendors",
+        "description": "Production-only vendor partners: web developers, illustrators, photographers, type foundries, printers.",
+        "_path": "fake-org/nodes/stakeholders/studio-vendors.md"
+      }
+    ],
+    "commitments": [
+      {
+        "id": "studio-employees-development",
+        "title": "Studio ↔ employees — junior development arc",
+        "level": "unit",
+        "parties_committing": [
+          "operations",
+          "design",
+          "strategy",
+          "digital-product"
+        ],
+        "parties_benefiting": [],
+        "description": "",
+        "state": "active",
+        "_path": "fake-org/commitments/studio-employees-development.md"
+      },
+      {
+        "id": "studio-enterprise-baseline",
+        "title": "Studio ↔ enterprise clients — baseline engagement",
+        "level": "org-stakeholder",
+        "parties_committing": [
+          "strategy",
+          "design",
+          "digital-product",
+          "client-services",
+          "operations"
+        ],
+        "parties_benefiting": [
+          "enterprise-clients"
+        ],
+        "description": "",
+        "state": "active",
+        "_path": "fake-org/commitments/studio-enterprise-baseline.md"
+      },
+      {
+        "id": "studio-mid-market-baseline",
+        "title": "The mid-market engagement",
+        "level": "org-stakeholder",
+        "parties_committing": [
+          "strategy",
+          "design",
+          "digital-product",
+          "client-services"
+        ],
+        "parties_benefiting": [
+          "mid-market-clients"
+        ],
+        "description": "",
+        "state": "active",
+        "_path": "fake-org/commitments/studio-mid-market-baseline.md"
+      },
+      {
+        "id": "studio-vendors-payments",
+        "title": "Studio ↔ vendor partners — 30-day payment",
+        "level": "org-stakeholder",
+        "parties_committing": [
+          "operations"
+        ],
+        "parties_benefiting": [
+          "studio-vendors"
+        ],
+        "description": "",
+        "state": "active",
+        "_path": "fake-org/commitments/studio-vendors-payments.md"
+      }
+    ],
+    "activity_count_by_unit": {
+      "client-services": [
+        "asset-handover",
+        "kickoff-workshop",
+        "weekly-check-in"
+      ],
+      "strategy": [
+        "audience-research",
+        "brand-positioning",
+        "competitive-audit"
+      ],
+      "design": [
+        "brand-book",
+        "identity-system-build",
+        "visual-language"
+      ],
+      "digital-product": [
+        "design-system-build",
+        "ui-design",
+        "ux-research"
+      ],
+      "operations": [
+        "quarterly-finance-review",
+        "vendor-invoicing"
+      ]
+    }
+  },
+  "capabilities": [
+    {
+      "name": "Brand positioning craft",
+      "kind": "judgement",
+      "moat_grade": "moat",
+      "description": "Author a positioning document that holds up under twelve months of market pressure: who the client is, against whom, with what proof points.",
+      "input": "Engagement scope, audience-research synthesis, competitive audit",
+      "output": "A positioning brief the design lead builds the identity system on top of",
+      "invocation_modality": "Run by Marco on every engagement, not delegated",
+      "is_callable_by": [
+        "mid-market-clients",
+        "enterprise-clients"
+      ],
+      "current_owners": [
+        "marco-bellini"
+      ],
+      "_structure_id": "brand-positioning",
+      "moat_rationale": "Marco is the studio's signature on this; the document goes out under his name on every engagement. The skill is years of pattern-recognition not transferable in a handover.",
+      "_structure_evidence": [
+        "outline-charter-2024 §1, §9",
+        "outline-roles-2025"
+      ]
+    },
+    {
+      "name": "Visual language definition",
+      "kind": "judgement",
+      "moat_grade": "moat",
+      "description": "Define the visual language for an engagement on top of the positioning brief: typography, colour, imagery direction, motion logic.",
+      "input": "Positioning brief",
+      "output": "Visual system that feeds the identity-system build",
+      "invocation_modality": "Run by Lena on every engagement, not delegated",
+      "is_callable_by": [
+        "mid-market-clients",
+        "enterprise-clients"
+      ],
+      "current_owners": [
+        "lena-thorvaldsen"
+      ],
+      "_structure_id": "visual-language",
+      "moat_rationale": "Lena's hand on the language is what the brand book carries. Senior designers build under her direction; the language itself is hers.",
+      "_structure_evidence": [
+        "outline-charter-2024 §9",
+        "outline-roles-2025"
+      ]
+    },
+    {
+      "name": "Brand book authorship",
+      "kind": "judgement",
+      "moat_grade": "moat",
+      "description": "Build the brand book as a single coherent artefact — the studio's most-recognized output. Personally integrated by the design lead.",
+      "input": "Identity system, visual language, positioning brief",
+      "output": "Brand book deliverable, the artefact the studio is best known for",
+      "invocation_modality": "Run by Lena personally on every engagement; mid-level designers may produce chapters under her review",
+      "is_callable_by": [
+        "mid-market-clients",
+        "enterprise-clients"
+      ],
+      "current_owners": [
+        "lena-thorvaldsen"
+      ],
+      "_structure_id": "brand-book",
+      "moat_rationale": "The brand book is the studio's signature artefact; the integration into a single object is the design lead's hand.",
+      "_structure_evidence": [
+        "outline-roles-2025"
+      ]
+    },
+    {
+      "name": "Identity system build",
+      "kind": "production",
+      "moat_grade": "commodity",
+      "description": "Build the full identity system: typography, colour, grid, motion, illustration direction.",
+      "input": "Visual language",
+      "output": "Identity system deliverable",
+      "invocation_modality": "Run by senior designers under Lena's review",
+      "is_callable_by": [
+        "mid-market-clients",
+        "enterprise-clients"
+      ],
+      "current_owners": [
+        "design"
+      ],
+      "_structure_id": "identity-system-build"
+    },
+    {
+      "name": "UI design",
+      "kind": "production",
+      "moat_grade": "commodity",
+      "description": "UI design for B2B web and apps: screens, components, prototyping, accessibility audits.",
+      "input": "Identity system",
+      "output": "UI screens, ready for client-side engineering",
+      "invocation_modality": "Run by senior product designers; product lead reviews every deliverable",
+      "is_callable_by": [
+        "enterprise-clients"
+      ],
+      "current_owners": [
+        "digital-product"
+      ],
+      "_structure_id": "ui-design"
+    },
+    {
+      "name": "Design system documentation",
+      "kind": "production",
+      "moat_grade": "commodity",
+      "description": "Document a design system handed off to clients who maintain their own product engineering.",
+      "input": "Identity system, UI screens",
+      "output": "Design system the client team can maintain",
+      "invocation_modality": "Mid-level product designers under the senior's lead",
+      "is_callable_by": [
+        "enterprise-clients"
+      ],
+      "current_owners": [
+        "digital-product"
+      ],
+      "_structure_id": "design-system-build"
+    },
+    {
+      "name": "Asset handover",
+      "kind": "process",
+      "moat_grade": "commodity",
+      "description": "Run the asset-handover ritual at the end of each engagement — every deliverable, sign-off, archived.",
+      "input": "Brand book, identity system, design system, UI screens",
+      "output": "Client handoff package",
+      "invocation_modality": "Tomás runs it with the discipline lead present at the close of each engagement",
+      "is_callable_by": [
+        "mid-market-clients",
+        "enterprise-clients"
+      ],
+      "current_owners": [
+        "client-services"
+      ],
+      "_structure_id": "asset-handover"
+    }
+  ],
+  "world_model_company": {
+    "overall_maturity": "medium",
+    "observations": [
+      {
+        "dimension": "Senior hours allocation",
+        "lives_in": "time-tracking system + Tomás's spreadsheet",
+        "maturity": "medium",
+        "gaps": "Reviewable per-quarter but not by activity-type"
+      },
+      {
+        "dimension": "Engagement profitability post-handover",
+        "lives_in": "annual review only",
+        "maturity": "low",
+        "gaps": "Not tracked per-engagement; Marco knows roughly"
+      },
+      {
+        "dimension": "Pitch win-rate",
+        "lives_in": "Tomás's tracker",
+        "maturity": "medium",
+        "gaps": "By prospect type but not by positioning angle"
+      }
+    ]
+  },
+  "world_model_customer": {
+    "is_unified": false,
+    "by_stakeholder": [
+      {
+        "type": "mid-market-clients",
+        "description": "The studio's primary client population — 11 engagements in 2025, fixed-price 12-16 weeks each.",
+        "what_they_get_from_org": "Strategy → identity → digital product flow, on time, at the agreed price.",
+        "what_they_contribute_back": "Domain context, deliverable feedback, references to other prospects.",
+        "honest_signal": "Renewal rate (returning for a second engagement within 24 months) and number of references generated.",
+        "current_maturity": "medium",
+        "fragmentation": "Lives in Tomás's CRM + Marco's head; nobody pulls a single coherent picture."
+      },
+      {
+        "type": "enterprise-clients",
+        "description": "Larger engagements with embedded UX research and design-system handoff. 3 in 2025.",
+        "what_they_get_from_org": "Identity + product flow with a design system the client team maintains long-term.",
+        "what_they_contribute_back": "Multi-year retainer potential, market visibility for the studio.",
+        "honest_signal": "Conversion of single project into multi-year retainer.",
+        "current_maturity": "low",
+        "fragmentation": "Marco owns the relationship; Lena is on the engagement; Tomás coordinates — the picture lives in 3 different heads."
+      }
+    ]
+  },
+  "intelligence_layer": {
+    "exists": false,
+    "current_human_compositions": [
+      {
+        "trigger": "A returning client asks for a brand refresh 18 months later",
+        "capabilities_composed": [
+          "Brand positioning craft",
+          "Visual language definition",
+          "Audience research"
+        ],
+        "description": "The studio runs the same flow it would for a new client; the prior engagement is in delivered files but not retrievable in a useful way.",
+        "failure_modes": "Marco and Lena pull from memory of the past engagement; insights from the prior brief don't compound into the new one. Effectively the second engagement starts from zero."
+      },
+      {
+        "trigger": "Tomás's weekly check-in note mentions scope drift",
+        "capabilities_composed": [
+          "Asset handover process",
+          "Pitch evidence"
+        ],
+        "description": "Marco reviews every weekly check-in note Tomás writes and decides whether to escalate to a scope-renegotiation conversation. Three engagements in 2025 needed his intervention.",
+        "failure_modes": "Founder is in the loop on every drift signal across 14 engagements per year; the bottleneck scales with engagement count."
+      },
+      {
+        "trigger": "Pitching a new prospect",
+        "capabilities_composed": [
+          "Brand positioning craft",
+          "Competitive audit",
+          "Visual language definition"
+        ],
+        "description": "Marco, Lena and Tomás each pull from their own memory of past clients to compose a positioning angle for the pitch.",
+        "failure_modes": "Lessons from past engagements don't surface unless the pitch happens to remind one of the three of a relevant case. Pattern is fragile and doesn't compound."
+      }
+    ],
+    "potential_compositions": [
+      {
+        "trigger": "A returning client asks for a brand refresh",
+        "capabilities": [
+          "Brand positioning craft",
+          "Returning-client context retrieval"
+        ],
+        "description": "Prior engagement loads into the kickoff: positioning, visual language, brand book, what was learned about the client's market. The kickoff becomes a shorter and more strategic conversation.",
+        "precondition": "A context-keeping practice exists that captures each engagement in a queryable shape, owned by a named role."
+      },
+      {
+        "trigger": "A check-in note hints at scope drift",
+        "capabilities": [
+          "Scope-drift early-warning",
+          "Asset handover"
+        ],
+        "description": "Pattern-match across past drift episodes flags the early-warning signal automatically; Tomás escalates without Marco being in the loop on every case.",
+        "precondition": "The studio has captured what scope drift looks like across 30+ engagements and the patterns are queryable."
+      }
+    ]
+  },
+  "interfaces": [
+    {
+      "name": "Pitch meeting",
+      "description": "Where a prospect first sees the studio's work and gets a price.",
+      "surfaces_capabilities": [
+        "Brand positioning craft"
+      ],
+      "_structure_id": "kickoff-workshop"
+    },
+    {
+      "name": "Kickoff workshop",
+      "description": "The engagement opens with a 1-day workshop: scope, calendar, single point of contact, deliverables agreed.",
+      "surfaces_capabilities": [
+        "Brand positioning craft"
+      ],
+      "_structure_id": "kickoff-workshop"
+    },
+    {
+      "name": "Weekly check-in call",
+      "description": "Recurring 30-min call on every active engagement: progress, blockers, next-week scope.",
+      "surfaces_capabilities": [],
+      "_structure_id": "weekly-check-in"
+    },
+    {
+      "name": "Asset handover meeting",
+      "description": "Closing meeting where the client receives every artefact and signs off.",
+      "surfaces_capabilities": [
+        "Asset handover",
+        "Brand book authorship"
+      ],
+      "_structure_id": "asset-handover"
+    }
+  ],
+  "failure_signals": [
+    {
+      "trigger": "A returning client comes back 18 months later asking for a brand refresh",
+      "missing_capability": "Returning-client context retrieval",
+      "composition_attempted": [
+        "Brand positioning craft",
+        "Audience research",
+        "Competitive audit"
+      ],
+      "what_would_be_needed": "A context-keeping practice that captures each delivered engagement (positioning, visual language, brand book, what was learned about the market) in a queryable shape. Owned by a named role; refreshed at every engagement close.",
+      "structure_evidence": "outline-roles-2025 — currently no one in the org owns this role"
+    },
+    {
+      "trigger": "A weekly check-in note mentions a blocker that could be early scope drift",
+      "missing_capability": "Scope-drift early-warning",
+      "composition_attempted": [
+        "Asset handover process"
+      ],
+      "what_would_be_needed": "A pattern-match across past scope-drift episodes that flags the early signal automatically, so Tomás can escalate without Marco needing to read every check-in note.",
+      "structure_evidence": "outline-annual-review-2025 — three founder-mediated renegotiations in 2025"
+    },
+    {
+      "trigger": "Twelve months after handover, the question is: did the work hold up in the market?",
+      "missing_capability": "Post-handover market check-in",
+      "composition_attempted": [
+        "Asset handover process"
+      ],
+      "what_would_be_needed": "A scheduled 12-month conversation with each delivered client, capturing what changed and what the brand book carried. The signal feeds back into Brand positioning craft on future engagements.",
+      "structure_evidence": "outline-charter-2024 §15 — the studio pitches engagement quality but has no loop that closes 12 months later"
+    }
+  ],
+  "decisions": [
+    {
+      "question": "What does this studio actually own that nobody else does?",
+      "answer": "The studio owns four things that are hard to copy: the way Marco writes a positioning document, the way Lena defines a visual language, the way Lena builds a brand book, and the strategy → identity → digital-product flow run as one engagement. Everything else — kickoff workshops, weekly check-ins, asset handover, UI design, design-system documentation — is competent practice the studio shares with every other shop in the category.\n\nThe studio sells one fixed price for both. The four things make the price; the rest fills the engagement. Naming this distinction at pitch is the first move.",
+      "source": "outline-charter-2024 §1, §9, §15; outline-roles-2025"
+    },
+    {
+      "question": "What is held together by people today that could be held together by a system?",
+      "answer": "Three places where the studio pays coordination tax in meeting hours: (1) a returning client comes back 18 months later for a refresh — the prior engagement is in delivered files but not retrievable, so the second engagement starts from zero; (2) scope-drift detection — Tomás's weekly check-in notes get reviewed by Marco who decides whether to escalate, on every engagement; (3) the pitch — Marco, Lena and Tomás each pull from their own memory of past clients to compose a positioning angle.\n\nAll three would compound if the studio kept what it learned about each client in a queryable shape. The next hire is the role that owns that shared memory and lets it accumulate across engagements.",
+      "source": "outline-roles-2025; outline-annual-review-2025"
+    },
+    {
+      "question": "Where is the structure thin — what would the next thing built actually be?",
+      "answer": "The map names three failure-signals where today's request gets composed by hand because a needed function isn't there yet: a returning-client context retrieval, a scope-drift early-warning, and a post-handover market check-in 12 months after delivery. None of these are exotic. Each one shares the same missing capability: a context-keeping practice that captures past engagements as something the next engagement can read.\n\nBuild that one capability and three failure-signals close at once. The ROI is not in the artefact — it's in the compounding effect on every engagement after.",
+      "source": "outline-roles-2025; outline-charter-2024 §20"
+    }
+  ]
+}
