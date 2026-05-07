@@ -1,6 +1,6 @@
 ---
 name: value-map
-description: "Build a value-chain map for an anchor (a commitment or a unit) of the organization. Each component is positioned on an evolution axis, with an optional target showing where AI is pushing it and a free-text effect description. Output: a frozen play with an SVG map, a JSON map (schema-interoperable with the play-new-dashboard format), and a structure-grounded narrative."
+description: "Build a value-chain map for an anchor (a commitment or a unit) of the organization. Each component is positioned on an evolution axis with an optional AI overlay. The artefact is a JSON + HTML + SVG triplet under org/plays/data/: the HTML is an interactive map with a popover next to each clicked node, a 'How to read this map' section with three to five concrete operational decisions tied to component positions, and an explicit notice when no AI overlay is attached. Canonical reference output: mcp-server/test-fixtures/fake-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.html (Outline & Co., a fake creative agency)."
 ---
 
 # Playbook: value-map
@@ -79,6 +79,20 @@ type WardleyMap = {
   }[];
   edges: { from: string; to: string }[];   // dependencies down the chain
   new_value?: { label: string; description: string; stakeholder: string; enabled_by: string }[];
+
+  // The load-bearing interpretive surface. Three to five concrete
+  // operational decisions a leader can take from the map. Each is a
+  // tuple: a reader-facing question, the answer derived from the
+  // positions on the map, and a citation to a structural source
+  // (charter §, role descriptions, financial summary, prior play).
+  // The HTML viewer renders these as the "How to read this map"
+  // section. Without the array the section degrades to a "no
+  // interpretation attached" notice.
+  decisions?: {
+    question: string;     // reader-facing question, plain English
+    answer: string;       // 2-4 sentence answer + a concrete move
+    source: string;       // citation, e.g. "outline-charter-2024 §15"
+  }[];
 };
 ```
 
@@ -156,7 +170,7 @@ When the bundled mcp server is available, the canonical way to launch this playb
 3. Call `org_play_run` again with `mode="render"`, `json_content=<the filled JSON as a string>`. The tool writes to `plays/data/`, runs `audit.py`, then `viewer.py`, and returns the artefact paths (`json`, `html`, `svg`) plus the audit result.
 4. Append a one-line entry to `log.md` via `org_log_append`. The play's success or failure is determined by the audit pass returned by render.
 
-Do **not** write a markdown play under `plays/` for this flow — the JSON + HTML + SVG triplet in `plays/data/` is the primary artefact. The optional markdown is reserved for the rare case where the agent needs to publish a long-form discussion alongside.
+The JSON + HTML + SVG triplet under `plays/data/` is the primary artefact. The optional markdown play under `plays/` mirrors the JSON's decisions verbatim and is encouraged once the autoresearch loop passes.
 
 If `org_play_run` is not available (older mcp build), fall back to the manual steps below.
 
@@ -202,6 +216,34 @@ For each anchor, the agent sets:
 
 - `evolution` — how well-defined the user need is in the market
 - Optional `evolution_target`, `is_new` — same rules as components
+
+### 3b. Write the decisions
+
+This is the load-bearing step of the playbook. The map is the evidence; the `decisions` array is what the map *means*. Without it, the play is a static positioning chart that asks the reader to be a Wardley specialist. With it, the play is a set of moves a leader can take to the next monthly review.
+
+**Three to five decisions per play.** Fewer than three: the map's interpretation surface is thin; ask whether the playbook is the right tool for the question. More than five: each decision dilutes the others; pick the load-bearing ones.
+
+**Each decision is a (question, answer, source) tuple:**
+
+- `question`: a reader-facing question, plain English, no Wardley vocabulary. Imagine the leader of the org reading it cold over coffee. Examples that work:
+  - *"Where does the value of an Outline engagement actually sit?"*
+  - *"For what should the studio actually be paid?"*
+  - *"Where does AI commoditize first, and what's the funnel?"*
+  - *"Which roles need to shift?"*
+  - *"What role is missing as the studio scales?"*
+
+  Examples that don't work (too generic / too jargon):
+  - *"Where to raise prices?"* (too shallow — see the deeper reframe below)
+  - *"Which components are at evolution 0.5+?"* (jargon, not a leader's question)
+  - *"What does the map show?"* (no commitment to interpretation)
+
+- `answer`: 2-4 short sentences ending in a concrete move. The structure is: observation derived from the map → interpretation → move. Plain English. No "evolution 0.X" numbers, no Wardley terms standalone (the words *commodity* and *custom* can appear if used as plain English: "common practice" / "built in-house" are usually preferable). Cite the relevant component IDs in passing.
+
+- `source`: a citation that the audit can verify, in the form `<source-id>` or `<source-id> §X.Y`. The citation must point to a real file under `org/sources/` referenced in the structure.
+
+**Frame for the pricing question.** When the reader asks "where can the studio raise prices?" they are usually asking the wrong question. The deeper question is *for what should the studio be paid?*  Decompose the work into nodes; ask per node where value sits, what the feedback speed is, what the judgment density is. Bundles where commodity work subsidizes premium work must break apart. Commodity work becomes infrastructure (gift it or margin-price it as a funnel). Value shifts upstream toward irreplicable, context-specific judgment. (Reference: Roversi, *Il contesto e l'organizzazione*, https://workafter.substack.com/p/il-contesto-e-lorganizzazione, 2026.)
+
+**Frame for the AI question.** AI commoditizing the production layer is not the threat. It is the funnel. The play surfaces this if it shows: which nodes are about to drift to commodity, which differentiated nodes upstream they funnel toward, and what the gift/margin-price strategy looks like.
 
 ### 4. Add new_end_users and new_value (if applicable)
 
@@ -255,6 +297,7 @@ The audit verifies:
 4. **Constraints on `is_new` and `evolution_target`** — the schema rules (never combine the two) are enforced.
 5. **Edge integrity** — every edge's `from` and `to` reference an existing anchor, component, or end-user node.
 6. **Component count** in the 12–16 range (warning, not failure).
+7. **Decisions** — at least three items in `decisions[]`, each with a non-empty question, an answer ≥ 60 chars, and a non-empty source. Warning (not failure) when missing or short, since some plays can be saved without a markdown play. Run `autoresearch.py` for the strict gate.
 
 Exit code: 0 = pass, 1 = fail. Same contract as `audit.py` for ai-exposure plays.
 
@@ -320,9 +363,40 @@ Three structural rules:
 
 1. **Component existence is grounded**. The builder produces the skeleton deterministically by reading structure edges; the agent cannot add components that don't exist as structure nodes (except `is_new` with body-level citation).
 2. **`ai_effect` and `evolution_target` cite evidence** that the audit script can find — typically an AEI match in `matches.json`.
-3. **Interpretation is demarcated**. The "Operational consequences" section is interpretive; every line cites a (component, shift) pair from the audited tables above.
+3. **Interpretation is demarcated**. The "decisions" array is the interpretive surface; every decision must cite a structural source the audit can resolve.
 
 The agent generates narrative around audited structure; the agent does not assert evolution shifts without cited AEI or structure evidence.
+
+## Autoresearch loop
+
+The agent runs the playbook iteratively. Each iteration produces a play (JSON + HTML + SVG); each iteration is then scored on four dimensions before the next pass.
+
+**Score**:
+
+```bash
+python3 skills/playbooks/value-map/autoresearch.py \
+  --map <chain.json>
+```
+
+The script runs four checks against the play and prints a per-dimension score plus an overall pass/fail.
+
+| Dimension | What it checks |
+|---|---|
+| **Recognizability** | Does the play mention specific units / people / activities of the org by name (not as generic placeholders)? |
+| **Plain language** | Density of jargon: standalone Wardley terms, "evolution 0.X" patterns, technical acronyms without expansion. |
+| **Decision anchoring** | At least three items in `decisions[]`, each ≥ 60 chars in `answer`, each citing a non-empty `source`. |
+| **Audit grounded** | Every component has `_structure_id` resolving to a real file. (Inherits from `audit.py`.) |
+
+The script returns exit code 0 only if all four pass. The agent's iteration loop:
+
+1. Run `org_play_run` build → render → first HTML.
+2. Run `autoresearch.py`. If a dimension fails, the script prints which.
+3. Read the failure mode, edit the JSON (positions, decisions, ai_effect prose), call render again.
+4. Re-score. Repeat until all four pass or the operator intervenes.
+
+The reference iteration (the canonical example produced for `Outline & Co.`) reached pass on iter-2 after the iter-1 decisions were rewritten in plain English with the Roversi pricing frame.
+
+**Output of the loop**: the same JSON + HTML + SVG triplet, but the JSON now has audited decisions and the HTML renders them in the "How to read this map" section. The play markdown under `org/plays/` is optional; when written it mirrors the JSON's decisions verbatim.
 
 ## Author-name policy
 
