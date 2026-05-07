@@ -75,8 +75,8 @@ Four base playbooks plus one meta-skill. Each answers one analytical question an
 2. Filters via the five-property test (invocable, structured output, atomic, hard to acquire, composable). See [`skills/CAPABILITIES.md`](../skills/CAPABILITIES.md).
 3. The agent classifies each capability as `moat` or `commodity` with rationale.
 4. For each stakeholder type the agent fills bidirectional fields: what they get from the org, what they contribute back, the most honest signal recorded, current maturity, fragmentation across teams.
-5. The agent surfaces failure signals: stakeholder requests that fail because a capability is missing.
-6. Renders the layered stack with modals on every chip.
+5. The agent surfaces pieces to build (formerly "failure signals"): stakeholder requests that fail today because one needed piece of the chain isn't there yet.
+6. Renders the layered stack with a floating popover on every clickable card.
 
 **Output.**
 - `org/plays/data/world-model-<scope>-<date>.json`

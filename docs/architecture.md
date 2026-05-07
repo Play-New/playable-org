@@ -63,7 +63,7 @@ Two reasons:
 
 ## The mcp server
 
-The bridge from Claude Desktop to the graph. TypeScript, stdio-based, exposes 12 tools. Read tools (read, search, list, neighbors). Write tools (write_node, save_source, log_append). Meta tools (skills_list, skill_read). Executors (lint_run, play_run, open).
+The bridge from Claude Desktop to the graph. TypeScript, stdio-based, exposes 13 tools. Read tools (read, search, list, neighbors). Write tools (write_node, save_source, log_append). Meta tools (skills_list, skill_read). Executors (lint_run, play_run, autoresearch_run, open).
 
 The server is intentionally thin. It does not know about playbooks. It does not know about specific analytical methods. It exposes primitives. The agent (Claude) composes them by following recipes in `skills/`.
 

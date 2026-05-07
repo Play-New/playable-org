@@ -35,7 +35,7 @@ The new playbook stays `pending` until first run audit-passes against a real anc
 
 ## 2. Add a new mcp tool (rarer)
 
-If you need a primitive the existing 12 tools don't cover, add one:
+If you need a primitive the existing 13 tools don't cover, add one:
 
 1. Create `mcp-server/src/tools/<name>.ts`. Use the existing tools as templates. Note the safety patterns: path-traversal containment via `safeResolve`, no shell injection, deterministic JSON output.
 2. Register the tool in `mcp-server/src/server.ts`.
