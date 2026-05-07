@@ -440,9 +440,9 @@ def test_repo_root_tooling():
     out = call(d, "org_skills_list", {})
     parsed = json.loads(out)
     names = {s["name"] for s in parsed.get("skills", [])}
-    expected = {"init", "ingest", "lint",
+    expected = {"init", "ingest", "lint", "compile-agent", "interview-activity",
                 "ai-exposure", "value-map", "reshuffle", "world-model", "new-playbook"}
-    assertion(f"skills_list exposes all 8 skills (got {len(names)})",
+    assertion(f"skills_list exposes all 10 skills (got {len(names)})",
               expected.issubset(names),
               f"missing: {expected - names}")
 
