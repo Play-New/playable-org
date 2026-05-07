@@ -304,3 +304,26 @@ Three structural rules:
 3. **Rebundle proposals are conditional and labeled**. The audit verifies that every rebundle candidate names the engine that enables it AND the constraint that still binds.
 
 The agent narrates around audited structure; the agent does not classify constraints or AI uses without cited evidence.
+
+## Autoresearch loop
+
+The agent runs the playbook iteratively. Each iteration produces a play; each iteration is then scored on five dimensions before the next pass — four deterministic gates plus an opt-in LLM judge.
+
+**Score**:
+
+```bash
+python3 skills/playbooks/reshuffle/autoresearch.py \
+  --map <reshuffle.json> \
+  --org-dir <org-dir> \
+  [--llm]
+```
+
+| Dimension | What it checks |
+|---|---|
+| **Recognizability** | Decisions mention named components (units, activities, anchor) by their org labels. |
+| **Plain language** | No paraphrased framework jargon: `see-saw`, `flywheel`, `coordination paradox`, `bundle state`, `engine candidate`, `rebundle`, `constraint distribution`, `dissolves the constraint`. The leader reads outcomes, not vocabulary. |
+| **Decision anchoring** | At least three items in `decisions[]`, each ≥ 60 chars in `answer`, each citing a non-empty `source`. |
+| **Audit grounded** | Every component with a `_structure_id` resolves to a real file under `org/`. |
+| **LLM judge** *(opt-in: `--llm`)* | Claude Sonnet 4.6 scores each decision on `actionable` (yes/no), `distinctive` (high/medium/low), `readable` (yes/no). Skipped when `ANTHROPIC_API_KEY` is not set. |
+
+The play's primary interpretive surface is the top-level `decisions[]` array — the leader-facing reading of which capability becomes the new constraint, where the see-saw becomes a flywheel, what to hire / divest / reorganise around. Engine candidates and rebundle candidates are the structured intermediates; the decisions translate them for action. The agent fills this array as the final step of the playbook, then iterates until every dimension passes.

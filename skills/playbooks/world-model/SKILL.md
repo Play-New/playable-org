@@ -246,3 +246,26 @@ Three structural rules:
 After at least one ai-exposure pass and ideally one value-map play. The structural assessment benefits from the activity-level and value-chain views as priors.
 
 For a first run, scope = whole organization. Per-Direzione scoping is possible but loses the cross-Direzione capabilities (which are the most informative ones, often).
+
+## Autoresearch loop
+
+The agent runs the playbook iteratively. Each iteration produces a play; each iteration is then scored on five dimensions before the next pass — four deterministic gates plus an opt-in LLM judge.
+
+**Score**:
+
+```bash
+python3 skills/playbooks/world-model/autoresearch.py \
+  --map <world-model.json> \
+  --org-dir <org-dir> \
+  [--llm]
+```
+
+| Dimension | What it checks |
+|---|---|
+| **Recognizability** | Decisions mention specific units / activities / stakeholders / capabilities of the org by name. |
+| **Plain language** | No paraphrased framework jargon: `world model`, `capability stack`, `intelligence layer`, `failure signal`, `moat`, `judgment density`, etc. |
+| **Decision anchoring** | At least three items in `decisions[]`, each ≥ 60 chars in `answer`, each citing a non-empty `source`. |
+| **Audit grounded** | Every capability / interface / failure-signal that claims a `_structure_id` resolves to a real file under `org/`. |
+| **LLM judge** *(opt-in: `--llm`)* | Claude Sonnet 4.6 scores each decision on `actionable` (yes/no), `distinctive` (high/medium/low), `readable` (yes/no). Skipped when `ANTHROPIC_API_KEY` is not set. |
+
+The play's primary interpretive surface is the top-level `decisions[]` array — the leader-facing reading of which capabilities are moat vs commodity, which interfaces are real vs aspirational, and which failure-signals indicate a missing capability the org should build. The agent fills this array as the final step of the playbook, then iterates against the autoresearch output until every dimension passes.

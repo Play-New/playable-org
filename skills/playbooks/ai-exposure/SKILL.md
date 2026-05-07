@@ -336,3 +336,36 @@ Three structural rules:
 3. **Interpretive content is clearly demarcated**. Sections labeled "Actionable summary", "Operational decision", "Consequences" (or equivalent in the org's working language) are interpretation. Tables and per-activity sections with extracted metrics are computed.
 
 The agent is only allowed to interpret in the demarcated sections, and even there every claim should cite a source (data layer, internal document, or be marked as opinion).
+
+## Autoresearch loop
+
+The agent runs the playbook iteratively. Each iteration produces a play; each iteration is then scored on five dimensions before the next pass — four deterministic gates plus an opt-in LLM judge.
+
+Unlike the other playbooks, the ai-exposure pipeline's primary build output is a *list* of activity matches with no top-level wrapper. The autoresearch script therefore consumes a separate **play file** that wraps the matches with the agent's interpretation:
+
+```json
+{
+  "_scope":    { ... },
+  "matches":   [ ... raw activity → O*NET task matches ... ],
+  "decisions": [ {"question": "...", "answer": "...", "source": "..."}, ... ]
+}
+```
+
+**Score**:
+
+```bash
+python3 skills/playbooks/ai-exposure/autoresearch.py \
+  --play <ai-exposure-play.json> \
+  --org-dir <org-dir> \
+  [--llm]
+```
+
+| Dimension | What it checks |
+|---|---|
+| **Recognizability** | Decisions mention named activities and units of the org by their org labels. |
+| **Plain language** | No raw AEI vocabulary in decisions: `O*NET`, `ai_autonomy_mean`, `ai_education_years_mean`, `penetration`, `cosine similarity`, `embedding`. The leader reads what the numbers mean, not the field names. |
+| **Decision anchoring** | At least three items in `decisions[]`, each ≥ 60 chars in `answer`, each citing a non-empty `source`. |
+| **Audit grounded** | Every activity in `matches[]` resolves to a real file under `org/nodes/activities/`. The matches are the cited evidence base; the decisions can only stand if their underlying activities exist. |
+| **LLM judge** *(opt-in: `--llm`)* | Claude Sonnet 4.6 scores each decision on `actionable` (yes/no), `distinctive` (high/medium/low), `readable` (yes/no). Skipped when `ANTHROPIC_API_KEY` is not set. |
+
+The agent fills `decisions[]` as the final step of the playbook — the leader-facing reading of which activities are most exposed and how, where the displacement vs. augmentation pattern lands, which roles or units should reallocate hours, and which capabilities the org should build. Iterate until every dimension passes.
