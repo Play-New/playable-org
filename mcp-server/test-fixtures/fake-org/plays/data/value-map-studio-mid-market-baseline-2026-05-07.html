@@ -19,16 +19,18 @@
 
   /* Backgrounds */
   --bg:               #FFFFFF;
-  --bg-alt:           rgba(0, 0, 0, 0.03);   /* card / section tint */
-  --bg-muted:         rgba(0, 0, 0, 0.05);   /* slightly stronger tint */
+  --bg-alt:           rgba(0, 0, 0, 0.04);   /* card / section tint */
+  --bg-muted:         rgba(0, 0, 0, 0.06);   /* slightly stronger tint */
   --bg-dark:          #1A1A1A;               /* inverted sections */
 
-  /* Foregrounds (black-on-white) */
-  --fg:               rgba(0, 0, 0, 0.9);    /* body / primary */
-  --fg-muted:         rgba(0, 0, 0, 0.5);    /* labels, secondary */
-  --fg-light:         rgba(0, 0, 0, 0.35);   /* tertiary */
-  --fg-faint:         rgba(0, 0, 0, 0.25);   /* disabled, captions */
-  --fg-hairline:      rgba(0, 0, 0, 0.1);    /* borders, separators */
+  /* Foregrounds (black-on-white). Contrast bumped 2026-05-07 — the
+     0.1 / 0.5 hairline + muted layer felt washed-out on page; nudged
+     to 0.18 / 0.6 for visible borders and readable secondary labels. */
+  --fg:               rgba(0, 0, 0, 0.92);   /* body / primary */
+  --fg-muted:         rgba(0, 0, 0, 0.6);    /* labels, secondary */
+  --fg-light:         rgba(0, 0, 0, 0.42);   /* tertiary */
+  --fg-faint:         rgba(0, 0, 0, 0.3);    /* disabled, captions */
+  --fg-hairline:      rgba(0, 0, 0, 0.18);   /* borders, separators */
 
   /* Inverse (on dark surfaces) */
   --fg-inverse:       #FAFAFA;
@@ -50,10 +52,10 @@
      Phase 2 will migrate viewers to the canonical names above and
      these aliases will be dropped.
      ------------------------------------------------------------------ */
-  --bg-soft:          rgba(0, 0, 0, 0.03);   /* alias of --bg-alt */
-  --muted:            rgba(0, 0, 0, 0.5);    /* alias of --fg-muted */
-  --soft:             rgba(0, 0, 0, 0.35);   /* alias of --fg-light */
-  --line:             rgba(0, 0, 0, 0.1);    /* alias of --fg-hairline */
+  --bg-soft:          rgba(0, 0, 0, 0.04);   /* alias of --bg-alt */
+  --muted:            rgba(0, 0, 0, 0.6);    /* alias of --fg-muted */
+  --soft:             rgba(0, 0, 0, 0.42);   /* alias of --fg-light */
+  --line:             rgba(0, 0, 0, 0.18);   /* alias of --fg-hairline */
 
   /* ------------------------------------------------------------------
      Data-viz palette — pastel secondary. Used only where category
