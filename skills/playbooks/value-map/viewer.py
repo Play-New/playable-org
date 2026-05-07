@@ -40,16 +40,21 @@ NUDGE_PASSES = 5
 USER_NODE_Y = 56            # bumped down so label isn't clipped
 LABEL_TRUNCATE = 22
 
-# Colors (mirage palette, mirrors dashboard)
-FG = "#1a1a1a"
-MUTED = "#6b6b6b"
-BG = "#faf9f6"
-LINE = "#e6e3dd"
-ACCENT = "#c47558"
-GENESIS = "#88a884"
-CUSTOM = "#a5a3c8"
-PRODUCT = "#c8d4e5"
-COMMODITY = "#e8dfc9"
+# Colors — these are SVG-attribute-injected hex values, kept in sync
+# with the data-viz palette declared in skills/design.py (--ds-*).
+# CSS in design.py owns the truth; these mirrors exist because SVG
+# `fill="..."` attributes don't reliably resolve `var(--ds-sage)`
+# across renderers (Chrome OK, Safari & static viewers patchy). When
+# you edit the palette in design.py, copy the hex values across here.
+FG = "#1a1a1a"        # foreground (rgba(0,0,0,0.9) on white in CSS)
+MUTED = "#6b6b6b"     # legacy --muted; design.py uses rgba(0,0,0,0.5)
+BG = "#faf9f6"        # paper-white surface
+LINE = "#e6e3dd"      # legacy --line; design.py uses rgba(0,0,0,0.1)
+ACCENT = "#c47558"    # = --ds-coral
+GENESIS = "#88a884"   # = --ds-sage
+CUSTOM = "#a5a3c8"    # = --ds-lilac
+PRODUCT = "#99b3d4"   # = --ds-slate (was #c8d4e5; unified for consistency)
+COMMODITY = "#d8cfb6" # = --ds-sand (was #e8dfc9; unified for consistency)
 
 
 def truncate(s: str, n: int = LABEL_TRUNCATE) -> str:

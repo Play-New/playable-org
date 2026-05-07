@@ -52,11 +52,12 @@ EXTRA_CSS = """
   --line: var(--line);
   --card: var(--bg);
   --accent: var(--fg);
-  --automated: #5b8a4e;
-  --augmented: #8b85b8;
-  --assistive: #99b3d4;
-  --no-data: #d8cfb6;
-  --low-conf: #c8c0b6;
+  /* Category colours route through the data-viz palette in design.py */
+  --automated: var(--ds-sage);
+  --augmented: var(--ds-lilac);
+  --assistive: var(--ds-slate);
+  --no-data:   var(--ds-sand);
+  --low-conf:  #c8c0b6;
 }
 
 body { background: var(--bg-soft); }

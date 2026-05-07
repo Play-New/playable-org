@@ -37,14 +37,17 @@ EXTRA_CSS = """
   --line: var(--line);
   --card: var(--bg);
   --accent: var(--fg);
-  --moat: #c47558;
-  --commodity: var(--soft);
-  --layer-stakeholder-bg: var(--fg); --layer-stakeholder-fg: var(--bg);
-  --layer-interface-bg: #f5f8fc; --layer-interface-border: #c7d4ec;
-  --layer-intelligence-bg: #f6f4fb; --layer-intelligence-border: #c4bcd9;
-  --layer-worldmodel-bg: #f3f7f1; --layer-worldmodel-border: #c0d3b9;
-  --layer-capability-bg: #f8f3e8; --layer-capability-border: #d8c89e;
-  --principle-bg: #fbe8dd; --principle-border: #c47558;
+  /* Stack layers + moat / commodity — route through the data-viz
+     palette (--ds-*) so the world-model viewer stays in sync with the
+     other playbooks. */
+  --moat:                       var(--ds-coral);
+  --commodity:                  var(--soft);
+  --layer-stakeholder-bg:       var(--fg);          --layer-stakeholder-fg: var(--bg);
+  --layer-interface-bg:         var(--ds-slate-bg); --layer-interface-border:    var(--ds-slate);
+  --layer-intelligence-bg:      var(--ds-lilac-bg); --layer-intelligence-border: var(--ds-lilac);
+  --layer-worldmodel-bg:        var(--ds-sage-bg);  --layer-worldmodel-border:   var(--ds-sage);
+  --layer-capability-bg:        var(--ds-sand-bg);  --layer-capability-border:   var(--ds-sand);
+  --principle-bg:               var(--ds-coral-bg); --principle-border:          var(--ds-coral);
 }
 
 body { background: var(--bg-soft); }

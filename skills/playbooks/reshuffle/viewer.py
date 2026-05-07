@@ -71,9 +71,13 @@ EXTRA_CSS = """
   --line: var(--line);
   --card: var(--bg);
   --accent: var(--fg);
-  --scarcity: #c4bcd9;
-  --risk: #e0b3b3;
-  --coordination: #b6cdaf;
+  /* Constraint colours route through the data-viz palette in
+     design.py. Lilac for scarcity (rare resource feels purple in
+     editorial palettes), coral for risk (warm = warn), sage for
+     coordination (green = "growth between teams"). */
+  --scarcity:    var(--ds-lilac);
+  --risk:        var(--ds-coral);
+  --coordination: var(--ds-sage);
 }
 
 body { background: var(--bg-soft); }
