@@ -315,19 +315,18 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
             f'</g>'
         )
 
-    # New end users — squares (matching the is_new component shape) so
-    # everything emerging shares the same visual code: square = new.
+    # New end users — same circle shape as existing end-users (kind =
+    # stakeholder, shape stays a circle), coral fill to mark "new".
     for j, _ in enumerate(map_data.get("new_end_users") or []):
         p = positions.get(f"__new_user_{j}__")
         if not p:
             continue
-        sq = 14  # half-side; total side = 28, slightly larger than r=12 for visual parity
         parts.append(
             f'<g class="node node-user node-new" data-node-id="__new_user_{j}__" onclick="pnNodeClick(this)">'
             f'<title>{escape(p["label"])}</title>'
-            f'<rect x="{p["px"] - sq:.1f}" y="{p["py"] - sq:.1f}" width="{sq * 2}" height="{sq * 2}" fill="{ACCENT}"/>'
-            f'<text x="{p["px"]:.1f}" y="{p["py"] - sq - 8:.1f}" text-anchor="middle" '
-            f'font-size="13" fill="{ACCENT}" font-weight="600">{escape(truncate(p["label"]))} ★</text>'
+            f'<circle cx="{p["px"]:.1f}" cy="{p["py"]:.1f}" r="14" fill="{ACCENT}"/>'
+            f'<text x="{p["px"]:.1f}" y="{p["py"] - 26:.1f}" text-anchor="middle" '
+            f'font-size="14" fill="{ACCENT}" font-weight="600">{escape(truncate(p["label"]))} ★</text>'
             f'</g>'
         )
 
@@ -360,24 +359,19 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
             f'</g>'
         )
 
-    # Components — circles for existing, squares for is_new (so the
-    # leader's eye separates "what shifts" from "what emerges" at a glance).
+    # Components — always circles. Coral fill marks emerging items.
+    # Rule: shape = kind (circle = component/stakeholder, diamond =
+    # anchor/value), colour = state (white = exists, coral = new).
     for c in map_data["components"]:
         p = positions[c["id"]]
         cx, cy = p["px"], p["py"]
         r = 7
         fill = ACCENT if p["is_new"] else "#ffffff"
         stroke = ACCENT if p["is_new"] else FG
-        if p["is_new"]:
-            shape = (
-                f'<rect x="{cx - r:.1f}" y="{cy - r:.1f}" width="{r * 2}" height="{r * 2}" '
-                f'fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>'
-            )
-        else:
-            shape = (
-                f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" '
-                f'fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>'
-            )
+        shape = (
+            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" '
+            f'fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>'
+        )
         et = c.get("evolution_target")
         et_arrow = ""
         if et is not None and not p["is_new"]:
@@ -463,6 +457,14 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .section .lead { font-size: 0.95rem; color: var(--fg-muted); line-height: 1.65; max-width: 720px; margin: 0 0 28px; }
 
 .no-overlay { font-size: 0.9rem; color: var(--fg-muted); padding: 18px 22px; background: var(--bg-alt); border-radius: 4px; max-width: 720px; line-height: 1.6; }
+
+/* Emerging section — surfaces every is_new component / new stakeholder
+   with its rationale, visible without clicking. Coral accent so the eye
+   ties items to the coral marks on the map. */
+.emerging-item { padding: 16px 18px; margin-bottom: 12px; border: 1px solid var(--ds-coral); border-radius: 4px; max-width: 720px; background: var(--ds-coral-bg, rgba(196,117,88,0.04)); }
+.emerging-item .emerging-kind { font-family: var(--font-display); font-size: 0.66rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--ds-coral); margin-bottom: 6px; }
+.emerging-item .emerging-label { font-family: var(--font-display); font-size: 1.0rem; font-weight: 500; color: var(--fg); margin-bottom: 6px; letter-spacing: -0.01em; }
+.emerging-item .why { font-size: 0.92rem; line-height: 1.65; color: var(--fg); margin: 0; }
 .no-overlay code { font-size: 0.85em; }
 
 .decision { margin-bottom: 32px; }
@@ -484,6 +486,9 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .popover .body p:last-child { margin-bottom: 0; }
 .popover .body em.placement { color: var(--fg-muted); font-style: normal; }
 .popover .citation { font-size: 0.7rem; color: var(--fg-muted); padding-top: 8px; margin-top: 10px; border-top: 1px solid var(--fg-hairline); font-family: ui-monospace, SF Mono, Menlo, monospace; }
+.popover .emerging-why { margin-top: 10px; padding: 10px 12px; background: var(--ds-coral-bg, rgba(196,117,88,0.08)); border-left: 2px solid var(--ds-coral); border-radius: 3px; }
+.popover .emerging-why-label { font-family: var(--font-display); font-size: 0.62rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--ds-coral); margin-bottom: 4px; }
+.popover .emerging-why p { font-size: 0.84rem; line-height: 1.55; margin: 0; }
 """
 
 
@@ -519,6 +524,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </div>
 
     {ai_overlay_section}
+
+    {emerging_section}
 
     {decisions_section}
   </div>
@@ -590,12 +597,22 @@ function renderPopoverContent(node) {{
     html += `<p><em class="placement">→ Heading toward ${{STAGE_PLAIN[stageFor(node.evolution_target)]}}.</em></p>`;
   }}
 
-  if (node.ai_effect) {{
+  // Existing items: ai_effect describes what AI does to them.
+  if (node.ai_effect && !node.is_new) {{
     html += `<p>${{escapeHtml(node.ai_effect)}}</p>`;
   }}
 
+  // Emerging items (new component or new stakeholder): render a
+  // dedicated "Why it emerges" block. For components the rationale
+  // lives in ai_effect; for new stakeholders it lives in rationale.
+  // Either way, the leader sees a clear answer to "why is this here?".
   if (node.is_new) {{
-    html += `<p><em class="placement">Emerging — does not exist today.</em></p>`;
+    const why = node.ai_effect || node.rationale;
+    if (why) {{
+      html += `<div class="emerging-why"><div class="emerging-why-label">Why it emerges</div><p>${{escapeHtml(why)}}</p></div>`;
+    }} else {{
+      html += `<p><em class="placement">Emerging — does not exist today.</em></p>`;
+    }}
   }}
 
   html += '</div>';
@@ -744,6 +761,46 @@ def render_html(map_data: dict) -> str:
             '</div></div>'
         )
 
+    # Emerging section — surfaces every is_new component and every
+    # new_end_user with a clear "why it emerges" line, visible without
+    # clicking. The popover shows the same content on click; this
+    # section makes it impossible to miss.
+    emerging_components = [c for c in components if c.get("is_new")]
+    new_users_list = map_data.get("new_end_users") or []
+    if emerging_components or new_users_list:
+        items: list[str] = []
+        for u in new_users_list:
+            label = escape(u.get("label", ""))
+            why = escape(u.get("rationale", "") or u.get("description", "") or "")
+            why_html = f'<p class="why">{why}</p>' if why else ""
+            items.append(
+                f'<div class="emerging-item">'
+                f'<div class="emerging-kind">New stakeholder</div>'
+                f'<div class="emerging-label">{label}</div>'
+                f'{why_html}'
+                f'</div>'
+            )
+        for c in emerging_components:
+            label = escape(c.get("label", ""))
+            why = escape(c.get("ai_effect", "") or c.get("description", "") or c.get("_description", "") or "")
+            why_html = f'<p class="why">{why}</p>' if why else ""
+            items.append(
+                f'<div class="emerging-item">'
+                f'<div class="emerging-kind">New piece of the chain</div>'
+                f'<div class="emerging-label">{label}</div>'
+                f'{why_html}'
+                f'</div>'
+            )
+        emerging_section = (
+            '<div class="section emerging-section">'
+            '<h2>What\'s new on the map</h2>'
+            '<p class="lead">Every coral mark on the map above is something that doesn\'t exist today. Each one is here because something changed in the chain that makes it possible — and worth doing — now. Below, what each is and why it emerges.</p>'
+            + "".join(items)
+            + '</div>'
+        )
+    else:
+        emerging_section = ""
+
     # Decisions enabled — the load-bearing interpretive section. If the
     # JSON carries a `decisions` array (each item: {question, answer,
     # source}), render it; otherwise prompt for one.
@@ -807,6 +864,7 @@ def render_html(map_data: dict) -> str:
         H=H,
         svg_inner=inner,
         ai_overlay_section=ai_overlay_section,
+        emerging_section=emerging_section,
         decisions_section=decisions_section,
         nodes_json=json.dumps(nodes, ensure_ascii=False),
     )
