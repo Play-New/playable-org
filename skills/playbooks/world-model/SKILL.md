@@ -198,7 +198,7 @@ The HTML is the **primary consumer artefact** — a self-contained interactive d
 
 **Click on any card** opens a small floating popover (never a modal) next to the clicked element. The popover contains:
 
-- Eyebrow with the kind ("capability · differentiated" / "capability · standard" / "stakeholder" / "interface" / "where the structure is thin" / "held together by people today" / "could be held together by systems").
+- Eyebrow with the kind ("capability · differentiated" / "capability · standard" / "stakeholder" / "interface" / "a piece to build" / "held together by people today" / "could be held together by systems").
 - The full label as h3.
 - A description paragraph.
 - Per-kind sections: for capabilities, the contract (`Takes` / `Returns` / `How called`), `Can be called by`, `Held today by`, and a "Why differentiated" or "Why standard" rationale. For stakeholders, what-they-get / what-they-give-back / honest-signal / fragmentation. For failure-signals, what's-missing + what-it-would-take-to-build.

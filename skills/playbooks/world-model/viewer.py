@@ -184,7 +184,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </header>
 
     <div class="intro">
-      <p>Behind every org-chart there is a different structure: who the org serves, the surfaces where it reaches them, the way requests get composed into responses, the things the org knows about itself and its world, and the atomic things it can do. The map below reads each layer for this organization and surfaces where the structure is thin.</p>
+      <p>Behind every org-chart there is a different structure: who the org serves, the surfaces where it reaches them, the way requests get composed into responses, the things the org knows about itself and its world, and the atomic things it can do. The map below reads each layer for this organization and surfaces the pieces that aren't there yet.</p>
       <div class="pull">The bottom layers are where the value compounds. The top layers are where it gets delivered. The work that lives between them — picking the right things to do and connecting them — is where the cost of keeping everyone aligned shows up today, paid in meeting hours and hand-off attrition. Replacing it with shared knowledge is the move that ages well.</div>
     </div>
 

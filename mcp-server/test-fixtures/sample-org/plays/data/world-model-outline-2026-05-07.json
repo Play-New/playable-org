@@ -675,8 +675,8 @@
       "source": "outline-roles-2025; outline-annual-review-2025"
     },
     {
-      "question": "Where is the structure thin — what would the next thing built actually be?",
-      "answer": "The map names three failure-signals where today's request gets composed by hand because a needed function isn't there yet: a returning-client context retrieval, a scope-drift early-warning, and a post-handover market check-in 12 months after delivery. None of these are exotic. Each one shares the same missing capability: a context-keeping practice that captures past engagements as something the next engagement can read.\n\nBuild that one capability and three failure-signals close at once. The ROI is not in the artefact — it's in the compounding effect on every engagement after.",
+      "question": "Which piece does the structure suggest building next?",
+      "answer": "The map names three places where the response would be put together by hand today because a needed function isn't there yet: a returning-client context retrieval, a scope-drift early-warning, and a post-handover market check-in 12 months after delivery. None of these are exotic. Each one shares the same missing capability: a context-keeping practice that captures past engagements as something the next engagement can read.\n\nBuild that one capability and three of these gaps close at once. The ROI is not in the artefact — it's in the compounding effect on every engagement after.",
       "source": "outline-roles-2025; outline-charter-2024 §20"
     }
   ]
