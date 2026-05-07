@@ -173,19 +173,42 @@ The audit verifies:
 ```bash
 python3 skills/playbooks/world-model/viewer.py \
   --map <world-model.json> \
-  --html <world-model.html>
+  --html <world-model.html> \
+  [--decisions <decisions.json>]
 ```
 
-The viewer renders the organization as a layered stack:
+The HTML is the **primary consumer artefact** — a self-contained interactive document the leader opens in a browser. **This shape is frozen**; the canonical Outline & Co. play under `mcp-server/test-fixtures/sample-org/plays/data/world-model-outline-2026-05-07.html` is the reference render. Page structure, in order:
 
-- Top band: stakeholder types as circles.
-- Second band: interfaces as labeled rectangles, connected to stakeholders that use them.
-- Third band: intelligence layer as a horizontal panel listing current human-mediated compositions and potential automated ones.
-- Fourth band: world model (company-side and customer-side panels).
-- Bottom band: capability cards in a grid, each with name, moat indicator, current owners, contract excerpt.
-- Right side: failure signals panel, each card linking to the missing capability.
+1. **Header** (eyebrow `world model` + h1 title + lead), centered in a 820px column inside the 1240px container.
+2. **Intro** (820px centered): one paragraph framing what the page does, plus a pull-quote naming the central insight (the value compounds at the bottom layers; replacing the coordination work with shared knowledge is the move that ages well).
+3. **Frame diagram** (full container): a 720×540 SVG schematic of the five layers, top-down, with plain-language captions per layer and a coral pull at the bottom for the shared principle.
+4. **The stack** (full container) — five layer blocks, each with the same shape:
+   - Layer head: 2-column grid (`1fr 1.1fr`) — name + thin coloured rule on the left, plain-language hint on the right.
+   - Layer body: the actual data for that layer.
+   - Layers, top to bottom: **Stakeholders** (pill-style cards), **Interfaces** (chip cards), **Intelligence layer** (2-column grid: held-together-by-people-today / could-be-held-together-by-systems), **World model** (2-column grid: about-itself / about-the-people-it-serves), **Capabilities** (grid of cards).
+5. **Principle block** (820px centered): coral-bordered pull-quote — the shared principle.
+6. **Failure-signals block** (full container): h2 + lead in a 720px-max prose, then a grid of failure-signal cards (each with trigger + missing capability).
+7. **Decisions section** "How to read this map" (820px centered): h2 + lead + each decision rendered as `.question` + `.answer` + `.source` citation. The load-bearing interpretive surface.
 
-Click any element for full detail in a modal. Apply the style charter: every term defined inline, no acronyms left unexplained, every number declares its scale.
+**Visual code (frozen)**:
+
+- **Shape = kind**: cards (rounded-corner full-border) for everything that's content-rich (stakeholder, interface, composition, world-model entry, capability, failure-signal). All clickable items use the same shape and the same hover signal (border darkens to `--fg`).
+- **Colour = state / role**: hairline border = standard / commodity; coral border (`--ds-coral`) = differentiated / moat (capabilities) or emerging (any future `is_new` item — value-map convention). The shape never changes when an item is differentiated or emerging — only the border colour does.
+- **No left-rule cards**. Every card has a full hairline border.
+
+**Click on any card** opens a small floating popover (never a modal) next to the clicked element. The popover contains:
+
+- Eyebrow with the kind ("capability · differentiated" / "capability · standard" / "stakeholder" / "interface" / "where the structure is thin" / "held together by people today" / "could be held together by systems").
+- The full label as h3.
+- A description paragraph.
+- Per-kind sections: for capabilities, the contract (`Takes` / `Returns` / `How called`), `Can be called by`, `Held today by`, and a "Why differentiated" or "Why standard" rationale. For stakeholders, what-they-get / what-they-give-back / honest-signal / fragmentation. For failure-signals, what's-missing + what-it-would-take-to-build.
+- Footer citation: the `_structure_id` if present.
+
+Esc / click outside / close button dismisses. Position relative to click target, viewport-edge clamped.
+
+**Plain-language discipline (frozen)**. The framework's layer names (Stakeholders, Interfaces, Intelligence layer, World model, Capabilities) stay as the framework defines them — they are the primitives, not jargon. Below each layer name, the hint paragraph translates the primitive into plain English. **Inside the popover and the prose**, no framework vocabulary leaks: `moat` becomes "differentiated", `commodity` becomes "standard", `judgment density` and `capability stack` never appear. Decisions are reviewed by `autoresearch.py` against this discipline.
+
+**`--decisions <list.json>`** merges a JSON list of `{question, answer, source}` into the map's `decisions[]` field before rendering. **Required** for a shippable play — autoresearch fails without it.
 
 ### 9. Write the play
 
