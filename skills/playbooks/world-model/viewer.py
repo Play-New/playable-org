@@ -65,25 +65,19 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .intro p strong { font-weight: 500; }
 .intro .pull { padding: 14px 0 14px 18px; margin: 22px 0; font-size: 1.0rem; color: var(--fg); border-left: 2px solid var(--fg); line-height: 1.65; }
 
-/* Conceptual frame diagram — sits in the container, no card frame. */
-.frame-diagram { margin: 0 0 56px; text-align: center; }
-.frame-diagram svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
-.frame-diagram-caption { font-size: 0.85rem; color: var(--fg-muted); margin-top: 14px; max-width: 720px; margin-left: auto; margin-right: auto; line-height: 1.6; }
-
-/* Stack — vertical flow of layer blocks. Each layer is a block at
-   container width, separated by a hairline above. The layer-accent
-   colour is a thin left border, not a filled background. */
-.stack { display: flex; flex-direction: column; }
+/* Stack — vertical flow of layer blocks, each in the same 820px
+   centered column as the rest of the page so nothing escapes the
+   editorial grid. */
+.stack { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; }
 .stack-layer { padding: 36px 0 36px; border-top: 1px solid var(--fg-hairline); }
-.stack-layer .layer-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 56px; margin-bottom: 24px; align-items: start; }
-@media (max-width: 1100px) { .stack-layer .layer-head { grid-template-columns: 1fr; gap: 16px; } }
-.stack-layer .layer-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; padding-left: 14px; border-left: 2px solid var(--commodity); }
+.stack-layer .layer-head { margin-bottom: 18px; }
+.stack-layer .layer-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; padding-left: 14px; border-left: 2px solid var(--commodity); margin-bottom: 10px; }
 .stack-layer.layer-stakeholders   .layer-name { border-left-color: var(--layer-stakeholder-accent); }
 .stack-layer.layer-interfaces     .layer-name { border-left-color: var(--layer-interface-accent); }
 .stack-layer.layer-intelligence   .layer-name { border-left-color: var(--layer-intelligence-accent); }
 .stack-layer.layer-worldmodel     .layer-name { border-left-color: var(--layer-worldmodel-accent); }
 .stack-layer.layer-capabilities   .layer-name { border-left-color: var(--layer-capability-accent); }
-.stack-layer .layer-hint { font-size: 0.92rem; color: var(--fg-muted); line-height: 1.65; max-width: 560px; }
+.stack-layer .layer-hint { font-size: 0.92rem; color: var(--fg-muted); line-height: 1.65; padding-left: 16px; }
 .stack-layer .layer-body { }
 .layer-explainer { font-size: 0.95rem; color: var(--fg); line-height: 1.7; margin: 0 0 12px; max-width: 720px; }
 .layer-explainer strong { font-weight: 500; }
@@ -101,20 +95,18 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .interface { background: transparent; border: 1px solid var(--fg-hairline); border-radius: 4px; padding: 7px 14px; font-size: 0.85rem; cursor: pointer; color: var(--fg); transition: border-color 0.15s; }
 .interface:hover { border-color: var(--fg); }
 
-/* Intelligence layer / world model — two-column grids */
-.il-grid, .wm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 18px; }
-@media (max-width: 900px) { .il-grid, .wm-grid { grid-template-columns: 1fr; gap: 20px; } }
+/* Intelligence layer / world model — single column inside the 820px
+   editorial grid; sub-sections stack vertically with their own labels. */
+.il-grid, .wm-grid { display: flex; flex-direction: column; gap: 20px; margin-top: 14px; }
 .il-section .il-title, .wm-section .wm-title { font-family: var(--font-display); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 10px; font-weight: 500; }
-.il-card, .wm-card { padding: 14px 16px; margin-bottom: 10px; font-size: 0.88rem; border: 1px solid var(--fg-hairline); border-radius: 4px; transition: border-color 0.15s; }
-.il-card { cursor: pointer; }
-.wm-card { cursor: default; }
-.il-card:hover { border-color: var(--fg); }
+.il-card, .wm-card { padding: 14px 16px; margin-bottom: 10px; font-size: 0.88rem; border: 1px solid var(--fg-hairline); border-radius: 4px; transition: border-color 0.15s; cursor: pointer; }
+.il-card:hover, .wm-card:hover { border-color: var(--fg); }
 .il-card.potential { border-color: var(--fg); }
 .il-card .trigger, .wm-card .label { font-weight: 500; margin-bottom: 4px; color: var(--fg); }
 .il-card .meta, .wm-card .meta { font-size: 0.78rem; color: var(--fg-muted); }
 
-/* Capability cards */
-.cap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+/* Capability cards — grid that fits inside the 820px column. */
+.cap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
 .cap-card { padding: 14px 16px; cursor: pointer; transition: border-color 0.15s; border: 1px solid var(--fg-hairline); border-radius: 4px; }
 .cap-card.moat { border-color: var(--moat); }
 .cap-card:hover { border-color: var(--fg); }
@@ -131,13 +123,11 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .principle-block .label { font-family: var(--font-display); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.10em; color: var(--ds-coral); font-weight: 600; margin-bottom: 8px; }
 .principle-block .text { font-size: 0.95rem; color: var(--fg); line-height: 1.65; }
 
-/* Failure signals — title + intro span the container (data zone),
-   prose wraps short via inline max-width. Cards align to the same
-   container edge. */
-.signals-block { margin-top: 56px; padding-top: 36px; border-top: 1px solid var(--fg-hairline); }
+/* Failure signals — same 820px column. Cards stack vertically. */
+.signals-block { max-width: 820px; margin: 56px auto 0; padding-top: 36px; border-top: 1px solid var(--fg-hairline); }
 .signals-block h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 16px; }
-.signals-block > p.layer-explainer { margin: 0 0 24px; max-width: 720px; }
-.signals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.signals-block > p.layer-explainer { margin: 0 0 24px; }
+.signals-grid { display: flex; flex-direction: column; gap: 12px; }
 .signal-card { padding: 14px 16px; cursor: pointer; transition: border-color 0.15s; border: 1px solid var(--fg-hairline); border-radius: 4px; }
 .signal-card:hover { border-color: var(--fg); }
 .signal-card .trigger { font-weight: 500; font-size: 0.95rem; margin-bottom: 6px; color: var(--fg); }
@@ -191,12 +181,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     <div class="intro">
       <p>Behind every org-chart there is a different structure: who the org serves, the surfaces where it reaches them, the way requests get composed into responses, the things the org knows about itself and its world, and the atomic things it can do. The map below reads each layer for this organization and surfaces where the structure is thin.</p>
-      <div class="pull">The bottom layers are where the value compounds. The top layers are where it gets delivered. The work that lives between them — picking the right things to do and connecting them — is where most coordination tax is paid today; replacing it with shared knowledge is the move that ages well.</div>
-    </div>
-
-    <div class="frame-diagram">
-      {frame_diagram_svg}
-      <div class="frame-diagram-caption">The five layers, schematic. The page below is this same shape filled with the organization's actual data — stakeholders, interfaces, compositions, world model, capabilities — plus the failure-signals that name where a needed function isn't there yet.</div>
+      <div class="pull">The bottom layers are where the value compounds. The top layers are where it gets delivered. The work that lives between them — picking the right things to do and connecting them — is where the cost of keeping everyone aligned shows up today, paid in meeting hours and hand-off attrition. Replacing it with shared knowledge is the move that ages well.</div>
     </div>
 
     <div class="stack">
@@ -299,6 +284,7 @@ const INTERFACES = {interfaces_json};
 const SIGNALS = {signals_json};
 const COMPOSITIONS_CURRENT = {current_compositions_json};
 const COMPOSITIONS_POTENTIAL = {potential_compositions_json};
+const COMPANY_OBSERVATIONS = {company_observations_json};
 
 function escapeHtml(s) {{
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({{
@@ -432,6 +418,26 @@ function renderCompositionPopover(idx, kind) {{
   return html;
 }}
 
+function renderCompanyObservationPopover(idx) {{
+  const o = COMPANY_OBSERVATIONS[idx];
+  if (!o) return '';
+  let html = `<div class="eyebrow">what the org knows about itself</div>`;
+  html += `<h3>${{escapeHtml(o.dimension || '')}}</h3>`;
+  if (o.lives_in) {{
+    html += `<div class="section-label">Where this knowledge lives today</div>`;
+    html += `<div class="desc">${{escapeHtml(o.lives_in)}}</div>`;
+  }}
+  if (o.maturity) {{
+    html += `<div class="section-label">How mature the picture is</div>`;
+    html += `<div class="desc">${{escapeHtml(o.maturity)}}</div>`;
+  }}
+  if (o.gaps) {{
+    html += `<div class="section-label">What's missing</div>`;
+    html += `<div class="desc">${{escapeHtml(o.gaps)}}</div>`;
+  }}
+  return html;
+}}
+
 // Popover positioning + click handlers — same shape as value-map and ai-exposure.
 const popoverEl   = document.getElementById('popover');
 const popoverBody = document.getElementById('popover-body');
@@ -491,6 +497,16 @@ document.addEventListener('click', (e) => {{
     }}
     if (n.classList && n.classList.contains('il-card')) {{
       showFor(n, renderCompositionPopover(parseInt(n.dataset.idx, 10), n.dataset.kind));
+      return;
+    }}
+    if (n.classList && n.classList.contains('wm-card')) {{
+      if (n.dataset.wmKind === 'company') {{
+        showFor(n, renderCompanyObservationPopover(parseInt(n.dataset.idx, 10)));
+      }} else if (n.dataset.wmKind === 'customer') {{
+        // Customer-side wm-cards are stakeholder summaries — re-use the
+        // stakeholder popover so the leader sees the full picture.
+        showFor(n, renderStakeholderPopover(n.dataset.type));
+      }}
       return;
     }}
     if (n.id === 'popover') return;  // click inside the popover, leave it open
@@ -563,13 +579,15 @@ def render_html(d: dict, title: str) -> str:
     potential_compositions_html = "\n".join(comp_card(c, i, "potential") for i, c in enumerate(pot_comp)) or empty_pill
 
     company_observations_html = "\n".join(
-        f'<div class="wm-card"><div class="label">{escape(o.get("dimension", ""))}</div>'
+        f'<div class="wm-card" data-wm-kind="company" data-idx="{i}">'
+        f'<div class="label">{escape(o.get("dimension", ""))}</div>'
         f'<div class="meta">lives in {escape(o.get("lives_in", "?"))} · {escape(o.get("maturity", "?"))} maturity</div></div>'
-        for o in (company.get("observations", []) or [])
+        for i, o in enumerate(company.get("observations", []) or [])
     ) or empty_pill
 
     customer_observations_html = "\n".join(
-        f'<div class="wm-card"><div class="label">{escape(s.get("type", ""))}</div>'
+        f'<div class="wm-card" data-wm-kind="customer" data-type="{escape(s.get("type", ""))}">'
+        f'<div class="label">{escape(s.get("type", ""))}</div>'
         f'<div class="meta">honest signal: {escape((s.get("honest_signal") or "?")[:70])}{"…" if len(s.get("honest_signal","")) > 70 else ""} · '
         f'{escape(s.get("current_maturity", "?"))} maturity</div></div>'
         for s in (customer.get("by_stakeholder", []) or [])
@@ -684,6 +702,7 @@ def render_html(d: dict, title: str) -> str:
         interfaces_json=json.dumps(interfaces, ensure_ascii=False),
         signals_json=json.dumps(signals, ensure_ascii=False),
         current_compositions_json=json.dumps(cur_comp, ensure_ascii=False),
+        company_observations_json=json.dumps(company.get("observations", []) or [], ensure_ascii=False),
         potential_compositions_json=json.dumps(pot_comp, ensure_ascii=False),
     )
 
