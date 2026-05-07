@@ -166,3 +166,22 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 ## What this roadmap is not
 
 It is not a commitment to build all four playbooks for every organization. The order proposed here works because each playbook builds on the priors of the previous one, but pragmatic deployments often pick two or three depending on the question the organization wants to answer first.
+
+## Recent additions (May 2026)
+
+Tracked here so a fork merging upstream sees what changed:
+
+- **Visual chrome unified across all four playbooks.** One container width (1240px), 820px centered editorial column on every block, full-bordered cards (no left-rule), popover replacing the previous full-screen modal, eyebrow + h1 + lead header pattern, decisions section as the load-bearing interpretive surface. Frozen in each playbook's SKILL.md §Visualize so future iterations have a clear contract.
+- **Conditional voice rule for emerging items.** Anything `is_new` (component / stakeholder / piece-to-build / candidate role) is written with `if / would / could / depends on`, never `when / will / makes`. Lives in `STYLE.md` with examples.
+- **Plain-language jargon avoid-list.** Framework primitive names are fine as labels; paraphrased into prose they become jargon. Avoid-list grows in `STYLE.md`: moat, commodity (in body), commoditize, judgment density, capability stack, coordination tax, failure-signal, thin (metaphor), see-saw, flywheel, engine candidate, rebundle, production-tier, rich subset, O\*NET, AEI, embedding, cosine similarity, top-K, p25/p75, JSON field-name leaks (evolution_target, ai_effect, ai_autonomy_mean).
+- **Autoresearch as a 5-dimension gate**, four deterministic + one LLM judge. Per-playbook `autoresearch.py` with shared `skills/autoresearch_lib.py`. Each playbook tunes its own jargon blacklist + judge rubric. Promoted to a wiki feature via `org_autoresearch_run` mcp tool — agent can score a play right after rendering it without shelling out.
+- **`init` Path B (interview-first).** When the user has no founding documents, a structured ten-question interview becomes the founding source. The transcript is saved verbatim and cited by every node it generates. Combines with Path A (documents-first) for partial-document orgs.
+- **`org_autoresearch_run` mcp tool.** 13 tools total now (was 12). Same surface as `org_lint_run`.
+- **DRI as a distinct role** in `CAPABILITIES.md`. Three roles, not interchangeable: DRI (single accountable person, throat-to-choke), IC (executes), player-coach (hybrid, on capabilities large enough to need both building and people development).
+- **Activity density layer** documented in `org/AGENTS.md`. Optional fields (trigger, quality_gates, decision_criteria, output_format, fallback, handoff) that turn an activity into something a Claude skill can be compiled from. Filled by interviewing the performer; the transcript becomes a source citation.
+
+## Future (deferred)
+
+- **`compile-agent` skill** — given a scope (org / unit / person), emit a `CLAUDE.md` instruction file for an agent that knows that scope. Level 1 of agentic deployment; the data is mostly already in `org/`.
+- **`interview-activity` skill** — the Q&A flow that fills the activity density layer for a specific activity. Level 2 enabler. Once one activity has all six density fields, a Claude skill can be generated from it.
+- **`context-bundle` playbook** — exporting a knowledge graph + capability×role matrix + Gherkin scenarios as a deployable bundle for agentic pipelines. Cicero's "context bundling" thread (Through The Boundary, May 2026). Level 3 of agentic deployment.

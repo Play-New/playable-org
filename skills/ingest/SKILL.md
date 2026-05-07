@@ -9,7 +9,7 @@ Recipe for ingesting a source (organizational chart, statute, paper, slide deck,
 
 ## Pre-conditions
 
-- The source is available as a file (PDF, DOCX, XLSX, PPTX, MD, HTML, TXT) or as text to paste in chat
+- The source is available as a file (PDF, DOCX, XLSX, PPTX, MD, HTML, TXT) or as text to paste in chat. **Interview transcripts count as sources** — the same way `init` Path B treats the founding interview, an ingest-time conversation about a specific topic (a strategy meeting, a stakeholder call, a quarterly review) can be saved verbatim as `<topic>-interview-<date>.md` and cited the same way as a document.
 - Identity/ already exists: the agent verifies relevance against `identity/`
 - Lint Tier 1 and Tier 2 clean before starting (ingest does not fix preexisting debt)
 

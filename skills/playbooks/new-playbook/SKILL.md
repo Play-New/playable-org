@@ -24,7 +24,7 @@ All consumer-facing text the new playbook produces (the SKILL.md it generates, t
 - `skills/playbooks/<name>/SKILL.md` — populated from the chosen base, with the methodology rewritten to match the user's design decisions
 - `skills/playbooks/<name>/build.py` — forked from the base, with TODO markers at every point that depends on the new primitive's shape
 - `skills/playbooks/<name>/audit.py` — forked from the base, with audit rules expressing the evidence requirements from Q4
-- `skills/playbooks/<name>/viewer.py` — forked from the base, with the per-primitive modal content from Q5
+- `skills/playbooks/<name>/viewer.py` — forked from the base, with the per-primitive popover content from Q5 (and inheriting the frozen chrome conventions: 1240/820 column, full-bordered cards, popover-below-click, decisions section)
 - `skills/ROADMAP.md` — appended with a new row, status `pending` until the first run audit-passes
 
 The meta-skill does not produce a frozen play. Plays come from running the generated playbook against an anchor — that is the new playbook's first test.
@@ -83,7 +83,7 @@ For each obligatory field from Q3, name the evidence the audit gate will require
 
 The audit rule for the new playbook is the union of these per field. If the user wants a field that has no evidence pattern, **stop** — that is interpretation, it goes in play body not in the primitive schema.
 
-### Q5 — Which viewer pattern? What is in the modal?
+### Q5 — Which viewer pattern? What is in the popover?
 
 Pick one of the four base viewer patterns:
 
@@ -92,9 +92,25 @@ Pick one of the four base viewer patterns:
 | Tabular distribution  | grid + bucket distribution + per-area summary              | ai-exposure   |
 | 2-axis map            | components on evolution × visibility, click-for-detail     | value-map     |
 | Bundle bands          | activities grouped by constraint, AI-use badges per activity| reshuffle    |
-| Layered stack         | capabilities → world model → intelligence layer → interfaces, modals on every chip | world-model |
+| Layered stack         | capabilities + world-model knowledge + intelligence-layer compositions + interfaces, click-for-detail on every card | world-model |
 
-For the chosen pattern, list which fields render in the chip (the always-visible label) and which fields render in the modal (the click-to-detail panel). The audit gate later verifies the viewer references only fields that actually exist on the primitive.
+For the chosen pattern, list which fields render on the card (the always-visible label) and which fields render in the **popover** (the small click-to-detail card that opens next to the click target — never a full-screen modal). The audit gate later verifies the viewer references only fields that actually exist on the primitive.
+
+**Frozen viewer conventions every new playbook inherits**:
+
+- One uniform container width (1240px), with editorial blocks (header, intro, decisions, footer) constrained to a centered 820px column inside it. Data zones can use the same 820px column or fall back to the wider 1240px when the data is dense.
+- **Header pattern**: eyebrow `<playbook-name>` + h1 (the artefact title) + lead (one sentence, what this map is for).
+- **Decisions section** at the bottom, titled "How to read this map", with `.question` + `.answer` (one or more paragraphs) + `.source` citation per decision. The load-bearing interpretive surface — the deterministic numbers come from `build.py` / `match.py`, the page chrome from the design system, but the *meaning* of the artefact for this org lives in this section.
+- **Visual code (frozen)**:
+  - Shape = kind (every clickable item of the same kind shares the same shape: cards, circles, diamonds...). The shape never changes when an item is differentiated/emerging — only the colour does.
+  - Colour = state / role (hairline border = standard / commodity; coral border = differentiated / moat / emerging).
+  - **Full-bordered cards**, no left-rule cards. Every clickable card has a hairline border that darkens to `--fg` on hover.
+- **Click → popover**, never a full-screen modal. The popover opens **below** the clicked element, **centered horizontally on it**, flips above when there's no room below, and clamps to viewport edges. Esc / click outside / close button dismisses.
+- **Plain-language discipline**: framework primitive names are fine as labels (Stakeholders, Capabilities, Genesis/Custom/Product/Commodity); paraphrased into prose they become jargon and must be replaced. See [skills/STYLE.md](../../STYLE.md) for the full avoid-list.
+- **Conditional voice for emerging items**: any rationale on a `is_new` component, a `new_end_users` entry, or a piece-to-build is written with `if / would / could / depends on`, never `when / will / makes`. The map suggests preconditions are approaching; whether to build the thing stays the org's choice.
+- **`decisions[]` field on the JSON** is required for a shippable play. The `--decisions` CLI flag (or, for ai-exposure, the wrapper `{matches, decisions}` shape) lets the agent supply them at render time. Without `decisions[]`, autoresearch fails the decision-anchoring dimension.
+
+The new playbook's `viewer.py` forks one of the four base viewers and inherits all of the above. Diverging from any of them is a deliberate design choice that has to be argued.
 
 ## Picking the base playbook
 
@@ -154,7 +170,7 @@ Create `skills/playbooks/<name>/` with:
 
 - `viewer.py` — copied from the base, with TODO markers at:
   - the primitive-rendering function (replace fields per Q5)
-  - the modal content (per Q5)
+  - the popover content (per Q5 — never a modal)
 
 Each TODO marker has the form `# TODO(new-playbook): replace with <field>` — searchable, reviewable, removable when filled.
 
