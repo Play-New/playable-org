@@ -18,10 +18,18 @@ The `init` skill is the recipe for populating it from raw documents in one sessi
 
 ## What `init` does NOT do
 
-- It does not interview the user for content. The principle is: facts come from cited sources, not from the user's head. If the user has no documents, init cannot run.
 - It does not bypass the "every assertion cites a source" invariant. Every node it writes carries `(source-id)` citations.
 - It does not produce interpretations. No playbooks run during init. `plays/` stays empty until a playbook is invoked separately.
 - It does not write in batch-and-forget mode. Every batch of writes is shown to the user as a diff before being applied.
+
+## Two starting paths
+
+`init` accepts the org in either of two states:
+
+- **Path A — documents-first.** The user has dropped real source documents (charter, role descriptions, contracts) into `org/sources/`. This is the canonical path; everything below in §Workflow describes it.
+- **Path B — interview-first.** The user has no written documents to drop, or the documents that exist don't cover the structure (typical for orgs whose conventions live in conversation). The agent runs a structured interview; the transcript itself becomes a citable source. See §Path B below.
+
+The two paths can also combine: start with whatever documents exist, then fill the gaps with a targeted interview anchored on what the documents leave unsaid.
 
 ## Workflow
 
@@ -99,6 +107,65 @@ After all batches:
 2. The agent runs `org_lint_run` (Tier 1 + Tier 2). Reports issues to the user.
 3. The agent appends one line to `log.md` summarizing the session: total nodes by type, sources triaged, issues found.
 4. The agent suggests next steps: which playbook would yield interesting first results given the structure now populated.
+
+## Path B — interview-first init
+
+Use this path when:
+- the user has no source documents to drop into `org/sources/`, or
+- the documents that exist don't cover the structure (e.g. a tiny charter and nothing else, with the actual operating model living in conversation).
+
+The principle stays: every node in `org/` cites a source. In Path B the source IS the interview transcript — saved verbatim into `org/sources/`, given a stable id (e.g. `init-interview-YYYY-MM-DD`), and cited by every node the interview generates.
+
+### B1. Frame the interview
+
+Before asking any question, the agent says what's about to happen and why:
+
+> "I'm going to ask you ten or so questions about the organization. Your answers will be saved verbatim as a source document in `org/sources/`, and the structure I write — units, people, activities, commitments — will cite that source. So whatever you say, I treat as a fact you're attesting to. If you're not sure about something, say so explicitly; I'll write 'unverified per <interview>' rather than dropping it."
+
+This frames the interview as testimony, not brainstorming. Honesty about what's certain vs. what's a hunch travels into the structure.
+
+### B2. The ten questions
+
+Asked one at a time, in order. The agent waits for an answer to each before moving on. Each answer feeds a specific block in the structure.
+
+| # | Question | Yields |
+|---|---|---|
+| 1 | "In one paragraph: what does this organization do, and for whom?" | `identity/mission.md` |
+| 2 | "What kinds of people or organizations does it serve? List the categories — even if there's only one." | `nodes/stakeholders/*` |
+| 3 | "What does each kind of stakeholder get from the organization, and what do they give back? Anything from money to attention to data." | stakeholder bodies + first-pass commitments (org-stakeholder) |
+| 4 | "How is the work organized internally? List the teams or areas, even informal ones (the people who handle X, the people who handle Y)." | `nodes/units/*` |
+| 5 | "Name the people who anchor each team or area. For each, one sentence on what they uniquely own." | `nodes/people/*` with role description |
+| 6 | "Walk me through what each team actually does, week by week. Not what it's supposed to do — what it does. Five to ten activities per team, no more." | `nodes/activities/*` |
+| 7 | "What promises has the organization made to the outside world that bind it? Contracts, mission statements, charter clauses, regulatory commitments — anything where breaking the promise has real consequences." | `commitments/*` (org-stakeholder, inter-org) |
+| 8 | "What promises bind people inside the organization to each other? Who owes what to whom, even informally, when nobody is watching?" | `commitments/*` (org-internal) |
+| 9 | "What hard constraints — legal, ethical, financial — would the organization refuse to cross even if it cost a lot? Three to five, no more." | `identity/limits.md` |
+| 10 | "What's recently changed or is changing? A new unit forming, a stakeholder type drying up, a piece of work that used to matter and doesn't anymore. The thing you'd say first if a friend asked 'what's going on at work'." | `log.md` first entry + candidates for `plays/` later |
+
+The agent does not paraphrase answers into structure during the interview. Answers go in raw, verbatim, into the transcript. The transcript becomes a single source. Structure-extraction happens AFTER.
+
+### B3. Save the transcript as a source
+
+The agent calls `org_save_source` with:
+- `path: sources/init-interview-<YYYY-MM-DD>.md`
+- `content: <the full transcript, verbatim, including the agent's questions>`
+
+The transcript header includes the interview frame from B1, so anyone reading the source later understands its epistemic status (testimony, not document).
+
+### B4. Extract structure from the transcript
+
+The agent now treats the saved transcript as the only source. It walks back through each answer and proposes structure exactly as it would for a documents-first init: §2 (identity), §3 (operational), §4 (stakeholder + financial). Every proposed node cites `(init-interview-<date>)`. Every diff is shown to the user before being written.
+
+### B5. Drop a §clarifications block in the transcript
+
+If during structure-extraction the agent finds that an answer is too thin to support a node (e.g. "we have a finance team" with no further detail), it doesn't invent. It either:
+- Asks one targeted clarification question and appends the Q&A to the transcript (treating it as a continuation of the same source), then writes the node, OR
+- Drops the candidate node and notes the gap in `open-questions.md` for a later session.
+
+### B6. Hand off to documents-first
+
+After the interview-first pass produces a baseline structure, the user is encouraged to start dropping real documents into `org/sources/` whenever any appear. The regular `ingest` skill (one document at a time) takes over from there. Each new document either reinforces a node already cited from the interview, or contradicts it — in which case the agent surfaces the contradiction and asks which source wins.
+
+The interview source is never "replaced": it stays as the founding citation for everything it created. New documents add citations alongside, they don't erase.
 
 ## What `init` produces
 
