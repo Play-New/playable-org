@@ -175,12 +175,13 @@ Symbol convention: ⚖ legal, 🏛 statutory, 💬 judgement-preserved, ⚪ none
 
 **c. Scope aggregate** — distribution of operational decisions as ASCII bars.
 
-**Standalone HTML viewer** (optional, generated from the matches JSON):
+**Standalone HTML viewer** — the leader-facing artefact. Generated from the matches JSON plus the agent's interpretive inputs:
 
 ```bash
 python3 skills/playbooks/ai-exposure/viewer.py \
   --matches <path-to-matches.json> \
   --metadata <path-to-activities-metadata.json> \
+  --decisions <path-to-decisions.json> \
   --area-notes <path-to-area-notes.json> \
   --area-descriptions <path-to-area-descriptions.json> \
   --org-description-file <path-to-org-description.txt> \
@@ -190,37 +191,69 @@ python3 skills/playbooks/ai-exposure/viewer.py \
   --title "<title>"
 ```
 
-Output: a single self-contained HTML file (vanilla HTML/CSS/JS, no external deps). Visual style inspired by Anthropic's Job Explorer (anthropic.com/economic-index).
+Output: a single self-contained HTML file (vanilla HTML/CSS/JS, no external deps). Visual style is the Play New design system, **identical chrome to the value-map viewer**: pure white surface, editorial Inter Variable typography, hairlines, single accent. One uniform container width (1240px) is applied to every block on the page; prose elements (h1, lead, decision answers, footer copy) wrap at an inner readable line length while the block-level frame stays constant.
 
-Page structure, top to bottom:
+Page structure, top to bottom — same shape across every fork of this template:
 
-1. **Organization snapshot** (only when no specific area filter is active): free-text description + summary numbers + a horizontal distribution bar showing the org-wide split across the four Anthropic categories (automated / augmented / assistive / no-data) + legend with percentages.
+1. **Header** (centered in the container): an eyebrow `ai exposure` + h1 with the play title + a one-paragraph lead explaining how to read the map.
 
-2. **Filters**: search box, signal level (high signal / some signal / low signal / no signal / low confidence — these are activity-level levels derived from the per-task category counts; see thresholds in §4), area filter pills.
+2. **Legend**: the four Anthropic category swatches (automated / augmented / assistive / no-data) with their plain-language labels.
 
-3. **Per-area sections** (when "All areas" is active, group by area; otherwise show only the selected area):
-   - Area heading
-   - **Snapshot block**: scope description (structure-grounded one-liner from the area's `nodes/units/<area>.md` perimeter), distribution bar specific to that area, and an interpretive **commentary note** (free prose authored by the agent, audited by `audit-notes.py`).
-   - Grid of activity cards.
+3. **Filters**: search box, signal level (high signal / some signal / low signal / no signal / low confidence — these are activity-level levels derived from the per-task category counts; see thresholds in §4), area filter pills.
 
-4. **Activity card**: title, ID + area, short description, **closest O*NET task block** (top-1 task with confidence % and autonomy /5; supports an optional Italian translation when `--task-translations` provided), 5×5 grid of squares (one per top-K match) clustered by category color (verde → viola → azzurro → beige) with hover tooltip and click-to-modal, and a stat line showing the per-category breakdown (e.g., "X automated · Y augmented · Z assistive · W no data").
+4. **Organization snapshot** (only when no specific area filter is active): free-text description + summary numbers + a horizontal distribution bar showing the org-wide split across the four Anthropic categories + legend with percentages.
 
-5. **Modal (on square click)**: full O*NET task text (and translation if available), confidence, autonomy, sample size with warning if `< 100`, category, and a chain-of-inference disclaimer ("org activity → closest O*NET task → category labels the conversation sample, not the activity").
+5. **Per-area sections** (when "All areas" is active, group by area; otherwise show only the selected area). Each section starts with a hairline and uses a **two-column area-head** that spans the container width:
+   - Left column: area heading + scope description (structure-grounded one-liner from the area's `nodes/units/<area>.md` perimeter) + the interpretive **commentary note** (free prose authored by the agent, audited by `audit-notes.py`).
+   - Right column: distribution bar specific to that area + dist legend with percentages.
+   - Below the head: grid of activity cards (cards have no frame — bare title + closest-match pull-quote with hairline accent + 5×5 task-square grid + stat line).
 
-The viewer is consumer-facing: the leader/decision-maker opens it in a browser, scans the org snapshot, drills into an area, opens individual cards. The markdown play remains the audit trail; the HTML is the navigable consumer surface.
+6. **Activity card**: title, ID + area, short description, **closest O*NET task block** (top-1 task with confidence % and autonomy /5; supports an optional Italian translation when `--task-translations` provided), 5×5 grid of squares (one per top-K match) clustered by category color with hover tooltip and click-to-popover, and a stat line showing the per-category breakdown.
+
+7. **Decisions section** ("How to read this map"): an h2 above the list, a one-line lead, then each decision rendered as `.question` (display-weight) + `.answer` (paragraph prose, possibly multi-paragraph) + `.source` (mono-font citation). This is the leader-facing reading of the map. It is the load-bearing interpretive surface — the deterministic numbers come from `match.py`, the page chrome comes from the design system, but the *meaning* of the map for this org lives in this section.
+
+8. **Footer**: dataset reference, embedding model, similarity threshold.
+
+**Click on a task-square** opens a small **floating popover** (not a modal) next to the clicked square: eyebrow with the area, the activity title, the matched O*NET task, confidence + autonomy + sample size + category, and a chain-of-inference disclaimer ("org activity → closest O*NET task → category labels the conversation sample, not the activity"). Esc, click outside, or the close button dismisses. The popover positions itself relative to the click target and clamps to the viewport edges.
+
+The viewer is the **consumer surface**: the leader/decision-maker opens it in a browser, reads the header, scans the org snapshot, drills into an area, opens individual cards, then reads the decisions section to land on what to do. The markdown play remains the audit trail; the HTML is the navigable consumer artefact.
+
+**Decisions JSON shape** — the agent fills this as the final step of the playbook:
+
+```json
+[
+  {
+    "question": "Which activities are most exposed to AI delegation today, and how exposed?",
+    "answer": "Multi-paragraph prose. Names this org's units and people. Ends on a Monday move, not just an observation.\n\nSecond paragraph if needed for the move.",
+    "source": "outline-charter-2024 §1, §9; Anthropic Economic Index 2026-03-24"
+  },
+  ...
+]
+```
+
+Each decision is a question the leader of this org should be able to answer after reading the map, plus the answer the play asserts. The autoresearch loop (see §11) scores these on five dimensions before a play is considered shippable.
+
+**Reference example** — the canonical artefact for this skill is the Outline & Co. fake-org play:
+- `mcp-server/test-fixtures/fake-org/plays/data/ai-exposure-outline-2026-05-07.json` — the play wrapper (matches + scope + decisions)
+- `mcp-server/test-fixtures/fake-org/plays/data/ai-exposure-outline-2026-05-07.html` — the rendered viewer
+
+Open the HTML in a browser to see exactly what this skill produces. The four decisions in that play frame displacement vs augmentation, hours reallocation across the studio's four units, and the missing context-keeping role. They mention `audience-research`, `brand-book`, `identity-system-build`, `visual-language` by name, use no AEI vocabulary in the prose, and pass autoresearch on all four deterministic dimensions.
 
 **Optional inputs** that enrich the viewer:
 
 - **`--metadata <list.json>`**: list of `{id, title, description, area, unit, ...}` for each activity. Title and description make cards readable instead of showing only IDs.
+- **`--decisions <list.json>`**: list of `{question, answer, source}`. When supplied, renders the "How to read this map" section. **Required** for a shippable play — autoresearch fails without it.
 - **`--area-descriptions <dict.json>`**: `{area_id: "high-level scope description"}`. One line per area, structure-grounded (typically copied from the area's `nodes/units/<area>.md` frontmatter `description` field).
 - **`--area-notes <dict.json>`**: `{area_id: "interpretive commentary"}`. Free prose, 3-5 sentences per area, authored by the agent. Must pass `audit-notes.py` before being shipped.
 - **`--org-description` / `--org-description-file`**: free text describing the organization, rendered at the top.
 - **`--task-translations <dict.json>`**: `{english_task: target_language_task}` for displaying O*NET task names in the UI language. Translations can come from any pipeline (manual, LLM-assisted, machine translation) — the viewer only consumes the dict.
-- **`--lang en|it`**: UI language for labels, legends, modal copy. Default `en`.
+- **`--lang en|it`**: UI language for labels, legends, popover copy. Default `en`.
 
-### 9. Write the play
+### 9. Write the play (optional — the HTML viewer is the primary consumer surface)
 
-In `org/plays/ai-exposure-<scope>-<date>.md`:
+The leader-facing artefact is the rendered HTML from §8 (with the `decisions[]` array attached). The markdown play is now an optional companion for the audit trail; when written, its body mirrors the HTML's `decisions[]` content verbatim plus the §10 audit notes. Forks that don't ship the markdown play but do ship the HTML pass autoresearch the same way.
+
+When a markdown play is written, place it in `org/plays/ai-exposure-<scope>-<date>.md`:
 
 ```yaml
 ---
