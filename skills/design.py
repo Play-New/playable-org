@@ -8,6 +8,22 @@ Convention: viewers compose primitives, never write inline CSS. This module
 is the only place where typography, spacing, color, and layout decisions
 live. Update once, every viewer follows.
 
+Visual version: 2 (Play New)
+- v1: Inter Variable + monochrome-with-state-accents (#1a1a1a / #e5e5e5).
+- v2 (current): Play New design system. Mirage variable as the single
+  font family (display/body/mono all aliased). Pure monochrome —
+  opacity-layered black on white, no chromatic colors. Backward-compat
+  aliases (--bg-soft, --line, --muted, --soft) preserved so existing
+  viewer EXTRA_CSS keeps building. State colors (--warn, --success,
+  --error, --info) preserved for now, scheduled for phase-2 removal in
+  favor of weight/opacity/eyebrow-label differentiation.
+
+License note: the bundled `_assets/fonts/mirage-variable.woff2` is
+Mirage variable — confirm licensing terms before re-distributing the
+public template. If shipping a fork that cannot use Mirage, drop the
+woff2 file and the @font-face block falls through to the system-ui
+fallback chain declared on `html, body`.
+
 Public API:
 
     from design import (
@@ -18,11 +34,12 @@ Public API:
         pill,
         item_list, item,
         card_grid, card,
+        modal_shell, modal_script, modal_field,
     )
 
-The `base_css()` string already contains an `@font-face` block for Inter
-Variable (with `opsz` axis), embedded as a base64 data URL so the rendered
-HTML is fully offline-portable.
+The `base_css()` string already contains an `@font-face` block for
+Mirage variable, embedded as a base64 data URL so the rendered HTML is
+fully offline-portable.
 """
 
 from __future__ import annotations
@@ -32,7 +49,7 @@ from html import escape
 from pathlib import Path
 from typing import Iterable
 
-_FONT_PATH = Path(__file__).resolve().parent / "_assets" / "fonts" / "inter-variable.woff2"
+_FONT_PATH = Path(__file__).resolve().parent / "_assets" / "fonts" / "mirage-variable.woff2"
 
 
 # ----------------------------------------------------------------------
@@ -40,7 +57,7 @@ _FONT_PATH = Path(__file__).resolve().parent / "_assets" / "fonts" / "inter-vari
 # ----------------------------------------------------------------------
 
 def _font_data_url() -> str:
-    """Inter Variable as a base64 data URL. Empty if the woff2 is missing."""
+    """Mirage variable as a base64 data URL. Empty if the woff2 is missing."""
     if not _FONT_PATH.is_file():
         return ""
     encoded = base64.b64encode(_FONT_PATH.read_bytes()).decode("ascii")
@@ -48,16 +65,17 @@ def _font_data_url() -> str:
 
 
 def _font_face_block() -> str:
-    """`@font-face` for Inter Variable with both `wght` and `opsz` axes.
+    """`@font-face` for Mirage variable.
 
-    Falls back to system sans if the woff2 is not present (e.g. dev mode).
+    Falls back to system-ui / -apple-system if the woff2 is not present
+    (e.g. the public-template fork chooses to ship without Mirage).
     """
     data_url = _font_data_url()
     if not data_url:
         return ""
     return f"""@font-face {{
-  font-family: 'Inter';
-  src: url('{data_url}') format('woff2-variations');
+  font-family: 'Mirage';
+  src: url('{data_url}') format('woff2');
   font-weight: 100 900;
   font-display: swap;
 }}"""
@@ -68,76 +86,331 @@ def _font_face_block() -> str:
 # ----------------------------------------------------------------------
 
 def _base_css() -> str:
-    """Tokens + every primitive class. ~5KB once font is excluded."""
+    """Tokens + every primitive class. Loaded once per viewer page."""
     return f"""{_font_face_block()}
 
 :root {{
-  /* Colour tokens — monochrome with state accents only */
-  --fg: #1a1a1a;
-  --muted: #6b6b6b;
-  --soft: #999999;
-  --line: #e5e5e5;
-  --bg: #ffffff;
-  --bg-soft: #fafafa;
+  /* ==================================================================
+     COLOR — Play New monochrome. Opacity-layered black on white.
+     Zero chromatic colors. All "color" comes from imagery, opacity
+     layers, and hairline borders. The brand has one accent: black.
+     ================================================================== */
 
-  --warn: #c47558;
-  --warn-bg: #fbf2eb;
-  --error: #b91c1c;
-  --error-bg: #fef2f2;
-  --success: #047857;
-  --success-bg: #ecfdf5;
-  --info: #2563eb;
-  --info-bg: #eff6ff;
+  /* Backgrounds */
+  --bg:               #FFFFFF;
+  --bg-alt:           rgba(0, 0, 0, 0.03);   /* card / section tint */
+  --bg-muted:         rgba(0, 0, 0, 0.05);   /* slightly stronger tint */
+  --bg-dark:          #1A1A1A;               /* inverted sections */
 
-  /* Spacing scale (4px base) */
-  --s-1: 4px;
-  --s-2: 8px;
-  --s-3: 12px;
-  --s-4: 16px;
-  --s-5: 20px;
-  --s-6: 24px;
-  --s-7: 32px;
-  --s-8: 40px;
-  --s-9: 48px;
-  --s-10: 64px;
-  --s-11: 80px;
+  /* Foregrounds (black-on-white) */
+  --fg:               rgba(0, 0, 0, 0.9);    /* body / primary */
+  --fg-muted:         rgba(0, 0, 0, 0.5);    /* labels, secondary */
+  --fg-light:         rgba(0, 0, 0, 0.35);   /* tertiary */
+  --fg-faint:         rgba(0, 0, 0, 0.25);   /* disabled, captions */
+  --fg-hairline:      rgba(0, 0, 0, 0.1);    /* borders, separators */
+
+  /* Inverse (on dark surfaces) */
+  --fg-inverse:       #FAFAFA;
+  --fg-inverse-90:    rgba(255, 255, 255, 0.9);
+  --fg-inverse-70:    rgba(255, 255, 255, 0.7);
+  --fg-inverse-50:    rgba(255, 255, 255, 0.5);
+  --fg-inverse-15:    rgba(255, 255, 255, 0.15);
+  --fg-inverse-08:    rgba(255, 255, 255, 0.08);
+
+  /* Accent — there is only one. */
+  --accent:           rgba(0, 0, 0, 0.9);
+
+  /* Selection */
+  --selection-bg:     rgba(0, 0, 0, 0.9);
+  --selection-fg:     #FFFFFF;
+
+  /* ------------------------------------------------------------------
+     Backward-compat aliases — existing viewer EXTRA_CSS uses these.
+     Phase 2 will migrate viewers to the canonical names above and
+     these aliases will be dropped.
+     ------------------------------------------------------------------ */
+  --bg-soft:          rgba(0, 0, 0, 0.03);   /* alias of --bg-alt */
+  --muted:            rgba(0, 0, 0, 0.5);    /* alias of --fg-muted */
+  --soft:             rgba(0, 0, 0, 0.35);   /* alias of --fg-light */
+  --line:             rgba(0, 0, 0, 0.1);    /* alias of --fg-hairline */
+
+  /* ------------------------------------------------------------------
+     State colors — preserved for now; Play New is monochrome and these
+     should phase out in favor of weight/opacity/eyebrow-label differen-
+     tiation. Used today by .pn-pill--warn / --error / --ok / --info and a handful
+     of legacy viewer rules.
+     ------------------------------------------------------------------ */
+  --warn:             #c47558;
+  --warn-bg:          #fbf2eb;
+  --error:            #b91c1c;
+  --error-bg:         #fef2f2;
+  --success:          #047857;
+  --success-bg:       #ecfdf5;
+  --info:             #2563eb;
+  --info-bg:          #eff6ff;
+
+  /* ==================================================================
+     TYPE — Mirage variable. One family, weight 100..900.
+     Display, body, and the historical "mono" role all alias to Mirage.
+     ================================================================== */
+
+  --font-display:     'Mirage', system-ui, -apple-system, sans-serif;
+  --font-body:        'Mirage', system-ui, -apple-system, sans-serif;
+  --font-mono:        'Mirage', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --w-regular:        400;
+  --w-medium:         500;
+  --w-semibold:       600;
+  --w-bold:           700;
+
+  /* Scale (rem, 16px base) */
+  --t-xs:             0.75rem;
+  --t-sm:             0.8125rem;
+  --t-base:           1rem;
+  --t-lg:             1.25rem;
+  --t-xl:             1.5rem;
+  --t-2xl:            1.75rem;
+  --t-3xl:            2rem;
+  --t-4xl:            2.5rem;
+  --t-5xl:            4rem;
+  --t-hero:           clamp(3rem, 12vw, 10rem);
+  --t-block:          clamp(2.5rem, 6vw, 4rem);
+  --t-quote:          clamp(1.5rem, 3vw, 2rem);
+
+  /* Line heights — TIGHT for display, airy for body */
+  --lh-tight:         0.9;
+  --lh-display:       1.1;
+  --lh-snug:          1.25;
+  --lh-normal:        1.5;
+  --lh-relaxed:       1.7;
+
+  /* Letter-spacing — display is always negative */
+  --ls-hero:          -0.05em;
+  --ls-h1:            -0.04em;
+  --ls-h2:            -0.03em;
+  --ls-tight:         -0.02em;
+  --ls-wide:          0.04em;       /* uppercase eyebrow */
+  --ls-uppercase:     0.10em;
+
+  /* ==================================================================
+     SPACING — 4px grid.
+     Two parallel naming conventions: --s-* (legacy) and --sp-* (Play
+     New). Same values, kept for compatibility during phase 1.
+     ================================================================== */
+
+  --s-1:              4px;
+  --s-2:              8px;
+  --s-3:              12px;
+  --s-4:              16px;
+  --s-5:              20px;
+  --s-6:              24px;
+  --s-7:              32px;
+  --s-8:              40px;
+  --s-9:              48px;
+  --s-10:             64px;
+  --s-11:             80px;
+
+  --sp-1:             0.25rem;
+  --sp-2:             0.5rem;
+  --sp-3:             0.75rem;
+  --sp-4:             1rem;
+  --sp-5:             1.25rem;
+  --sp-6:             1.5rem;
+  --sp-8:             2rem;
+  --sp-10:            2.5rem;
+  --sp-12:            3rem;
+  --sp-16:            4rem;
+  --sp-20:            5rem;
+
+  /* ==================================================================
+     RADII — 4px (controls), 8px (chrome), 12px (images), 16-24px (cards),
+     full (pills/avatars). No 16 in light surfaces.
+     ================================================================== */
+
+  --r-sm:             0.25rem;       /* 4px   */
+  --r-md:             0.5rem;        /* 8px   */
+  --r-lg:             0.75rem;       /* 12px  */
+  --r-xl:             1rem;          /* 16px  */
+  --r-2xl:            1.25rem;       /* 20px  */
+  --r-3xl:            1.5rem;        /* 24px  */
+  --r-full:           9999px;
+
+  /* ==================================================================
+     SHADOWS — used sparingly. Paper cards, banner overlays only.
+     ================================================================== */
+
+  --shadow-paper:     0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-banner:    0 4px 24px rgba(0, 0, 0, 0.2);
+
+  /* ==================================================================
+     MOTION — fast, understated.
+     ================================================================== */
+
+  --dur-fast:         0.2s;
+  --dur-base:         0.3s;
+  --dur-slow:         0.5s;
+  --dur-entry:        0.8s;
+  --ease-out:         ease-out;
+  --ease-in:          ease-in;
 }}
 
 * {{ box-sizing: border-box; }}
+
+::selection {{ background: var(--selection-bg); color: var(--selection-fg); }}
 
 html, body {{
   margin: 0;
   padding: 0;
   background: var(--bg);
   color: var(--fg);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-feature-settings: 'cv11', 'ss01';
+  font-family: var(--font-body);
   font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
-  line-height: 1.55;
+  line-height: var(--lh-normal);
   font-size: 15px;
 }}
 
 a {{ color: inherit; text-underline-offset: 2px; }}
-a:hover {{ color: var(--muted); }}
+a:hover {{ color: var(--fg-muted); }}
 
 button {{
   font-family: inherit;
   cursor: pointer;
   background: var(--bg);
-  border: 1px solid var(--line);
+  border: 1px solid var(--fg-hairline);
   color: var(--fg);
   padding: var(--s-2) var(--s-4);
-  border-radius: 3px;
+  border-radius: var(--r-sm);
   font-size: 0.85rem;
+  transition: background var(--dur-fast) var(--ease-out);
 }}
-button:hover {{ background: var(--bg-soft); }}
+button:hover {{ background: var(--bg-alt); }}
 
 :focus-visible {{ outline: 2px solid var(--fg); outline-offset: 2px; }}
 
-/* ------------------------------------------------------------------
-   Layout primitives
-   ------------------------------------------------------------------ */
+@keyframes pn-fade {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
+@keyframes pn-pop  {{ from {{ opacity: 0; transform: translateY(8px); }}
+                       to   {{ opacity: 1; transform: translateY(0);   }} }}
+
+/* ==================================================================
+   SEMANTIC TYPE classes — drop onto any element for one-line styling.
+   Mirror the Play New design system's colors_and_type.css.
+   ================================================================== */
+
+.pn-hero {{
+  font-family: var(--font-display);
+  font-weight: var(--w-medium);
+  font-size: var(--t-hero);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-hero);
+  color: var(--fg);
+}}
+
+.pn-h1 {{
+  font-family: var(--font-display);
+  font-weight: var(--w-medium);
+  font-size: var(--t-5xl);
+  line-height: 0.95;
+  letter-spacing: var(--ls-h1);
+  color: var(--fg);
+}}
+
+.pn-h2 {{
+  font-family: var(--font-display);
+  font-weight: var(--w-medium);
+  font-size: var(--t-block);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-h2);
+  color: var(--fg);
+}}
+
+.pn-h3 {{
+  font-family: var(--font-display);
+  font-weight: var(--w-medium);
+  font-size: var(--t-2xl);
+  line-height: 1.2;
+  color: var(--fg);
+}}
+
+/* Big statement — used as "fig-text" / compare list items */
+.pn-statement {{
+  font-family: var(--font-display);
+  font-weight: var(--w-medium);
+  font-size: var(--t-xl);
+  line-height: var(--lh-snug);
+  color: var(--fg-muted);
+}}
+.pn-statement strong {{ color: var(--fg); font-weight: var(--w-medium); }}
+
+/* Pull quote — editorial */
+.pn-quote {{
+  font-family: var(--font-display);
+  font-weight: var(--w-medium);
+  font-size: var(--t-quote);
+  line-height: 1.3;
+  color: var(--fg);
+}}
+
+/* Body */
+.pn-body {{
+  font-family: var(--font-body);
+  font-size: var(--t-base);
+  line-height: var(--lh-relaxed);
+  color: var(--fg);
+}}
+
+/* Lead / subtitle */
+.pn-lead {{
+  font-family: var(--font-body);
+  font-size: var(--t-lg);
+  line-height: var(--lh-normal);
+  color: var(--fg-muted);
+}}
+
+/* Nav / column link */
+.pn-link {{
+  font-family: var(--font-body);
+  font-size: var(--t-base);
+  line-height: 1.6;
+  color: var(--fg);
+  text-decoration: none;
+}}
+.pn-link:hover {{ text-decoration: underline; text-underline-offset: 3px; }}
+
+/* Small caps-style label — UPPERCASE eyebrow */
+.pn-eyebrow {{
+  font-family: var(--font-display);
+  font-weight: var(--w-medium);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wide);
+}}
+
+/* Big number — "01." "85%" "€240K" */
+.pn-num {{
+  font-family: var(--font-display);
+  font-weight: var(--w-bold);
+  font-size: var(--t-4xl);
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}}
+
+/* Footer / legal */
+.pn-legal {{
+  font-family: var(--font-body);
+  font-size: var(--t-sm);
+  line-height: var(--lh-normal);
+  color: var(--fg-muted);
+}}
+
+/* ==================================================================
+   COMPONENT PRIMITIVES
+   ================================================================== */
+
+/* Layout */
 
 .pn-shell {{
   max-width: 1100px;
@@ -147,41 +420,39 @@ button:hover {{ background: var(--bg-soft); }}
 
 .pn-rule {{
   height: 1px;
-  background: var(--line);
+  background: var(--fg-hairline);
   border: none;
   margin: var(--s-9) 0 var(--s-7);
 }}
 
-/* ------------------------------------------------------------------
-   Header
-   ------------------------------------------------------------------ */
+/* Header */
 
 .pn-header {{ margin-bottom: var(--s-9); }}
 .pn-header__eyebrow {{
   font-size: 0.72rem;
-  font-weight: 500;
+  font-weight: var(--w-medium);
   text-transform: uppercase;
-  letter-spacing: 0.10em;
-  color: var(--soft);
+  letter-spacing: var(--ls-uppercase);
+  color: var(--fg-light);
   margin-bottom: var(--s-4);
 }}
 .pn-header__title {{
+  font-family: var(--font-display);
   font-size: 2.4rem;
-  font-weight: 500;
-  letter-spacing: -0.025em;
+  font-weight: var(--w-medium);
+  letter-spacing: var(--ls-tight);
   line-height: 1.1;
   margin: 0;
 }}
 .pn-header__sub {{
   margin-top: var(--s-3);
-  color: var(--muted);
+  color: var(--fg-muted);
   font-size: 0.95rem;
   max-width: 640px;
+  line-height: var(--lh-normal);
 }}
 
-/* ------------------------------------------------------------------
-   Section header
-   ------------------------------------------------------------------ */
+/* Section header */
 
 .pn-section {{
   display: flex;
@@ -191,34 +462,31 @@ button:hover {{ background: var(--bg-soft); }}
 }}
 .pn-section__num {{
   font-size: 0.78rem;
-  font-weight: 500;
-  color: var(--soft);
+  font-weight: var(--w-medium);
+  color: var(--fg-light);
   letter-spacing: 0.05em;
   font-variant-numeric: tabular-nums;
 }}
 .pn-section__title {{
   font-size: 0.78rem;
-  font-weight: 500;
+  font-weight: var(--w-medium);
   text-transform: uppercase;
-  letter-spacing: 0.10em;
+  letter-spacing: var(--ls-uppercase);
   color: var(--fg);
 }}
 .pn-section__hint {{
   margin-left: auto;
   font-size: 0.78rem;
-  color: var(--soft);
+  color: var(--fg-light);
 }}
 
-/* ------------------------------------------------------------------
-   Stat grid
-   ------------------------------------------------------------------ */
+/* Stat grid */
 
-.pn-stat {{
-  padding: var(--s-7);
-}}
+.pn-stat {{ padding: var(--s-7); }}
 .pn-stat__num {{
+  font-family: var(--font-display);
   font-size: 2.8rem;
-  font-weight: 400;
+  font-weight: var(--w-regular);
   line-height: 1;
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
@@ -227,65 +495,69 @@ button:hover {{ background: var(--bg-soft); }}
 }}
 .pn-stat__lab {{
   font-size: 0.72rem;
-  font-weight: 500;
+  font-weight: var(--w-medium);
   text-transform: uppercase;
-  letter-spacing: 0.10em;
-  color: var(--muted);
+  letter-spacing: var(--ls-uppercase);
+  color: var(--fg-muted);
 }}
 
 .pn-stat-grid {{
   display: grid;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--fg-hairline);
+  border-bottom: 1px solid var(--fg-hairline);
 }}
 .pn-stat-grid--4 {{ grid-template-columns: repeat(4, 1fr); }}
 .pn-stat-grid--3 {{ grid-template-columns: repeat(3, 1fr); }}
 .pn-stat-grid--2 {{ grid-template-columns: repeat(2, 1fr); }}
 
-.pn-stat-grid > .pn-stat {{ border-right: 1px solid var(--line); }}
+.pn-stat-grid > .pn-stat {{ border-right: 1px solid var(--fg-hairline); }}
 .pn-stat-grid--4 > .pn-stat:nth-child(4n+1) {{ padding-left: 0; }}
 .pn-stat-grid--4 > .pn-stat:nth-child(4n)   {{ padding-right: 0; border-right: none; }}
 .pn-stat-grid--3 > .pn-stat:nth-child(3n+1) {{ padding-left: 0; }}
 .pn-stat-grid--3 > .pn-stat:nth-child(3n)   {{ padding-right: 0; border-right: none; }}
 .pn-stat-grid--2 > .pn-stat:nth-child(2n+1) {{ padding-left: 0; }}
 .pn-stat-grid--2 > .pn-stat:nth-child(2n)   {{ padding-right: 0; border-right: none; }}
-.pn-stat-grid--4 > .pn-stat:nth-child(n+5) {{ border-top: 1px solid var(--line); }}
-.pn-stat-grid--3 > .pn-stat:nth-child(n+4) {{ border-top: 1px solid var(--line); }}
-.pn-stat-grid--2 > .pn-stat:nth-child(n+3) {{ border-top: 1px solid var(--line); }}
+.pn-stat-grid--4 > .pn-stat:nth-child(n+5) {{ border-top: 1px solid var(--fg-hairline); }}
+.pn-stat-grid--3 > .pn-stat:nth-child(n+4) {{ border-top: 1px solid var(--fg-hairline); }}
+.pn-stat-grid--2 > .pn-stat:nth-child(n+3) {{ border-top: 1px solid var(--fg-hairline); }}
 
-/* ------------------------------------------------------------------
-   Pill / code
-   ------------------------------------------------------------------ */
+/* Pill / code */
 
 .pn-pill {{
   display: inline-flex;
   align-items: center;
   font-size: 0.66rem;
-  font-weight: 500;
-  letter-spacing: 0.10em;
+  font-weight: var(--w-medium);
+  letter-spacing: var(--ls-uppercase);
   text-transform: uppercase;
   padding: 2px var(--s-2);
-  border-radius: 3px;
+  border-radius: var(--r-sm);
   line-height: 1.5;
 }}
-.pn-pill--neutral {{ background: var(--bg-soft);    color: var(--muted); }}
+.pn-pill--neutral {{ background: var(--bg-alt);     color: var(--fg-muted); }}
 .pn-pill--error   {{ background: var(--error-bg);   color: var(--error); }}
 .pn-pill--warn    {{ background: var(--warn-bg);    color: var(--warn); }}
 .pn-pill--ok      {{ background: var(--success-bg); color: var(--success); }}
 .pn-pill--info    {{ background: var(--info-bg);    color: var(--info); }}
 
+.pn-code, code {{
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}}
+code {{
+  background: var(--bg-alt);
+  padding: 0.125em 0.375em;
+  border-radius: var(--r-sm);
+}}
 .pn-code {{
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  font-size: 0.72rem;
-  font-weight: 500;
+  font-weight: var(--w-medium);
   letter-spacing: 0.02em;
-  color: var(--muted);
+  color: var(--fg-muted);
   font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
 }}
 
-/* ------------------------------------------------------------------
-   Item list (issues / activities / signals)
-   ------------------------------------------------------------------ */
+/* Item list */
 
 .pn-item-list {{ display: flex; flex-direction: column; }}
 .pn-item {{
@@ -293,7 +565,7 @@ button:hover {{ background: var(--bg-soft); }}
   grid-template-columns: 120px 1fr;
   gap: var(--s-7);
   padding: var(--s-6) 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--fg-hairline);
 }}
 .pn-item:last-child {{ border-bottom: none; }}
 .pn-item__meta {{
@@ -302,31 +574,29 @@ button:hover {{ background: var(--bg-soft); }}
   gap: var(--s-2);
   flex-wrap: wrap;
 }}
-.pn-item__head {{ font-size: 0.95rem; font-weight: 500; margin-bottom: var(--s-2); }}
-.pn-item__body {{ font-size: 0.9rem; color: var(--muted); line-height: 1.6; }}
+.pn-item__head {{ font-size: 0.95rem; font-weight: var(--w-medium); margin-bottom: var(--s-2); }}
+.pn-item__body {{ font-size: 0.9rem; color: var(--fg-muted); line-height: 1.6; }}
 .pn-item__refs {{
   margin-top: var(--s-3);
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.78rem;
-  color: var(--soft);
+  color: var(--fg-light);
 }}
 
-/* ------------------------------------------------------------------
-   Card grid (capabilities / components)
-   ------------------------------------------------------------------ */
+/* Card grid */
 
-.pn-card-grid {{ display: grid; border-top: 1px solid var(--line); }}
+.pn-card-grid {{ display: grid; border-top: 1px solid var(--fg-hairline); }}
 .pn-card-grid--2 {{ grid-template-columns: repeat(2, 1fr); }}
 .pn-card-grid--1 {{ grid-template-columns: 1fr; }}
 
 .pn-card {{
   padding: var(--s-6) var(--s-7);
-  border-bottom: 1px solid var(--line);
-  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--fg-hairline);
+  border-right: 1px solid var(--fg-hairline);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background var(--dur-fast) var(--ease-out);
 }}
-.pn-card:hover {{ background: var(--bg-soft); }}
+.pn-card:hover {{ background: var(--bg-alt); }}
 .pn-card-grid--2 > .pn-card:nth-child(2n+1) {{ padding-left: 0; }}
 .pn-card-grid--2 > .pn-card:nth-child(2n)   {{ padding-right: 0; border-right: none; }}
 .pn-card-grid--1 > .pn-card                 {{ padding-left: 0; padding-right: 0; border-right: none; }}
@@ -339,23 +609,23 @@ button:hover {{ background: var(--bg-soft); }}
   flex-wrap: wrap;
 }}
 .pn-card__name {{
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.88rem;
-  font-weight: 500;
+  font-weight: var(--w-medium);
   letter-spacing: -0.005em;
   color: var(--fg);
 }}
 .pn-card__tag {{
   font-size: 0.66rem;
-  font-weight: 500;
+  font-weight: var(--w-medium);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--fg-muted);
 }}
 .pn-card__tag--accent {{ color: var(--warn); }}
 .pn-card__desc {{
   font-size: 0.88rem;
-  color: var(--muted);
+  color: var(--fg-muted);
   line-height: 1.55;
   margin-bottom: var(--s-3);
 }}
@@ -363,28 +633,24 @@ button:hover {{ background: var(--bg-soft); }}
   display: flex;
   gap: var(--s-4);
   font-size: 0.74rem;
-  color: var(--soft);
+  color: var(--fg-light);
   font-variant-numeric: tabular-nums;
   flex-wrap: wrap;
 }}
 
-/* ------------------------------------------------------------------
-   Footer
-   ------------------------------------------------------------------ */
+/* Footer */
 
 .pn-footer {{
   margin-top: var(--s-11);
   padding-top: var(--s-6);
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--fg-hairline);
   font-size: 0.78rem;
-  color: var(--soft);
+  color: var(--fg-light);
   display: flex;
   justify-content: space-between;
 }}
 
-/* ------------------------------------------------------------------
-   Modal (used by playbook viewers for click-to-detail)
-   ------------------------------------------------------------------ */
+/* Modal */
 
 .pn-modal-backdrop {{
   position: fixed;
@@ -398,14 +664,16 @@ button:hover {{ background: var(--bg-soft); }}
   overflow-y: auto;
   backdrop-filter: blur(4px);
 }}
-.pn-modal-backdrop.is-open {{ display: flex; }}
+.pn-modal-backdrop.is-open {{ display: flex; animation: pn-fade var(--dur-fast) var(--ease-out); }}
 
 .pn-modal {{
   background: var(--bg);
-  border: 1px solid var(--line);
+  border: 1px solid var(--fg-hairline);
+  border-radius: var(--r-md);
   width: 100%;
   max-width: 720px;
   padding: var(--s-7) var(--s-8) var(--s-8);
+  animation: pn-pop var(--dur-base) var(--ease-out);
 }}
 .pn-modal__close {{
   float: right;
@@ -413,24 +681,25 @@ button:hover {{ background: var(--bg-soft); }}
   border: 0;
   font-size: 1.4rem;
   line-height: 1;
-  color: var(--muted);
+  color: var(--fg-muted);
   padding: 0;
   margin-left: var(--s-3);
 }}
 .pn-modal__close:hover {{ color: var(--fg); background: transparent; }}
 .pn-modal__title {{
+  font-family: var(--font-display);
   font-size: 1.4rem;
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-weight: var(--w-medium);
+  letter-spacing: var(--ls-tight);
   margin: 0 0 var(--s-4);
 }}
 .pn-modal__field {{ margin: var(--s-4) 0; }}
 .pn-modal__field-label {{
   font-size: 0.72rem;
-  font-weight: 500;
+  font-weight: var(--w-medium);
   text-transform: uppercase;
-  letter-spacing: 0.10em;
-  color: var(--soft);
+  letter-spacing: var(--ls-uppercase);
+  color: var(--fg-light);
   margin-bottom: var(--s-2);
 }}
 .pn-modal__field-value {{

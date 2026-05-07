@@ -45,7 +45,7 @@ Seven skills:
 - `world-model` — re-read the organization as a platform of capabilities + world model + intelligence layer + interfaces. Surface failure signals as roadmap.
 - `new-playbook` — meta-skill: scaffold a new playbook from a five-question interview.
 
-Each playbook produces a self-contained interactive HTML report. The design system uses Inter Variable, sober typography, hairline rules, monochrome palette with state accents only.
+Each playbook produces a self-contained interactive HTML report. The design system follows Play New: Mirage variable as the single font family, opacity-layered black on white, hairline rules, no chromatic colors. One brand, one accent.
 
 ## What it is not
 
@@ -82,4 +82,4 @@ Detailed instructions: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture
 
 MIT. See [`LICENSE`](LICENSE).
 
-The bundled Inter Variable font is licensed under the SIL Open Font License (Rasmus Andersson). The Anthropic Economic Index dataset shipped with `ai-exposure` is licensed under CC BY 4.0 (Anthropic).
+The bundled Mirage variable font is part of the Play New design system; license terms to be confirmed before public redistribution (forks that cannot include Mirage drop `_assets/fonts/mirage-variable.woff2` and inherit the system-ui fallback). The Anthropic Economic Index dataset shipped with `ai-exposure` is licensed under CC BY 4.0 (Anthropic).
