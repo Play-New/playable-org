@@ -79,7 +79,7 @@ python3 lint.py            # Tier 1: structural
 python3 lint-semantic.py   # Tier 2: semantic metrics
 ```
 
-The test fixture for tool tests is `mcp-server/test-fixtures/sample-org/` (a tiny generic org used by the test suite).
+The test fixture for tool tests is `mcp-server/test-fixtures/sample-org/` (the Outline & Co. fake creative studio — a fully populated org with 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources, and the four canonical playbook artefacts under `plays/data/`).
 
 ## Forks for instance content
 

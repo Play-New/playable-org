@@ -52,7 +52,7 @@ When prose is in a language other than English, prefer the local equivalent over
 - 4 analytical playbooks: `ai-exposure`, `value-map`, `reshuffle`, `world-model`. All four use `design.py` primitives via inheritance through their viewer.py modules. Each ships with build.py + audit.py + viewer.py.
 - 1 meta-skill: `new-playbook`. Five-question interview that scaffolds a new playbook.
 - `org/` empty: 3 identity stubs (`# REPLACE ME`), zero other content. Lint Tier 1 reports 3 expected warnings on the stubs (empty `sources` arrays); these go to 0 after init.
-- mcp-server e2e: 84/84 PASS against `mcp-server/test-fixtures/sample-org/` (a tiny generic Acme fixture: 1 mission, 2 units, 1 person, 1 stakeholder, 1 commitment, 1 source).
+- mcp-server e2e: 84/84 PASS against `mcp-server/test-fixtures/sample-org/` (the Outline & Co. fake creative studio: 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources, plus the four canonical playbook artefacts under `plays/data/`).
 - TypeScript build: clean.
 
 ## Maintenance

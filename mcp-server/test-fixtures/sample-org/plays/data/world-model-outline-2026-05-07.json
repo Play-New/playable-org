@@ -25,7 +25,7 @@
         "level": "area",
         "parent": "null",
         "description": "Client services area. Kickoff workshops, weekly check-ins, asset handovers, scoping for new pitches.",
-        "_path": "fake-org/nodes/units/client-services.md"
+        "_path": "sample-org/nodes/units/client-services.md"
       },
       {
         "id": "design",
@@ -33,7 +33,7 @@
         "level": "area",
         "parent": "null",
         "description": "Brand identity area. Identity systems, visual languages, brand books, motion systems.",
-        "_path": "fake-org/nodes/units/design.md"
+        "_path": "sample-org/nodes/units/design.md"
       },
       {
         "id": "digital-product",
@@ -41,7 +41,7 @@
         "level": "area",
         "parent": "null",
         "description": "Digital product area. UI design for B2B web and apps; design systems for client product teams; embedded UX research.",
-        "_path": "fake-org/nodes/units/digital-product.md"
+        "_path": "sample-org/nodes/units/digital-product.md"
       },
       {
         "id": "operations",
@@ -49,7 +49,7 @@
         "level": "area",
         "parent": "null",
         "description": "Operations area. Studio finance, hiring, light HR, vendor management. Does not produce client work.",
-        "_path": "fake-org/nodes/units/operations.md"
+        "_path": "sample-org/nodes/units/operations.md"
       },
       {
         "id": "strategy",
@@ -57,7 +57,7 @@
         "level": "area",
         "parent": "null",
         "description": "Brand strategy area. Positioning, audience research, naming, narrative workshops, competitive audits.",
-        "_path": "fake-org/nodes/units/strategy.md"
+        "_path": "sample-org/nodes/units/strategy.md"
       }
     ],
     "activities": [
@@ -75,7 +75,7 @@
         "outputs": [
           "client-handoff"
         ],
-        "_path": "fake-org/nodes/activities/asset-handover.md"
+        "_path": "sample-org/nodes/activities/asset-handover.md"
       },
       {
         "id": "audience-research",
@@ -88,7 +88,7 @@
         "outputs": [
           "insights-document"
         ],
-        "_path": "fake-org/nodes/activities/audience-research.md"
+        "_path": "sample-org/nodes/activities/audience-research.md"
       },
       {
         "id": "brand-book",
@@ -101,7 +101,7 @@
         "outputs": [
           "brand-book-deliverable"
         ],
-        "_path": "fake-org/nodes/activities/brand-book.md"
+        "_path": "sample-org/nodes/activities/brand-book.md"
       },
       {
         "id": "brand-positioning",
@@ -115,7 +115,7 @@
         "outputs": [
           "positioning-brief"
         ],
-        "_path": "fake-org/nodes/activities/brand-positioning.md"
+        "_path": "sample-org/nodes/activities/brand-positioning.md"
       },
       {
         "id": "competitive-audit",
@@ -128,7 +128,7 @@
         "outputs": [
           "market-map"
         ],
-        "_path": "fake-org/nodes/activities/competitive-audit.md"
+        "_path": "sample-org/nodes/activities/competitive-audit.md"
       },
       {
         "id": "design-system-build",
@@ -142,7 +142,7 @@
         "outputs": [
           "design-system"
         ],
-        "_path": "fake-org/nodes/activities/design-system-build.md"
+        "_path": "sample-org/nodes/activities/design-system-build.md"
       },
       {
         "id": "identity-system-build",
@@ -155,7 +155,7 @@
         "outputs": [
           "identity-system"
         ],
-        "_path": "fake-org/nodes/activities/identity-system-build.md"
+        "_path": "sample-org/nodes/activities/identity-system-build.md"
       },
       {
         "id": "kickoff-workshop",
@@ -166,7 +166,7 @@
         "outputs": [
           "engagement-scope"
         ],
-        "_path": "fake-org/nodes/activities/kickoff-workshop.md"
+        "_path": "sample-org/nodes/activities/kickoff-workshop.md"
       },
       {
         "id": "quarterly-finance-review",
@@ -179,7 +179,7 @@
         "outputs": [
           "finance-decisions"
         ],
-        "_path": "fake-org/nodes/activities/quarterly-finance-review.md"
+        "_path": "sample-org/nodes/activities/quarterly-finance-review.md"
       },
       {
         "id": "ui-design",
@@ -192,7 +192,7 @@
         "outputs": [
           "ui-screens"
         ],
-        "_path": "fake-org/nodes/activities/ui-design.md"
+        "_path": "sample-org/nodes/activities/ui-design.md"
       },
       {
         "id": "ux-research",
@@ -205,7 +205,7 @@
         "outputs": [
           "user-insights"
         ],
-        "_path": "fake-org/nodes/activities/ux-research.md"
+        "_path": "sample-org/nodes/activities/ux-research.md"
       },
       {
         "id": "vendor-invoicing",
@@ -218,7 +218,7 @@
         "outputs": [
           "vendor-payments"
         ],
-        "_path": "fake-org/nodes/activities/vendor-invoicing.md"
+        "_path": "sample-org/nodes/activities/vendor-invoicing.md"
       },
       {
         "id": "visual-language",
@@ -231,7 +231,7 @@
         "outputs": [
           "visual-system"
         ],
-        "_path": "fake-org/nodes/activities/visual-language.md"
+        "_path": "sample-org/nodes/activities/visual-language.md"
       },
       {
         "id": "weekly-check-in",
@@ -244,7 +244,7 @@
         "outputs": [
           "weekly-status"
         ],
-        "_path": "fake-org/nodes/activities/weekly-check-in.md"
+        "_path": "sample-org/nodes/activities/weekly-check-in.md"
       }
     ],
     "stakeholders": [
@@ -252,25 +252,25 @@
         "id": "enterprise-clients",
         "title": "Enterprise clients",
         "description": "Larger clients running 6-9 month engagements with embedded studio presence; one or two such relationships per year by design.",
-        "_path": "fake-org/nodes/stakeholders/enterprise-clients.md"
+        "_path": "sample-org/nodes/stakeholders/enterprise-clients.md"
       },
       {
         "id": "mid-market-clients",
         "title": "Mid-market clients",
         "description": "Mid-market companies that engage the studio for the strategy → identity → digital product flow on fixed-price 12-16 week scopes.",
-        "_path": "fake-org/nodes/stakeholders/mid-market-clients.md"
+        "_path": "sample-org/nodes/stakeholders/mid-market-clients.md"
       },
       {
         "id": "strategic-partners",
         "title": "Strategic partners",
         "description": "Other studios and research firms in the network the studio refers to when client need exceeds capacity or scope.",
-        "_path": "fake-org/nodes/stakeholders/strategic-partners.md"
+        "_path": "sample-org/nodes/stakeholders/strategic-partners.md"
       },
       {
         "id": "studio-vendors",
         "title": "Studio vendors",
         "description": "Production-only vendor partners: web developers, illustrators, photographers, type foundries, printers.",
-        "_path": "fake-org/nodes/stakeholders/studio-vendors.md"
+        "_path": "sample-org/nodes/stakeholders/studio-vendors.md"
       }
     ],
     "commitments": [
@@ -287,7 +287,7 @@
         "parties_benefiting": [],
         "description": "",
         "state": "active",
-        "_path": "fake-org/commitments/studio-employees-development.md"
+        "_path": "sample-org/commitments/studio-employees-development.md"
       },
       {
         "id": "studio-enterprise-baseline",
@@ -305,7 +305,7 @@
         ],
         "description": "",
         "state": "active",
-        "_path": "fake-org/commitments/studio-enterprise-baseline.md"
+        "_path": "sample-org/commitments/studio-enterprise-baseline.md"
       },
       {
         "id": "studio-mid-market-baseline",
@@ -322,7 +322,7 @@
         ],
         "description": "",
         "state": "active",
-        "_path": "fake-org/commitments/studio-mid-market-baseline.md"
+        "_path": "sample-org/commitments/studio-mid-market-baseline.md"
       },
       {
         "id": "studio-vendors-payments",
@@ -336,7 +336,7 @@
         ],
         "description": "",
         "state": "active",
-        "_path": "fake-org/commitments/studio-vendors-payments.md"
+        "_path": "sample-org/commitments/studio-vendors-payments.md"
       }
     ],
     "activity_count_by_unit": {

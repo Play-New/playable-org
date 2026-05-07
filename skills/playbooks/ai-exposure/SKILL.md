@@ -247,9 +247,9 @@ The viewer is the **consumer surface**: the leader/decision-maker opens it in a 
 
 Each decision is a question the leader of this org should be able to answer after reading the map, plus the answer the play asserts. The autoresearch loop (see §11) scores these on five dimensions before a play is considered shippable.
 
-**Reference example** — the canonical artefact for this skill is the Outline & Co. fake-org play:
-- `mcp-server/test-fixtures/fake-org/plays/data/ai-exposure-outline-2026-05-07.json` — the play wrapper (matches + scope + decisions)
-- `mcp-server/test-fixtures/fake-org/plays/data/ai-exposure-outline-2026-05-07.html` — the rendered viewer
+**Reference example** — the canonical artefact for this skill is the Outline & Co. sample-org play:
+- `mcp-server/test-fixtures/sample-org/plays/data/ai-exposure-outline-2026-05-07.json` — the play wrapper (matches + scope + decisions)
+- `mcp-server/test-fixtures/sample-org/plays/data/ai-exposure-outline-2026-05-07.html` — the rendered viewer
 
 Open the HTML in a browser to see exactly what this skill produces. The four decisions in that play frame displacement vs augmentation, hours reallocation across the studio's four units, and the missing context-keeping role. They mention `audience-research`, `brand-book`, `identity-system-build`, `visual-language` by name, use no AEI vocabulary in the prose, and pass autoresearch on all four deterministic dimensions.
 

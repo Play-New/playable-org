@@ -336,21 +336,21 @@ def test_org_write_node():
 def test_org_read_search_list_neighbors():
     """Use the bundled fixture (mcp-server/test-fixtures/sample-org/) for read-side tests.
 
-    The fixture is a tiny generic Acme example: 1 identity, 2 units, 1 person,
-    1 stakeholder, 1 commitment, 1 source. Just enough to verify each tool's
-    behaviour without coupling tests to any specific real organization.
+    The fixture is the Outline & Co. fake studio: 5 units, 14 activities,
+    5 people, 4 stakeholders, 4 commitments. Rich enough to exercise the
+    read-side mcp tools against realistic graph structure.
     """
     fixture = REPO_ROOT / "mcp-server" / "test-fixtures" / "sample-org"
     d = str(fixture)
 
     # ---- org_read ----
-    out = call(d, "org_read", {"id": "operations"})
-    assertion("read by bare id finds operations",
-              '"id": "operations"' in out, out[:200])
+    out = call(d, "org_read", {"id": "strategy"})
+    assertion("read by bare id finds strategy",
+              '"id": "strategy"' in out, out[:200])
 
-    out = call(d, "org_read", {"id": "nodes/units/operations.md"})
+    out = call(d, "org_read", {"id": "nodes/units/strategy.md"})
     assertion("read by relative path",
-              '"path": "nodes/units/operations.md"' in out, out[:200])
+              '"path": "nodes/units/strategy.md"' in out, out[:200])
 
     out = call(d, "org_read", {"id": "nonexistent-node-xyz"})
     assertion("read missing returns helpful error",
@@ -367,9 +367,9 @@ def test_org_read_search_list_neighbors():
                   f'"path": "{doc_id}.md"' in out, out[:200])
 
     # ---- org_search ----
-    out = call(d, "org_search", {"query": "Acme"})
+    out = call(d, "org_search", {"query": "Outline"})
     parsed = json.loads(out)
-    assertion("search 'Acme' returns hits",
+    assertion("search 'Outline' returns hits",
               parsed.get("total", 0) > 0, out[:200])
 
     out = call(d, "org_search", {"query": "asdfqwertyzzzz"})
@@ -377,7 +377,7 @@ def test_org_read_search_list_neighbors():
     assertion("search no-match returns 0 hits",
               parsed.get("total", -1) == 0, out[:200])
 
-    out = call(d, "org_search", {"query": "Acme", "type": "commitment"})
+    out = call(d, "org_search", {"query": "Outline", "type": "commitment"})
     parsed = json.loads(out)
     types = {h["type"] for h in parsed.get("hits", [])}
     assertion("search type filter applied",
@@ -388,22 +388,24 @@ def test_org_read_search_list_neighbors():
               "Query too short" in out, out)
 
     # ---- org_list ----
+    # Counts match the Outline & Co. fixture (5 units, 4 commitments,
+    # 5 people, 14 activities, 4 stakeholders).
     out = call(d, "org_list", {"type": "unit"})
     parsed = json.loads(out)
-    assertion("list units returns 2",
-              parsed.get("total") == 2,
+    assertion("list units returns 5",
+              parsed.get("total") == 5,
               f"got total={parsed.get('total')}")
 
     out = call(d, "org_list", {"type": "commitment"})
     parsed = json.loads(out)
-    assertion("list commitment returns 1",
-              parsed.get("total") == 1,
+    assertion("list commitment returns 4",
+              parsed.get("total") == 4,
               f"got total={parsed.get('total')}")
 
     out = call(d, "org_list", {"path": "nodes/people"})
     parsed = json.loads(out)
-    assertion("list path=nodes/people returns 1",
-              parsed.get("total") == 1,
+    assertion("list path=nodes/people returns 5",
+              parsed.get("total") == 5,
               f"got total={parsed.get('total')}")
 
     out = call(d, "org_list", {"type": "nonexistent-type"})

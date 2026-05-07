@@ -1,6 +1,6 @@
 ---
 name: value-map
-description: "Build a value-chain map for an anchor (a commitment or a unit) of the organization. Each component is positioned on an evolution axis with an optional AI overlay. The artefact is a JSON + HTML + SVG triplet under org/plays/data/: the HTML is an interactive map with a popover next to each clicked node, a 'How to read this map' section with three to five concrete operational decisions tied to component positions, and an explicit notice when no AI overlay is attached. Canonical reference output: mcp-server/test-fixtures/fake-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.html (Outline & Co., a fake creative agency)."
+description: "Build a value-chain map for an anchor (a commitment or a unit) of the organization. Each component is positioned on an evolution axis with an optional AI overlay. The artefact is a JSON + HTML + SVG triplet under org/plays/data/: the HTML is an interactive map with a popover next to each clicked node, a 'How to read this map' section with three to five concrete operational decisions tied to component positions, and an explicit notice when no AI overlay is attached. Canonical reference output: mcp-server/test-fixtures/sample-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.html (Outline & Co., a fake creative agency)."
 ---
 
 # Playbook: value-map
@@ -329,7 +329,7 @@ Body (in order):
 1. **Anchor and end users** (one paragraph + citation)
 2. **The map** (link to the HTML/SVG artefact; mobile/text fallback as bulleted list grouped by stage)
 3. **Per-component placement** grouped by stage band, each row citing the source where the placement is grounded
-4. **Decisions enabled** — *the load-bearing section*. Three to five concrete operational decisions a leader can take to the next monthly review. Each decision is a (question, position-derived answer, move, citation) tuple. Without this section the play is a static map; with it, the play is a what-if simulation grounded in the studio's facts. Examples (from `mcp-server/test-fixtures/fake-org/plays/value-map-studio-mid-market-baseline-2026-05-07.md`): *"Where to invest in tighter templating?"*, *"Which roles are most exposed to AI commoditization?"*, *"Where can the studio raise prices?"*, *"What does the value chain say about the next hire?"*.
+4. **Decisions enabled** — *the load-bearing section*. Three to five concrete operational decisions a leader can take to the next monthly review. Each decision is a (question, position-derived answer, move, citation) tuple. Without this section the play is a static map; with it, the play is a what-if simulation grounded in the studio's facts. Examples (from `mcp-server/test-fixtures/sample-org/plays/value-map-studio-mid-market-baseline-2026-05-07.md`): *"Where to invest in tighter templating?"*, *"Which roles are most exposed to AI commoditization?"*, *"Where can the studio raise prices?"*, *"What does the value chain say about the next hire?"*.
 5. **New components / new value** (if any) — what emerges from the shift
 6. **Method limits** — what the map can't say (no AEI overlay, agent-authored placements at the margin, etc.)
 7. **Cross-references**
@@ -399,11 +399,11 @@ The script returns exit code 0 only if every non-skipped dimension passes. The a
 
 The reference iteration (the canonical example produced for `Outline & Co.`) reached pass on iter-2 after the iter-1 decisions were rewritten in plain English with the Roversi pricing frame.
 
-**Reference example** — the canonical artefact for this skill is the Outline & Co. fake-org play, shipped in the public template's test fixtures:
+**Reference example** — the canonical artefact for this skill is the Outline & Co. sample-org play, shipped in the public template's test fixtures:
 
-- `mcp-server/test-fixtures/fake-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.json` — the source JSON with `decisions[]` filled in
-- `mcp-server/test-fixtures/fake-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.html` — the rendered viewer
-- `mcp-server/test-fixtures/fake-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.svg` — the static SVG companion
+- `mcp-server/test-fixtures/sample-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.json` — the source JSON with `decisions[]` filled in
+- `mcp-server/test-fixtures/sample-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.html` — the rendered viewer
+- `mcp-server/test-fixtures/sample-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.svg` — the static SVG companion
 
 Open the HTML in a browser to see exactly what this skill produces. The play sits over the studio's mid-market baseline commitment and frames where the studio's value actually lives, the pricing reframe (separating slow-feedback judgment work from fast-feedback production), the AI commodity funnel, and the missing context-steward role.
 

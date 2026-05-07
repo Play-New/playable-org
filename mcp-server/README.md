@@ -75,7 +75,7 @@ cd ..
 python3 mcp-server/test-e2e.py
 ```
 
-84 tests across the 12 tools. Tests use the bundled fixture in `mcp-server/test-fixtures/sample-org/` (a tiny generic Acme example) for read-side assertions, plus tmp directories for write-side and root-level for tooling that resolves via repo root.
+84 tests across the 12 tools. Tests use the bundled fixture in `mcp-server/test-fixtures/sample-org/` (the Outline & Co. fake creative studio — 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources, plus the four canonical playbook artefacts) for read-side assertions, plus tmp directories for write-side and root-level for tooling that resolves via repo root.
 
 ## Architecture
 
@@ -103,7 +103,7 @@ mcp-server/
 │       ├── safe-path.ts     path-traversal containment
 │       └── walk.ts          filesystem walking + frontmatter parsing
 ├── test-e2e.py              84-test end-to-end suite
-├── test-fixtures/sample-org generic Acme fixture
+├── test-fixtures/sample-org Outline & Co. fixture (rich)
 └── dist/                    compiled output (gitignored)
 ```
 
