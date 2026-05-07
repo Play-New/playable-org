@@ -245,7 +245,7 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
     parts.append(
         f'<text x="{30}" y="{plot_y0 + plot_h / 2}" text-anchor="middle" '
         f'transform="rotate(-90 30 {plot_y0 + plot_h / 2})" '
-        f'font-size="11" fill="{MUTED}" font-style="italic">visibility ↑ (utente) — invisibile ↓</text>'
+        f'font-size="11" fill="{MUTED}" font-style="italic">visibility ↑ (closer to user) — invisible ↓</text>'
     )
 
     # Arrow marker definition
