@@ -18,7 +18,9 @@ This playbook **must** produce a persistent file artefact under `org/plays/data/
 
 **Do not** use Claude Desktop's inline `visualize` / `show_widget` / artifact features for this playbook. Reasons: (a) those widgets are ephemeral (lost when the chat ends), (b) they bypass the audit gate, (c) they don't use the Play New design system that the bundled `viewer.py` applies. The HTML returned by `org_play_run` mode=render is the canonical visualization.
 
-**Do not** hand-write a markdown play file under `plays/`. The JSON + HTML + SVG triplet under `plays/data/` is the play. The `org_log_append` line that closes the run is the audit trail.
+The JSON + HTML + SVG triplet under `plays/data/` is the canonical artefact. A **markdown play** at `plays/value-map-<anchor>-<date>.md` is **optional but encouraged** — it is the surface where the agent commits to *what the map means for the org*. When written, the markdown play must contain a **"Decisions enabled"** section with 3–5 concrete operational decisions, each tied to specific component positions and citing structural sources (charter §, role descriptions, financial summary). Without that section the markdown is overhead. With it, the play moves from "here is a Wardley map" to "here are the moves the studio can make this quarter, grounded in the studio's own facts."
+
+The `org_log_append` line closes the run.
 
 If `org_play_run` returns an error (wrong arguments, audit failure, missing python3), report the error verbatim to the user and stop. Do not fall back to an in-chat widget.
 
@@ -282,13 +284,12 @@ references:
 Body (in order):
 
 1. **Anchor and end users** (one paragraph + citation)
-2. **The map** (embed SVG inline; mobile/text fallback as bulleted list grouped by stage)
-3. **Per-component table**: id, label, evolution, evolution_target, visibility, ai_effect, evidence
-4. **Per-anchor table**: similar
+2. **The map** (link to the HTML/SVG artefact; mobile/text fallback as bulleted list grouped by stage)
+3. **Per-component placement** grouped by stage band, each row citing the source where the placement is grounded
+4. **Decisions enabled** — *the load-bearing section*. Three to five concrete operational decisions a leader can take to the next monthly review. Each decision is a (question, position-derived answer, move, citation) tuple. Without this section the play is a static map; with it, the play is a what-if simulation grounded in the studio's facts. Examples (from `mcp-server/test-fixtures/fake-org/plays/value-map-studio-mid-market-baseline-2026-05-07.md`): *"Where to invest in tighter templating?"*, *"Which roles are most exposed to AI commoditization?"*, *"Where can the studio raise prices?"*, *"What does the value chain say about the next hire?"*.
 5. **New components / new value** (if any) — what emerges from the shift
-6. **Operational consequences** (interpretive section, demarcated). Each consequence cites a (component, evolution shift, ai_effect) tuple from the audited table above.
-7. **Method limits**
-8. **Cross-references**
+6. **Method limits** — what the map can't say (no AEI overlay, agent-authored placements at the margin, etc.)
+7. **Cross-references**
 
 ### 8. Lint + log
 
