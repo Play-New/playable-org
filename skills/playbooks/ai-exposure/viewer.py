@@ -975,7 +975,19 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    matches = json.loads(Path(args.matches).read_text())
+    raw = json.loads(Path(args.matches).read_text())
+    # Two accepted shapes:
+    # 1. Bare list of activity matches (the original match.py output).
+    # 2. Wrapper object {matches, decisions, _scope, ...} for the
+    #    mcp-tool render flow where the agent passes the whole play
+    #    context via json_content.
+    embedded_decisions: list[dict] | None = None
+    if isinstance(raw, dict) and "matches" in raw:
+        matches = raw["matches"]
+        if "decisions" in raw and isinstance(raw["decisions"], list):
+            embedded_decisions = raw["decisions"]
+    else:
+        matches = raw
     metadata: dict[str, dict] = {}
     if args.metadata:
         meta_list = json.loads(Path(args.metadata).read_text())
@@ -1009,7 +1021,10 @@ def main() -> int:
     if args.org_description_file:
         org_description = Path(args.org_description_file).read_text().strip()
 
-    decisions: list[dict] = []
+    # Decisions: --decisions flag wins over wrapper-embedded decisions
+    # (so a CLI user can override a wrapper). Otherwise use wrapper if
+    # present.
+    decisions: list[dict] = embedded_decisions or []
     if args.decisions:
         decisions = json.loads(Path(args.decisions).read_text())
         if not isinstance(decisions, list):

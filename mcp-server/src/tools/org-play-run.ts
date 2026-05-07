@@ -260,10 +260,20 @@ export const orgPlayRunTool: ToolDefinition = {
     const auditArgs: string[] = [auditScript, '--map', jsonPath, '--org-dir', ctx.dataDir];
     const auditResult = await runPython(auditArgs, repoRoot);
 
-    // Viewer (run regardless — even if audit fails the user can inspect the HTML)
-    const viewerArgs: string[] = [viewerScript, '--map', jsonPath, '--html', htmlPath];
-    if (args.playbook === 'value-map') {
-      viewerArgs.push('--svg', svgPath);
+    // Viewer — flag shape differs by playbook.
+    // value-map / world-model / reshuffle: --map ... --html ...
+    // ai-exposure: --matches ... --out ... (its CLI predates the
+    //   --map convention; matches.json is the input shape it expects).
+    // The viewer reads `decisions[]` directly from the input JSON when
+    // present, so no separate --decisions plumbing is needed here.
+    const viewerArgs: string[] = [viewerScript];
+    if (args.playbook === 'ai-exposure') {
+      viewerArgs.push('--matches', jsonPath, '--out', htmlPath);
+    } else {
+      viewerArgs.push('--map', jsonPath, '--html', htmlPath);
+      if (args.playbook === 'value-map') {
+        viewerArgs.push('--svg', svgPath);
+      }
     }
     const viewerResult = await runPython(viewerArgs, repoRoot);
 
