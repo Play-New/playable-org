@@ -7,7 +7,7 @@ Pull requests welcome. This file describes the lay of the land and the rules.
 ```
 playable-org/
 ├── org/                  empty starter (3 identity stubs); your instance content goes here
-├── mcp-server/           TypeScript stdio mcp server, exposes 12 tools to Claude Desktop
+├── mcp-server/           TypeScript stdio mcp server, exposes 13 tools to Claude Desktop
 ├── skills/               agent-followed recipes + analytical playbooks + design system
 │   ├── CAPABILITIES.md   four-property frame for capabilities (referenced by world-model)
 │   ├── STYLE.md          anti-rhetoric writing charter applied to consumer-facing prose
@@ -32,7 +32,7 @@ Three layers, kept distinct.
 
 **`org/`** is your instance content. Forks of this repo populate it. The public template ships with three empty identity stubs.
 
-**`mcp-server/`** is the bridge from Claude Desktop to `org/`. It exposes 12 tools. Adding a new tool = adding a TypeScript file under `src/tools/`, registering it in `src/server.ts`, and writing a test in `test-e2e.py`.
+**`mcp-server/`** is the bridge from Claude Desktop to `org/`. It exposes 13 tools. Adding a new tool = adding a TypeScript file under `src/tools/`, registering it in `src/server.ts`, and writing a test in `test-e2e.py`.
 
 **`skills/`** is what the agent does. Each skill is a `SKILL.md` recipe (sometimes plus Python scripts for playbooks that need numerical work). `design.py` is the only place visual decisions live. Adding a playbook = creating a folder under `skills/playbooks/` with a `SKILL.md` that follows the established shape.
 

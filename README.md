@@ -5,7 +5,7 @@ Represent an organization as a navigable graph of cited markdown files, then run
 ## What you install
 
 - `org/` — your structure, as a folder of markdown files. One file per organizational unit, person, role, activity, stakeholder, commitment, financial summary. Each file is short. Each claim cites its source.
-- `mcp-server/` — a TypeScript stdio mcp server that exposes 12 tools to Claude Desktop. Read tools (read, search, list, neighbors). Write tools (write_node, save_source, log_append). Meta tools (skills_list, skill_read, lint_run, play_run, open).
+- `mcp-server/` — a TypeScript stdio mcp server that exposes 13 tools to Claude Desktop. Read tools (read, search, list, neighbors). Write tools (write_node, save_source, log_append). Meta tools (skills_list, skill_read). Executors (lint_run, play_run, autoresearch_run, open).
 - `skills/` — workflow recipes and analytical playbooks, plus the productizable design system. Three operational skills (`init`, `ingest`, `lint`), four analytical playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`), one meta-skill (`new-playbook`).
 - `install.command` / `install.bat` — clickable installers. They build the mcp server and register it in Claude Desktop's config. No admin privileges required.
 
@@ -72,8 +72,8 @@ The pattern itself — an LLM-maintained markdown corpus governed by an `AGENTS.
 2. Make sure Claude Desktop is installed (https://claude.ai/download) and Node.js is on your PATH.
 3. Double-click `install.command` (macOS) or `install.bat` (Windows). The installer builds the mcp server and registers it in Claude Desktop.
 4. Restart Claude Desktop.
-5. Drop founding documents (charter, organizational charts, role-descriptions, annual report) into `org/sources/`.
-6. In Claude Desktop, in a new chat: *initialize the structure from sources/*.
+5. Either drop founding documents (charter, organizational charts, role-descriptions, annual report) into `org/sources/` (documents-first), or have nothing to drop and let the agent run a structured interview that becomes the founding source (interview-first). Both paths are part of the `init` skill.
+6. In Claude Desktop, in a new chat: *initialize the structure*. The agent picks the right path from what's there.
 7. After ~30–60 minutes you have a populated graph. From there, ask questions, ingest new documents as they arrive, run playbooks.
 
 Detailed instructions: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/architecture.md). Playbook reference: [`docs/playbooks.md`](docs/playbooks.md). Extending: [`docs/extending.md`](docs/extending.md).

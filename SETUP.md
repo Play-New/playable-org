@@ -82,9 +82,17 @@ Acceptable formats: `.pdf`, `.docx`, `.xlsx`, `.pptx`, `.md`, `.html`, `.txt`. U
 
 In a new chat in Claude Desktop:
 
-> Initialize the structure from `sources/`.
+> Initialize the structure.
 
-Claude follows the `init` skill. It reads founding documents first to fill the three identity stubs (`mission`, `limits`, `rules`), then iterates through the rest, proposing entities in batches, showing you the diff, writing on confirmation, appending one log line per batch. A first session typically takes 30 to 60 minutes and produces 200 to 400 nodes.
+Claude follows the `init` skill. Two starting paths, picked from what's available:
+
+- **Path A — documents-first**: if you've dropped founding documents into `org/sources/`, Claude reads them in priority order (founding documents fill the three identity stubs first), then iterates through operational, stakeholder, and financial documents, proposing entities in batches, showing you the diff, writing on confirmation, appending one log line per batch.
+
+- **Path B — interview-first**: if `org/sources/` is empty (or only has documents that don't cover the structure), Claude runs a structured ten-question interview. Your answers are saved verbatim as a source document (`init-interview-<date>.md`) and every node Claude writes cites that source. The principle stays: every assertion has a citation, the citation can be testimony.
+
+The two paths can also combine: start with what documents exist, then fill gaps with a targeted interview anchored on what the documents leave unsaid.
+
+A first session typically takes 30 to 60 minutes (Path A) or 20 to 40 minutes (Path B), and produces 50 to 400 nodes.
 
 After init, run:
 

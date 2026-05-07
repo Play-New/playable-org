@@ -77,3 +77,12 @@ Catalog of the structure. One link, one-line summary per node, organized by cate
 - [outline-charter-2024](sources/outline-charter-2024.md) — founding charter, 2024
 - [outline-roles-2025](sources/outline-roles-2025.md) — internal role-descriptions document, 2025 edition
 - [outline-annual-review-2025](sources/outline-annual-review-2025.md) — annual review, 2025
+
+## plays/data
+
+Four canonical playbook artefacts — the reference render for each playbook in the public template. Each is a JSON + HTML pair (value-map ships a SVG companion as well).
+
+- [value-map · studio mid-market engagement, 2026-05-07](plays/data/value-map-studio-mid-market-baseline-2026-05-07.html) — 16 components on the value chain, AEI overlay arrows on 12 activities, "Context steward" emerging as a candidate role, "Returning client" as a new stakeholder type, 5 leader-facing decisions
+- [ai-exposure · whole-org, 2026-05-07](plays/data/ai-exposure-outline-2026-05-07.html) — 14 activities matched against the public catalog of work, 4 leader-facing decisions on hours-reallocation and the missing context-keeping role
+- [world-model · whole-org, 2026-05-07](plays/data/world-model-outline-2026-05-07.html) — 7 capabilities (3 differentiated, 4 standard), 4 touchpoints, 5 compositions across the intelligence layer, 3 pieces to build, 3 decisions
+- [reshuffle · studio mid-market engagement, 2026-05-07](plays/data/reshuffle-outline-2026-05-07.html) — 12 activities classified by what holds each in place (8 alignment-bound, 4 scarcity-bound), 3 engine candidates, 2 direction options, 3 decisions sequencing the moves over 2026-2027
