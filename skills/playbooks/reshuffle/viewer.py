@@ -126,17 +126,22 @@ header .anchor-line { font-family: ui-monospace, SF Mono, Menlo, monospace; font
 .group-header .count { font-size: 0.8rem; color: var(--fg-muted); margin-left: auto; }
 .group-explain { max-width: 820px; margin: 0 auto 18px; font-size: 0.92rem; color: var(--fg-muted); line-height: 1.65; }
 
-.activity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px 24px; }
-.activity-card { padding: 14px 0 14px 14px; cursor: pointer; transition: border-color 0.15s; border-left: 1px solid var(--fg-hairline); }
-.activity-card:hover { border-left-color: var(--fg); }
-.activity-card.engine { border-left: 2px solid var(--ds-coral); }
+/* All clickable items render as full-bordered cards. The engine accent
+   is the full border in the data-viz coral, not a left rule. Hover
+   signal is uniform — the border darkens to fg. */
+.activity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.activity-card { padding: 14px 16px; cursor: pointer; transition: border-color 0.15s; border: 1px solid var(--fg-hairline); border-radius: 4px; }
+.activity-card:hover { border-color: var(--fg); }
+.activity-card.engine { border-color: var(--ds-coral); }
+.activity-card.engine:hover { border-color: var(--ds-coral); }
 .activity-card .label { font-family: var(--font-display); font-weight: 500; font-size: 0.95rem; line-height: 1.35; margin-bottom: 6px; color: var(--fg); letter-spacing: -0.01em; }
 .activity-card .ai-label { font-size: 0.78rem; color: var(--fg-muted); }
 .activity-card.engine .ai-label { color: var(--ds-coral); font-weight: 500; }
 
-.candidate-card { padding: 16px 0 16px 16px; margin-bottom: 14px; cursor: pointer; transition: border-color 0.15s; border-left: 2px solid var(--fg-hairline); }
-.candidate-card:hover { border-left-color: var(--fg); }
-.candidate-card.engine-card { border-left-color: var(--ds-coral); }
+.candidate-card { padding: 16px 18px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.15s; border: 1px solid var(--fg-hairline); border-radius: 4px; }
+.candidate-card:hover { border-color: var(--fg); }
+.candidate-card.engine-card { border-color: var(--ds-coral); }
+.candidate-card.engine-card:hover { border-color: var(--ds-coral); }
 .candidate-card .name { font-family: var(--font-display); font-weight: 500; font-size: 1.0rem; margin-bottom: 6px; color: var(--fg); letter-spacing: -0.01em; }
 .candidate-card .meta { font-size: 0.9rem; color: var(--fg-muted); line-height: 1.55; }
 

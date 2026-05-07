@@ -90,33 +90,36 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .layer-explainer em { font-style: italic; color: var(--fg); }
 .il-section-hint { font-size: 0.85rem; color: var(--fg-muted); margin-bottom: 12px; line-height: 1.6; max-width: 720px; }
 
-/* Stakeholder pills */
+/* All clickable items render as cards with a full hairline border.
+   Hover signal is uniform across the page: the border darkens to fg.
+   The moat accent on capability cards is the full border in the
+   data-viz coral, not just a left rule. */
 .stakeholder-row, .interface-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
-.stakeholder { background: var(--fg); color: #FFFFFF; padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: opacity 0.15s; }
-.stakeholder:hover { opacity: 0.85; }
+.stakeholder { background: transparent; color: var(--fg); padding: 7px 14px; border: 1px solid var(--fg-hairline); border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: border-color 0.15s; }
+.stakeholder:hover { border-color: var(--fg); }
 
-/* Interface chips */
-.interface { background: transparent; border: 1px solid var(--fg-hairline); border-left: 2px solid var(--layer-interface-accent); border-radius: 2px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer; color: var(--fg); transition: border-color 0.15s; }
+.interface { background: transparent; border: 1px solid var(--fg-hairline); border-radius: 4px; padding: 7px 14px; font-size: 0.85rem; cursor: pointer; color: var(--fg); transition: border-color 0.15s; }
 .interface:hover { border-color: var(--fg); }
 
 /* Intelligence layer / world model — two-column grids */
-.il-grid, .wm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 18px; }
-@media (max-width: 900px) { .il-grid, .wm-grid { grid-template-columns: 1fr; gap: 24px; } }
+.il-grid, .wm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 18px; }
+@media (max-width: 900px) { .il-grid, .wm-grid { grid-template-columns: 1fr; gap: 20px; } }
 .il-section .il-title, .wm-section .wm-title { font-family: var(--font-display); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 10px; font-weight: 500; }
-.il-card, .wm-card { padding: 12px 14px 12px 14px; margin-bottom: 8px; font-size: 0.88rem; border-left: 1px solid var(--fg-hairline); cursor: pointer; transition: border-color 0.15s; }
+.il-card, .wm-card { padding: 14px 16px; margin-bottom: 10px; font-size: 0.88rem; border: 1px solid var(--fg-hairline); border-radius: 4px; transition: border-color 0.15s; }
 .il-card { cursor: pointer; }
 .wm-card { cursor: default; }
-.il-card:hover { border-left-color: var(--fg); }
-.il-card.potential { border-left: 2px solid var(--fg); }
+.il-card:hover { border-color: var(--fg); }
+.il-card.potential { border-color: var(--fg); }
 .il-card .trigger, .wm-card .label { font-weight: 500; margin-bottom: 4px; color: var(--fg); }
 .il-card .meta, .wm-card .meta { font-size: 0.78rem; color: var(--fg-muted); }
 
 /* Capability cards */
 .cap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
-.cap-card { padding: 14px 0 14px 14px; cursor: pointer; transition: border-color 0.15s; border-left: 2px solid var(--commodity); }
-.cap-card.moat { border-left-color: var(--moat); }
-.cap-card:hover { border-left-color: var(--fg); }
-.cap-card .name { font-weight: 500; font-size: 0.92rem; font-family: var(--font-display); letter-spacing: -0.01em; margin-bottom: 6px; color: var(--fg); }
+.cap-card { padding: 14px 16px; cursor: pointer; transition: border-color 0.15s; border: 1px solid var(--fg-hairline); border-radius: 4px; }
+.cap-card.moat { border-color: var(--moat); }
+.cap-card:hover { border-color: var(--fg); }
+.cap-card.moat:hover { border-color: var(--moat); }
+.cap-card .name { font-weight: 500; font-size: 0.95rem; font-family: var(--font-display); letter-spacing: -0.01em; margin-bottom: 6px; color: var(--fg); }
 .cap-card .desc { font-size: 0.85rem; color: var(--fg-muted); line-height: 1.55; margin-bottom: 10px; }
 .cap-card .meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.7rem; }
 .cap-card .pill { background: transparent; border: 1px solid var(--fg-hairline); padding: 1px 8px; border-radius: 999px; color: var(--fg-muted); font-weight: 500; letter-spacing: 0.02em; }
@@ -128,12 +131,15 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .principle-block .label { font-family: var(--font-display); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.10em; color: var(--ds-coral); font-weight: 600; margin-bottom: 8px; }
 .principle-block .text { font-size: 0.95rem; color: var(--fg); line-height: 1.65; }
 
-/* Failure signals — section header in centered column, cards span container. */
+/* Failure signals — title + intro span the container (data zone),
+   prose wraps short via inline max-width. Cards align to the same
+   container edge. */
 .signals-block { margin-top: 56px; padding-top: 36px; border-top: 1px solid var(--fg-hairline); }
-.signals-block h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 auto 16px; max-width: 820px; }
-.signals-block > p.layer-explainer { max-width: 820px; margin: 0 auto 24px; }
-.signal-card { padding: 14px 0 14px 14px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.15s; border-left: 1px solid var(--fg-hairline); }
-.signal-card:hover { border-left-color: var(--fg); }
+.signals-block h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 16px; }
+.signals-block > p.layer-explainer { margin: 0 0 24px; max-width: 720px; }
+.signals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.signal-card { padding: 14px 16px; cursor: pointer; transition: border-color 0.15s; border: 1px solid var(--fg-hairline); border-radius: 4px; }
+.signal-card:hover { border-color: var(--fg); }
 .signal-card .trigger { font-weight: 500; font-size: 0.95rem; margin-bottom: 6px; color: var(--fg); }
 .signal-card .missing { font-size: 0.8rem; color: var(--fg-muted); font-family: ui-monospace, SF Mono, Menlo, monospace; }
 
@@ -275,7 +281,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <div class="signals-block">
       <h2>Where the structure is thin — the roadmap that emerges</h2>
       <p class="layer-explainer">A failure-signal is a request the org would try to compose from existing capabilities, and where the composition fails because one of the needed capabilities isn't there yet. Each one is a candidate to build. The list below is generated by the demand the structure already produces — not by the next three-year plan.</p>
-      {signals_html}
+      <div class="signals-grid">{signals_html}</div>
     </div>
 
     {decisions_section}
