@@ -20,6 +20,7 @@ import { orgSkillsListTool } from './tools/org-skills-list.js';
 import { orgSkillReadTool } from './tools/org-skill-read.js';
 import { orgLintRunTool } from './tools/org-lint-run.js';
 import { orgPlayRunTool } from './tools/org-play-run.js';
+import { orgAutoresearchRunTool } from './tools/org-autoresearch-run.js';
 import { orgOpenTool } from './tools/org-open.js';
 
 export interface Context {
@@ -46,6 +47,7 @@ export function registerTools(server: Server, ctx: Context) {
     orgSkillReadTool,
     orgLintRunTool,
     orgPlayRunTool,
+    orgAutoresearchRunTool,
     orgOpenTool,
   ];
 

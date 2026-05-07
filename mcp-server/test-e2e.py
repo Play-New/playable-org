@@ -101,7 +101,7 @@ def test_tools_listing():
     d = setup_tmpdir()
     try:
         names = list_tools(d)
-        assertion("12 tools registered", len(names) == 12, f"got {len(names)}: {names}")
+        assertion("13 tools registered", len(names) == 13, f"got {len(names)}: {names}")
         for expected in ("org_read", "org_search", "org_list", "org_neighbors",
                          "org_write_node", "org_save_source", "org_log_append",
                          "org_skills_list", "org_skill_read", "org_lint_run",
