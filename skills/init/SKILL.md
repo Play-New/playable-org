@@ -12,9 +12,9 @@ The `init` skill is the recipe for populating it from raw documents in one sessi
 ## Pre-conditions
 
 - The mcp server is connected (Claude Desktop reads `org/`).
-- The user has dropped source documents into `org/sources/` via Finder / file manager. Acceptable formats: PDF, DOCX, XLSX, PPTX, MD, HTML, TXT.
+- **Either** (Path A) the user has dropped source documents into `org/sources/` via Finder / file manager — acceptable formats: PDF, DOCX, XLSX, PPTX, MD, HTML, TXT — **or** (Path B) the user is available for a structured interview whose transcript becomes the founding source. See the §Two starting paths section below for the choice.
 - The user knows what kind of organization is being represented (so the agent can scope-check against `identity/` later).
-- Lint Tier 1 reports 3 frontmatter issues on the unmodified starter (the three `identity/` stubs ship with empty `sources: []` arrays because they haven't been pointed at a source yet). After init fills the identity from real founding documents, those three warnings go away and Tier 1 should land at 0.
+- Lint Tier 1 reports 3 frontmatter issues on the unmodified starter (the three `identity/` stubs ship with empty `sources: []` arrays because they haven't been pointed at a source yet). After init fills the identity from real founding documents or from the interview transcript, those three warnings go away and Tier 1 should land at 0.
 
 ## What `init` does NOT do
 

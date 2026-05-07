@@ -112,12 +112,15 @@ A useful consequence: writing the contract forces honesty about maturity. If the
 
 ### 2. Team ownership, not hierarchical ownership
 
-A capability needs a dedicated team that owns it across time:
+A capability needs a dedicated team that owns it across time. Three distinct roles, not interchangeable:
 
-- **Individual contributors (ICs)**: deep specialists in the domain. They build and operate the capability.
-- **Player-coach**: combines building with developing people. Not a middle manager, does not spend the day on reporting and alignment. Still writes code or designs flows, and develops the ICs in addition.
+- **DRI** (*Directly Responsible Individual*, Dorsey's term, popularized at Apple/Square). The single person accountable for the capability's outcome. One per capability — no committees, no shared accountability. The DRI is the throat-to-choke when something breaks: they answer for it, they can be removed for it. They do not have to do the work themselves; they can delegate freely to the ICs. What they cannot delegate is accountability. The DRI's job is to keep the capability shipping its contract over time, decide trade-offs in the moment, and make the calls that don't fit a rule.
 
-Important: the capability is not owned by the area or division that hosts it today. A capability that crosses multiple areas is detached from all of them and given to a team that owns it end to end. Areas continue to exist as containers of the capabilities they host, but they are no longer the unit of ownership.
+- **Individual contributors (ICs)**: deep specialists in the domain. They build and operate the capability day-to-day. The DRI directs; the ICs execute. There can be many ICs per capability; there is exactly one DRI.
+
+- **Player-coach**: a hybrid role on capabilities large enough to need both ongoing building and people development. Combines hands-on work with developing the ICs. Not a middle manager — does not spend the day on reporting and alignment. Still writes code, designs flows, ships work, and develops the team in addition. On smaller capabilities the DRI plays this role themselves; on larger ones a player-coach is named distinct from the DRI to free the DRI for outcome-level decisions.
+
+Important: the capability is not owned by the area or division that hosts it today. A capability that crosses multiple areas is detached from all of them and given to a team — with its own DRI — that owns it end to end. Areas continue to exist as containers of the capabilities they host, but they are no longer the unit of ownership. The accountability sits on a person (the DRI), not on a unit.
 
 Consequence: the organizational transition is not trivial. Capabilities already contained in a single area can be exposed quickly. Capabilities that cross two or three areas require deeper redesign.
 

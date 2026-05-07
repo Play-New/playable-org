@@ -38,9 +38,7 @@
       "_kind": "unit",
       "_description": "Brand strategy area. Positioning, audience research, naming, narrative workshops, competitive audits.",
       "evolution": 0.42,
-      "visibility": 0.55,
-      "evolution_target": 0.5,
-      "ai_effect": "AI assists market-scan and audit synthesis. Positioning itself stays where it is — that's pattern-recognition that lives in Marco's hand."
+      "visibility": 0.55
     },
     {
       "id": "c2",
@@ -49,8 +47,7 @@
       "_kind": "unit",
       "_description": "Brand identity area. Identity systems, visual languages, brand books, motion systems.",
       "evolution": 0.45,
-      "visibility": 0.7,
-      "ai_effect": "The visual-language work doesn't commoditize. Signature output stays where it is."
+      "visibility": 0.7
     },
     {
       "id": "c3",
@@ -59,9 +56,7 @@
       "_kind": "unit",
       "_description": "Digital product area. UI design for B2B web and apps; design systems for client product teams; embedded UX research.",
       "evolution": 0.55,
-      "visibility": 0.78,
-      "evolution_target": 0.78,
-      "ai_effect": "UI generation, design-system documentation and screen scaffolding all drift toward commodity within 18 months."
+      "visibility": 0.78
     },
     {
       "id": "c4",
@@ -70,9 +65,7 @@
       "_kind": "unit",
       "_description": "Client services area. Kickoff workshops, weekly check-ins, asset handovers, scoping for new pitches.",
       "evolution": 0.72,
-      "visibility": 0.92,
-      "evolution_target": 0.85,
-      "ai_effect": "Coordination AI lets one account manager handle more engagements as kickoff and handover automate."
+      "visibility": 0.92
     },
     {
       "id": "c5",
@@ -91,7 +84,33 @@
       "evolution": 0.4,
       "visibility": 0.3,
       "evolution_target": 0.55,
-      "ai_effect": "Interview transcript and synthesis become assisted. The strategist still runs the room."
+      "ai_effect": "Interview transcript and synthesis become assisted. The strategist still runs the room.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "confer with clients to determine objectives, budget, background information, and presentation approaches, styles, and techniques.",
+            "similarity": 0.703,
+            "ai_autonomy_mean": 3.3719,
+            "count": 484.0,
+            "in_rich": true
+          },
+          {
+            "task": "analyze patrons' requests to determine needed information and assist in furnishing or locating that information.",
+            "similarity": 0.702,
+            "ai_autonomy_mean": 2.8199,
+            "count": 633.0,
+            "in_rich": true
+          },
+          {
+            "task": "collect information about clients through interviews, observation, or tests.",
+            "similarity": 0.691,
+            "ai_autonomy_mean": 3.2292,
+            "count": 96.0,
+            "in_rich": true
+          }
+        ]
+      }
     },
     {
       "id": "c6",
@@ -111,7 +130,33 @@
       "evolution": 0.3,
       "visibility": 0.65,
       "evolution_target": 0.35,
-      "ai_effect": "AI assists evidence-gathering. Marco still authors the document."
+      "ai_effect": "AI assists evidence-gathering. Marco still authors the document.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "confer with colleagues to formulate positions and strategies pertaining to pending issues.",
+            "similarity": 0.623,
+            "ai_autonomy_mean": 3.3818,
+            "count": 55.0,
+            "in_rich": true
+          },
+          {
+            "task": "Administer, coordinate, or recommend disciplinary and corrective actions.",
+            "similarity": 0.58,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          },
+          {
+            "task": "prepare written documents to establish contracts with or communicate financial recommendations to clients.",
+            "similarity": 0.564,
+            "ai_autonomy_mean": 3.1642,
+            "count": 67.0,
+            "in_rich": true
+          }
+        ]
+      }
     },
     {
       "id": "c7",
@@ -130,7 +175,33 @@
       "evolution": 0.52,
       "visibility": 0.25,
       "evolution_target": 0.75,
-      "ai_effect": "Web scrape plus summarization is where AI crushes it. The audit becomes a prompt, not a week."
+      "ai_effect": "Web scrape plus summarization is where AI crushes it. The audit becomes a prompt, not a week.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "Identify prospective customers, using business directories, leads from existing clients, participation in organizations, or trade show or conference attendance.",
+            "similarity": 0.578,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          },
+          {
+            "task": "identify prospective customers using business directories, leads from existing clients, participation in organizations, or trade show or conference attendance.",
+            "similarity": 0.573,
+            "ai_autonomy_mean": 3.3077,
+            "count": 26.0,
+            "in_rich": true
+          },
+          {
+            "task": "identify prospective customers by using business directories, following leads from existing clients, participating in organizations and clubs, and attending trade shows and conferences.",
+            "similarity": 0.561,
+            "ai_autonomy_mean": 3.451,
+            "count": 102.0,
+            "in_rich": true
+          }
+        ]
+      }
     },
     {
       "id": "c8",
@@ -148,7 +219,33 @@
       ],
       "evolution": 0.32,
       "visibility": 0.85,
-      "ai_effect": "Lena's hand. AI doesn't write the brand book."
+      "ai_effect": "Lena's hand. AI doesn't write the brand book.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "collaborate with graphic artists, editors and writers to produce master copies according to design specifications.",
+            "similarity": 0.49,
+            "ai_autonomy_mean": 3.1667,
+            "count": 54.0,
+            "in_rich": true
+          },
+          {
+            "task": "make manuscript acceptance or revision recommendations to the publisher.",
+            "similarity": 0.477,
+            "ai_autonomy_mean": 3.679,
+            "count": 81.0,
+            "in_rich": true
+          },
+          {
+            "task": "Manage inventory or sale of artist merchandise.",
+            "similarity": 0.476,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          }
+        ]
+      }
     },
     {
       "id": "c9",
@@ -167,7 +264,33 @@
       "evolution": 0.45,
       "visibility": 0.72,
       "evolution_target": 0.65,
-      "ai_effect": "System-component generation (type pairs, colour scales) becomes assisted; the senior designer reviews."
+      "ai_effect": "System-component generation (type pairs, colour scales) becomes assisted; the senior designer reviews.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "design complex graphics and animation, using independent judgment, creativity, and computer equipment.",
+            "similarity": 0.605,
+            "ai_autonomy_mean": 3.6278,
+            "count": 704.0,
+            "in_rich": true
+          },
+          {
+            "task": "create designs, concepts, and sample layouts, based on knowledge of layout principles and esthetic design concepts.",
+            "similarity": 0.586,
+            "ai_autonomy_mean": 3.8333,
+            "count": 30.0,
+            "in_rich": true
+          },
+          {
+            "task": "integrate and develop visual elements, such as line, space, mass, color, and perspective, to produce desired effects, such as the illustration of ideas, emotions, or moods.",
+            "similarity": 0.575,
+            "ai_autonomy_mean": 3.6237,
+            "count": 372.0,
+            "in_rich": true
+          }
+        ]
+      }
     },
     {
       "id": "c10",
@@ -185,7 +308,33 @@
       ],
       "evolution": 0.28,
       "visibility": 0.6,
-      "ai_effect": "Lena's hand. AI doesn't define a visual language."
+      "ai_effect": "Lena's hand. AI doesn't define a visual language.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "integrate and develop visual elements, such as line, space, mass, color, and perspective, to produce desired effects, such as the illustration of ideas, emotions, or moods.",
+            "similarity": 0.585,
+            "ai_autonomy_mean": 3.6237,
+            "count": 372.0,
+            "in_rich": true
+          },
+          {
+            "task": "formulate basic layout design or presentation approach and specify material details, such as style and size of type, photographs, graphics, animation, video, and sound.",
+            "similarity": 0.53,
+            "ai_autonomy_mean": 3.5476,
+            "count": 42.0,
+            "in_rich": true
+          },
+          {
+            "task": "interpret engineering sketches, specifications, or drawings.",
+            "similarity": 0.529,
+            "ai_autonomy_mean": 3.1786,
+            "count": 28.0,
+            "in_rich": true
+          }
+        ]
+      }
     },
     {
       "id": "c11",
@@ -205,7 +354,33 @@
       "evolution": 0.65,
       "visibility": 0.32,
       "evolution_target": 0.85,
-      "ai_effect": "Documentation auto-generated from the system. The mid-level designer becomes a curator."
+      "ai_effect": "Documentation auto-generated from the system. The mid-level designer becomes a curator.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "Discuss the design with the client.",
+            "similarity": 0.768,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          },
+          {
+            "task": "prepare design presentations and proposals for staff or customers.",
+            "similarity": 0.725,
+            "ai_autonomy_mean": 3.6056,
+            "count": 71.0,
+            "in_rich": true
+          },
+          {
+            "task": "Provide feedback to product design teams so that products can be tailored to clients' needs.",
+            "similarity": 0.719,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          }
+        ]
+      }
     },
     {
       "id": "c12",
@@ -224,7 +399,33 @@
       "evolution": 0.58,
       "visibility": 0.85,
       "evolution_target": 0.85,
-      "ai_effect": "UI generation drifts to commodity fast. The differentiator becomes the brief upstream, not the screens."
+      "ai_effect": "UI generation drifts to commodity fast. The differentiator becomes the brief upstream, not the screens.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "Conceptualize and help design interfaces for multimedia games, products, and devices.",
+            "similarity": 0.581,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          },
+          {
+            "task": "design customer interface of online storefront, using web programming or e-commerce software.",
+            "similarity": 0.556,
+            "ai_autonomy_mean": 3.4203,
+            "count": 138.0,
+            "in_rich": true
+          },
+          {
+            "task": "Research and apply innovative solutions for product design, visuals, and user experience to meet the needs of individual Web development projects.",
+            "similarity": 0.55,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          }
+        ]
+      }
     },
     {
       "id": "c13",
@@ -243,7 +444,33 @@
       "evolution": 0.5,
       "visibility": 0.22,
       "evolution_target": 0.65,
-      "ai_effect": "Synthesis assisted; interviews and observation still need a human in the room."
+      "ai_effect": "Synthesis assisted; interviews and observation still need a human in the room.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "Assess the user-interface or usability characteristics of products.",
+            "similarity": 0.671,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          },
+          {
+            "task": "research and test new or modified hardware or software products to determine performance and interoperability.",
+            "similarity": 0.62,
+            "ai_autonomy_mean": 3.5909,
+            "count": 22.0,
+            "in_rich": true
+          },
+          {
+            "task": "provide feedback and recommendations to developers on software usability and functionality.",
+            "similarity": 0.578,
+            "ai_autonomy_mean": 3.4951,
+            "count": 4912.0,
+            "in_rich": true
+          }
+        ]
+      }
     },
     {
       "id": "c14",
@@ -265,7 +492,33 @@
       "evolution": 0.75,
       "visibility": 0.95,
       "evolution_target": 0.92,
-      "ai_effect": "Package auto-assembles from delivered files. Tomás reviews and signs off."
+      "ai_effect": "Package auto-assembles from delivered files. Tomás reviews and signs off.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "Set out and recover stakes, marks, or other monumentation.",
+            "similarity": 0.598,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          },
+          {
+            "task": "Coordinate the removal of sets, props, and exhibits after productions or events are complete.",
+            "similarity": 0.541,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          },
+          {
+            "task": "recommend actions related to historical art, such as which items to add to a collection or which items to display in an exhibit.",
+            "similarity": 0.533,
+            "ai_autonomy_mean": 3.7412,
+            "count": 85.0,
+            "in_rich": true
+          }
+        ]
+      }
     },
     {
       "id": "c15",
@@ -282,7 +535,33 @@
       "evolution": 0.78,
       "visibility": 0.95,
       "evolution_target": 0.85,
-      "ai_effect": "Agenda and scoping assisted; the discipline lead still anchors the conversation."
+      "ai_effect": "Agenda and scoping assisted; the discipline lead still anchors the conversation.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "Schedule promotional or performance engagements for clients.",
+            "similarity": 0.717,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          },
+          {
+            "task": "meet with clients to schedule and plan details of conventions, banquets, receptions and other functions.",
+            "similarity": 0.658,
+            "ai_autonomy_mean": 3.6,
+            "count": 15.0,
+            "in_rich": true
+          },
+          {
+            "task": "plan, organize, and conduct practice sessions.",
+            "similarity": 0.654,
+            "ai_autonomy_mean": 3.4762,
+            "count": 63.0,
+            "in_rich": true
+          }
+        ]
+      }
     },
     {
       "id": "c16",
@@ -301,7 +580,33 @@
       "evolution": 0.82,
       "visibility": 0.78,
       "evolution_target": 0.92,
-      "ai_effect": "Status auto-summary from project tools. The lead intervenes only on flagged drift."
+      "ai_effect": "Status auto-summary from project tools. The lead intervenes only on flagged drift.",
+      "_aei": {
+        "low_confidence": false,
+        "top_matches": [
+          {
+            "task": "schedule and confirm appointments for clients, customers, or supervisors.",
+            "similarity": 0.57,
+            "ai_autonomy_mean": 2.5507,
+            "count": 69.0,
+            "in_rich": true
+          },
+          {
+            "task": "Coordinate the implementation or scheduling of validation testing with affected departments and personnel.",
+            "similarity": 0.561,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          },
+          {
+            "task": "Direct validation activities, such as protocol creation or testing.",
+            "similarity": 0.55,
+            "ai_autonomy_mean": null,
+            "count": 0,
+            "in_rich": false
+          }
+        ]
+      }
     },
     {
       "id": "c17",
@@ -313,7 +618,7 @@
       "is_new": true,
       "evolution": 0.15,
       "visibility": 0.55,
-      "ai_effect": "A candidate role that doesn't exist today. AI makes it feasible — the studio's prior-engagement context could become a system instead of memory in three people's heads — but it has to be staffed and built. The map shows where it would sit, not that it will be there."
+      "ai_effect": "A candidate role that doesn't exist today. AI makes it feasible — the studio's prior-engagement context could become a system instead of memory in three people's heads — but it has to be staffed and built. The map shows where it would sit, not that it's been built."
     }
   ],
   "edges": [
