@@ -18,7 +18,7 @@
   "new_end_users": [
     {
       "label": "Returning client",
-      "rationale": "When prior-engagement context compounds across engagements, refresh work 18-24 months after handover becomes economically viable."
+      "rationale": "A new client category that opens up only if the studio first builds a way to keep prior-engagement context queryable. Without that, refresh engagements 18-24 months after handover stay too expensive to win — every one of them starts from scratch."
     }
   ],
   "anchors": [
@@ -313,7 +313,7 @@
       "is_new": true,
       "evolution": 0.15,
       "visibility": 0.55,
-      "ai_effect": "Doesn't exist today. AI is what makes it possible: the studio's prior-engagement context becomes a system instead of memory in three people's heads."
+      "ai_effect": "A candidate role that doesn't exist today. AI makes it feasible — the studio's prior-engagement context could become a system instead of memory in three people's heads — but it has to be staffed and built. The map shows where it would sit, not that it will be there."
     }
   ],
   "edges": [

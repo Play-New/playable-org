@@ -603,13 +603,13 @@ function renderPopoverContent(node) {{
   }}
 
   // Emerging items (new component or new stakeholder): render a
-  // dedicated "Why it emerges" block. For components the rationale
+  // dedicated "Why it's on the map" block. For components the rationale
   // lives in ai_effect; for new stakeholders it lives in rationale.
   // Either way, the leader sees a clear answer to "why is this here?".
   if (node.is_new) {{
     const why = node.ai_effect || node.rationale;
     if (why) {{
-      html += `<div class="emerging-why"><div class="emerging-why-label">Why it emerges</div><p>${{escapeHtml(why)}}</p></div>`;
+      html += `<div class="emerging-why"><div class="emerging-why-label">Why it's on the map</div><p>${{escapeHtml(why)}}</p></div>`;
     }} else {{
       html += `<p><em class="placement">Emerging — does not exist today.</em></p>`;
     }}
@@ -794,7 +794,7 @@ def render_html(map_data: dict) -> str:
         emerging_section = (
             '<div class="section emerging-section">'
             '<h2>What\'s new on the map</h2>'
-            '<p class="lead">Every coral mark on the map above is something that doesn\'t exist today. Each one is here because something changed in the chain that makes it possible — and worth doing — now. Below, what each is and why it emerges.</p>'
+            '<p class="lead">Every coral mark on the map above is something that doesn\'t exist today. Each one is a candidate, not a commitment: it\'s here because the rest of the chain suggests the conditions for it are approaching, but whether to build it stays the org\'s choice. Below, what each is and what would have to be true for it to land.</p>'
             + "".join(items)
             + '</div>'
         )
