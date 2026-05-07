@@ -34,11 +34,11 @@ from design import base_css  # noqa: E402
 # Layout constants
 W = 1400
 PAD = {"top": 130, "right": 80, "bottom": 70, "left": 120}
-MIN_DIST_COMPONENT = 70
-MIN_DIST_ANCHOR = 220       # anchors need more horizontal room for labels
-NUDGE_PASSES = 5
-USER_NODE_Y = 56            # bumped down so label isn't clipped
-LABEL_TRUNCATE = 22
+MIN_DIST_COMPONENT = 110     # bumped from 70 for better spread / no overlap
+MIN_DIST_ANCHOR    = 260     # anchors need horizontal room for labels
+NUDGE_PASSES       = 14      # bumped from 5 — more passes converge to clean layout
+USER_NODE_Y        = 56      # bumped down so label isn't clipped
+LABEL_TRUNCATE     = 22
 
 # Colors — these are SVG-attribute-injected hex values, kept in sync
 # with the data-viz palette declared in skills/design.py (--ds-*).
@@ -205,22 +205,25 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
 
     parts: list[str] = []
 
-    # Plot frame
+    # Plot axes — only the left (Y) and bottom (X) edges, no full rectangle.
+    # Play New convention: hairlines, white space, no boxes around boxes.
     parts.append(
-        f'<rect x="{plot_x0}" y="{plot_y0}" width="{plot_w}" height="{plot_h}" '
-        f'fill="none" stroke="{LINE}" stroke-width="1"/>'
+        f'<line x1="{plot_x0}" y1="{plot_y0}" x2="{plot_x0}" y2="{plot_y1}" '
+        f'stroke="{LINE}" stroke-width="1"/>'
+    )
+    parts.append(
+        f'<line x1="{plot_x0}" y1="{plot_y1}" x2="{plot_x1}" y2="{plot_y1}" '
+        f'stroke="{LINE}" stroke-width="1"/>'
     )
 
-    # Stage divisions — thin dashed hairlines at the four boundaries.
-    # Coloured stage bands removed: they were 8% fills that fought the
-    # actual content. Play New convention: hairlines do the work, white
-    # space carries the page.
+    # Stage divisions — tiny tick marks on the X axis at the boundaries
+    # (no full vertical lines, no fills behind).
     band_x = lambda ev: plot_x0 + ev * plot_w
     for boundary in (0.17, 0.40, 0.70):
         x = band_x(boundary)
         parts.append(
-            f'<line x1="{x:.1f}" y1="{plot_y0}" x2="{x:.1f}" y2="{plot_y1}" '
-            f'stroke="{LINE}" stroke-width="0.5" stroke-dasharray="2,4"/>'
+            f'<line x1="{x:.1f}" y1="{plot_y1 - 6:.1f}" x2="{x:.1f}" y2="{plot_y1 + 6:.1f}" '
+            f'stroke="{LINE}" stroke-width="1"/>'
         )
 
     # X axis stage labels
@@ -392,7 +395,7 @@ body { background: #FFFFFF; color: var(--fg); }
 
 .container { max-width: 1240px; margin: 0 auto; padding: 80px 40px 96px; }
 
-header { margin-bottom: 48px; max-width: 820px; }
+header { margin: 0 auto 48px; max-width: 820px; }
 header .eyebrow { font-family: var(--font-display); font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 16px; }
 header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); }
 header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0; max-width: 720px; }
@@ -411,7 +414,7 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .legend .shape.new { background: var(--ds-coral); }
 .legend .shape.arrow { width: 22px; height: 1.5px; background: var(--ds-coral); }
 
-.section { margin-top: 80px; padding-top: 36px; border-top: 1px solid var(--fg-hairline); max-width: 820px; }
+.section { margin: 80px auto 0; padding-top: 36px; border-top: 1px solid var(--fg-hairline); max-width: 820px; }
 .section h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 20px; }
 .section p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; max-width: 720px; }
 .section .lead { font-size: 0.95rem; color: var(--fg-muted); line-height: 1.65; max-width: 720px; margin: 0 0 28px; }
@@ -505,10 +508,10 @@ const STAGE_PLAIN = {{
 }};
 
 const STAGE_PLAIN = {{
-  genesis:   'new territory, still being figured out',
-  custom:    'built in-house, not yet a standard',
-  product:   'common practice, vendors and patterns exist',
-  commodity: 'market standard, indistinguishable across vendors',
+  genesis:   'new territory — nobody knows yet how to do this well',
+  custom:    'built in-house — every shop figures it out their own way',
+  product:   'common practice — vendors and patterns exist, you can buy it',
+  commodity: 'market standard — indistinguishable across providers',
 }};
 
 function kindLabel(node) {{
@@ -537,16 +540,15 @@ function renderModal(node) {{
 
   if (!isUser && node.evolution != null) {{
     const visText = node.visibility != null
-      ? (node.visibility >= 0.7 ? ', visible to the end user'
-         : node.visibility >= 0.4 ? ', mid-chain'
-         : ', deep in the infrastructure')
-      : '';
-    html += `<p><em class="placement">Sits at <strong>${{stage}}</strong>${{visText}} — ${{STAGE_PLAIN[stage]}}.</em></p>`;
+      ? (node.visibility >= 0.7 ? ' — and the client sees it directly.'
+         : node.visibility >= 0.4 ? ' — mid-chain, partly visible to the client.'
+         : ' — deep behind the scenes; the client never touches it.')
+      : '.';
+    html += `<p><em class="placement">${{STAGE_PLAIN[stage]}}${{visText}}</em></p>`;
   }}
 
   if (node.evolution_target != null && !node.is_new) {{
-    const ts = stageFor(node.evolution_target);
-    html += `<p><em class="placement">Heading toward <strong>${{ts}}</strong> — ${{STAGE_PLAIN[ts]}}.</em></p>`;
+    html += `<p><em class="placement">Heading toward standardization: ${{STAGE_PLAIN[stageFor(node.evolution_target)]}}.</em></p>`;
   }}
 
   if (node.ai_effect) {{
@@ -574,6 +576,20 @@ window.pnNodeClick = function(el) {{
   if (id && NODES[id]) renderModal(NODES[id]);
 }};
 
+// Belt-and-suspenders: a document-level click listener in case inline
+// onclick is stripped by some sanitizer or doesn't bind on a given
+// renderer. Walks up parentNode manually (closest() on SVG is uneven).
+document.addEventListener('click', function(e) {{
+  let n = e.target;
+  while (n && n.nodeType === 1) {{
+    if (n.classList && n.classList.contains('node')) {{
+      const id = n.dataset && n.dataset.nodeId;
+      if (id && NODES[id]) {{ renderModal(NODES[id]); return; }}
+    }}
+    n = n.parentNode;
+  }}
+}}, true);
+
 document.getElementById('modal-close').addEventListener('click', () => {{
   document.getElementById('modal-backdrop').classList.remove('open');
 }});
@@ -592,7 +608,14 @@ def render_html(map_data: dict) -> str:
     inner, H = render_svg_inner(map_data, interactive=True)
     anchor = map_data.get("_anchor", {})
     title = anchor.get("title") or "Value map"
-    description = anchor.get("description", "")
+    # Lead paragraph fallback chain: anchor.description -> anchor.terms ->
+    # commitment terms field if build.py preserved it. The page header
+    # needs SOMETHING substantive under the H1.
+    description = (
+        anchor.get("description")
+        or anchor.get("terms")
+        or ""
+    )
 
     # AI overlay — surface a clear notice when no component carries either
     # `evolution_target` or `ai_effect`. The arrows on the map carry the
@@ -605,13 +628,15 @@ def render_html(map_data: dict) -> str:
     else:
         ai_overlay_section = (
             '<div class="section">'
-            '<h2>AI overlay</h2>'
-            '<div class="no-overlay">No AI signal is attached to this map. '
-            'To overlay where AI is pushing each piece of the chain, run an '
-            "<code>ai-exposure</code> play first and pass its matches JSON via "
-            "<code>--ai-exposure-matches</code> when building the value-map skeleton; "
-            "then refill the JSON with <code>evolution_target</code> and "
-            "<code>ai_effect</code> per component, citing AEI evidence."
+            '<h2>Where AI is pushing</h2>'
+            '<div class="no-overlay">'
+            "This map shows where each piece of the chain sits today, but it "
+            "doesn't yet show where AI is pushing it. The dashed arrows that "
+            "would normally appear on each node, pointing to the right toward "
+            "more standardization, need observed AI-usage data to be drawn. "
+            "Run the <em>ai-exposure</em> playbook first; the result is a set "
+            "of matches between the studio's activities and observed AI usage "
+            "in the world. Then re-render this map with that overlay on."
             '</div></div>'
         )
 
@@ -635,24 +660,24 @@ def render_html(map_data: dict) -> str:
             )
         decisions_section = (
             '<div class="section">'
-            '<h2>What this map says</h2>'
-            '<p class="lead">Operational moves the map enables. Each is a '
-            'concrete decision tied to component positions and grounded in '
-            'cited structural sources.</p>'
+            '<h2>How to read this map</h2>'
+            '<p class="lead">'
+            'The map alone is just positions. Below are the questions someone '
+            'looking at it should be asking, and what the positions suggest as '
+            'an answer. Each is a move you could make on Monday morning.'
+            '</p>'
             f'{"".join(items)}'
             '</div>'
         )
     else:
         decisions_section = (
             '<div class="section">'
-            '<h2>What this map says</h2>'
-            '<div class="no-overlay">No interpretation is attached to this map yet. '
-            'The map shows where each piece of the chain sits today; the '
-            'interpretation — what to do about it — is the next step. Add a '
-            "<code>decisions</code> array to the JSON: each item is "
-            "<code>{ question, answer, source }</code>. Three to five concrete "
-            'operational decisions, each tied to component positions and citing '
-            'structural sources (charter §, role descriptions, financial summary).'
+            '<h2>How to read this map</h2>'
+            '<div class="no-overlay">'
+            "The map shows where each piece of the work sits today. What to "
+            "do with that — which moves it suggests, what it tells you about "
+            "where the value is and where it's heading — is the next step. "
+            "It hasn't been authored yet for this map."
             '</div></div>'
         )
 

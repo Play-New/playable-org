@@ -17,7 +17,7 @@ lifecycle: active
 sources: [outline-charter-2024, outline-annual-review-2025]
 ---
 
-# Studio ↔ mid-market clients — baseline engagement
+# The mid-market engagement
 
 The cardinal commitment of the studio. Outline delivers the strategy → identity → digital product flow on fixed-price scope to mid-market companies; this is what the studio sells and what the studio is judged on (outline-charter-2024 §15).
 

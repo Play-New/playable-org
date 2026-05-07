@@ -361,6 +361,7 @@ def main() -> int:
             "kind": args.kind,
             "title": anchor_title,
             "description": anchor_fm.get("description", ""),
+            "terms": anchor_fm.get("terms", ""),
         },
         "_scope_units": scope_units,
         "end_user": "",  # agent fills
