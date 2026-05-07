@@ -76,6 +76,13 @@ header .eyebrow { font-family: var(--font-display); font-size: 0.74rem; font-wei
 header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); }
 header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0; }
 
+/* Intro: editorial prose explaining how to read the map. Same column
+   width as the header, sits between header and legend. */
+.intro { max-width: 820px; margin: 0 auto 48px; }
+.intro h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 16px; }
+.intro p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; }
+.intro p:last-child { margin-bottom: 0; }
+
 .legend-wrap { max-width: 820px; margin: 0 auto 40px; }
 .legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 0.82rem; color: var(--fg-muted); align-items: center; }
 .legend-item { display: flex; align-items: center; gap: 7px; }
@@ -213,7 +220,11 @@ P75 = 3.57
 
 STRINGS = {
     "en": {
-        "subtitle": "Each activity in this organization is matched against the closest task in a public catalog of work, and shown against how Claude was actually used on that task in a sample of public conversations. Each square is one of the closest matches; the colour shows how much autonomy Claude had — from assist-only to working alone. Hover for a quick read, click a square for the detail behind.",
+        "subtitle": "How AI usage observed in the public Claude sample maps onto each activity this organization actually does, by matching every activity to the closest tasks in a public catalog of work.",
+        "intro_h2": "How to read this map",
+        "intro_p1": "Each activity below is a piece of work this organization actually does. For each one, this page finds the closest tasks in a public catalog of about 18,500 occupations, and shows how Claude was used on those tasks in a sample of public conversations. The colours describe how Claude was used in the sample — not what the activity is in this organization.",
+        "intro_p2": "Each activity is shown with five matches, not one. Picking only the single closest match would be fragile — that one match is often only partially right. Five squares show whether the pattern holds across nearby matches: five greens means Claude reliably worked alone on tasks like this in the sample; a mix of colours means the read is noisier and worth taking with a pinch of salt.",
+        "intro_p3": "Click any square to read the matched task verbatim, how close it is to the activity (similarity), how Claude was used on it, and how big the sample behind that observation is. The colour key is in the legend below.",
         "legend_automated": "Mostly automated",
         "legend_augmented": "Mostly augmented",
         "legend_assistive": "Assistive",
@@ -274,7 +285,11 @@ STRINGS = {
         "activities_label": "activities",
     },
     "it": {
-        "subtitle": "Per ogni attività ho cercato la mansione più vicina nel catalogo americano dei mestieri. Per quella mansione, un campione di conversazioni con Claude raccolto da Anthropic osserva quanta autonomia Claude aveva quando veniva usato per fare quel lavoro. Ogni quadratino sotto è una delle 5 mansioni più vicine; il colore indica come Claude è stato osservato lavorare su quella mansione. Passa col mouse per la sintesi rapida, click sul quadratino per il dettaglio numerico.",
+        "subtitle": "Come l'uso di AI osservato nel campione pubblico Claude si mappa su ogni attività che questa organizzazione fa, cercando la mansione più vicina in un catalogo pubblico del lavoro.",
+        "intro_h2": "Come leggere questa mappa",
+        "intro_p1": "Ogni attività qui sotto è un pezzo di lavoro che l'organizzazione fa davvero. Per ognuna la pagina cerca le mansioni più vicine in un catalogo pubblico di circa 18.500 occupazioni, e mostra come Claude è stato usato su quelle mansioni in un campione di conversazioni pubbliche. I colori descrivono come Claude è stato usato nel campione — non cosa è l'attività dentro questa organizzazione.",
+        "intro_p2": "Ogni attività è mostrata con cinque match, non uno. Prendere solo la mansione più vicina sarebbe fragile — quel singolo match spesso è solo parzialmente azzeccato. Cinque quadratini mostrano se il pattern regge attraverso match diversi: cinque verdi vuol dire che Claude ha lavorato in autonomia su mansioni simili nel campione; un mix di colori vuol dire che il segnale è più rumoroso e va preso con cautela.",
+        "intro_p3": "Click su qualunque quadratino per leggere la mansione verbatim, quanto è vicina all'attività (similarità), come Claude è stato usato, e quanto è ampio il campione dietro quell'osservazione. La legenda dei colori è qui sotto.",
         "legend_automated": "Claude lavorava in autonomia (4-5 su 5)",
         "legend_augmented": "Claude assisteva con supervisione (3-4 su 5)",
         "legend_assistive": "Claude usato come strumento puntuale (1-3 su 5)",
@@ -467,6 +482,13 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
       <h1>{title}</h1>
       <p class="lead">{S["subtitle"]}</p>
     </header>
+
+    <div class="intro">
+      <h2>{S["intro_h2"]}</h2>
+      <p>{S["intro_p1"]}</p>
+      <p>{S["intro_p2"]}</p>
+      <p>{S["intro_p3"]}</p>
+    </div>
 
     <div class="legend-wrap">
       <div class="legend">
