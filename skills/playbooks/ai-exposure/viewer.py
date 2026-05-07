@@ -67,12 +67,16 @@ body { background: #FFFFFF; color: var(--fg); }
 .container { max-width: 1240px; margin: 0 auto; padding: 80px 40px 96px; }
 @media (max-width: 900px) { .container { padding: 56px 24px 80px; } }
 
-header { margin: 0 0 40px; }
+/* Editorial text columns at the start and end of the page sit in a
+   centered narrower column inside the 1240px container; data-heavy
+   blocks (filters, org-overview, area sections, card grid) span the
+   full container. */
+header { max-width: 820px; margin: 0 auto 48px; }
 header .eyebrow { font-family: var(--font-display); font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 16px; }
-header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); max-width: 920px; }
-header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0; max-width: 720px; }
+header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); }
+header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0; }
 
-.legend-wrap { margin: 0 0 40px; }
+.legend-wrap { max-width: 820px; margin: 0 auto 40px; }
 .legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 0.82rem; color: var(--fg-muted); align-items: center; }
 .legend-item { display: flex; align-items: center; gap: 7px; }
 .legend-square { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
@@ -82,7 +86,7 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .legend-square.no-data { background: var(--no-data); }
 
 /* Filter row — inline editorial controls, no chunky borders. */
-.controls { margin: 0 0 40px; display: flex; flex-direction: column; gap: 14px; }
+.controls { max-width: 820px; margin: 0 auto 40px; display: flex; flex-direction: column; gap: 14px; }
 .control-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .control-label { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; min-width: 60px; font-weight: 500; }
 .search-box { flex: 1; min-width: 240px; padding: 8px 14px; border: 1px solid var(--fg-hairline); border-radius: 3px; font-size: 0.9rem; background: #FFFFFF; font-family: inherit; color: var(--fg); }
@@ -92,10 +96,10 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .pill:hover { border-color: var(--fg); }
 .pill.active { background: var(--fg); color: #FFFFFF; border-color: var(--fg); }
 
-.summary { margin: 0 0 24px; font-size: 0.82rem; color: var(--fg-muted); }
+.summary { max-width: 820px; margin: 0 auto 24px; font-size: 0.82rem; color: var(--fg-muted); }
 
-/* Org snapshot — editorial block at container width. */
-.org-overview { margin: 0 0 64px; }
+/* Org snapshot — editorial block, centered column. */
+.org-overview { max-width: 820px; margin: 0 auto 64px; }
 .org-overview .label { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 14px; font-weight: 500; }
 .org-overview .org-desc { font-size: 0.95rem; line-height: 1.7; margin-bottom: 22px; color: var(--fg); max-width: 720px; }
 .org-overview .stats-row { display: flex; gap: 36px; flex-wrap: wrap; font-size: 0.85rem; color: var(--fg-muted); margin-bottom: 18px; }
@@ -163,9 +167,8 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .card.low-confidence .task-grid::before { content: "Low confidence — top-1 similarity below threshold."; grid-column: 1 / -1; font-size: 0.76rem; color: var(--fg-muted); padding: 8px 10px; background: var(--bg-alt); border-radius: 2px; }
 .card.low-confidence .task-grid { max-width: none; }
 
-/* Decisions section — at container width. The prose inside still wraps
-   at a readable line length via max-width on the inner elements. */
-.section { margin: 96px 0 0; padding-top: 40px; border-top: 1px solid var(--fg-hairline); }
+/* Decisions section — centered editorial column, same as value-map and world-model. */
+.section { max-width: 820px; margin: 96px auto 0; padding-top: 40px; border-top: 1px solid var(--fg-hairline); }
 .section h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 20px; }
 .section p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; max-width: 720px; }
 .section .lead { font-size: 0.95rem; color: var(--fg-muted); line-height: 1.65; max-width: 720px; margin: 0 0 28px; }
@@ -195,8 +198,8 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 
 .empty { text-align: center; padding: 64px 0; color: var(--fg-muted); font-size: 0.95rem; }
 
-.footer { margin: 80px 0 0; padding-top: 20px; border-top: 1px solid var(--fg-hairline); color: var(--fg-muted); font-size: 0.78rem; line-height: 1.6; }
-.footer p { margin: 0; max-width: 720px; }
+.footer { max-width: 820px; margin: 80px auto 0; padding-top: 20px; border-top: 1px solid var(--fg-hairline); color: var(--fg-muted); font-size: 0.78rem; line-height: 1.6; }
+.footer p { margin: 0; }
 """
 
 P25 = 3.21
