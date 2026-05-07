@@ -264,7 +264,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       <div class="stack-layer layer-capabilities">
         <div class="layer-head">
           <div class="layer-name">Capabilities</div>
-          <div class="layer-hint">The atomic things the org can actually do. Each one is a function: declared input, structured output, service targets, an invocation pattern. Cards with an <strong style="color: #c47558;">orange</strong> rule are differentiated for this org — hard to acquire, hard to copy. Cards with a grey rule are necessary but standard across the category.</div>
+          <div class="layer-hint">The atomic things the org can actually do. Each one is a function: declared input, structured output, service targets, an invocation pattern. Cards framed in <strong style="color: #c47558;">coral</strong> are differentiated for this org — hard to acquire, hard to copy. Cards in plain hairline are necessary but standard across the category.</div>
         </div>
         <div class="layer-body">
           <div class="cap-grid">{capabilities_html}</div>
