@@ -245,11 +245,21 @@ This is the load-bearing step of the playbook. The map is the evidence; the `dec
 
 **Frame for the AI question.** AI commoditizing the production layer is not the threat. It is the funnel. The play surfaces this if it shows: which nodes are about to drift to commodity, which differentiated nodes upstream they funnel toward, and what the gift/margin-price strategy looks like.
 
-### 4. Add new_end_users and new_value (if applicable)
+### 4. Add new_end_users, is_new components, new_value (if applicable)
 
-If the chain shift produces a new stakeholder type (e.g., a fundraising org starting to serve researchers directly), document it under `new_end_users`. If the chain produces a new value flow that didn't exist before, document under `new_value`.
+If the chain shift produces a new stakeholder type, document it under `new_end_users`. If a new piece of the chain emerges that doesn't exist today (typically a candidate role or capability that AI makes feasible), add a component with `is_new: true`. If a new value flow appears, document under `new_value`.
 
 These fields are optional. Use only when the structure or AEI evidence supports them.
+
+**Voice rule for emerging items — frozen.** Every `rationale` (on `new_end_users`) and every `ai_effect` (on `is_new` components) is written in **conditional voice**, never temporal/predictive:
+
+| Don't write | Do write |
+|---|---|
+| "When the studio builds X, Y becomes viable." | "Y opens up only **if** the studio first builds X. Without that, Y stays too expensive." |
+| "AI makes this commoditize within 18 months." | "AI **could** push this toward commodity inside 18 months, but the timing depends on..." |
+| "This will be the next hire." | "A **candidate** role that AI makes **feasible** — but it has to be staffed and built. The map shows where it **would** sit, not that it will be there." |
+
+The rule: the map suggests preconditions are approaching; whether to build the new element stays the org's choice. Every emerging item reads as "if / would / could / depends on", never "when / will / makes". The `autoresearch.py` LLM-judge dimension catches this in the decisions text; for `rationale` and `ai_effect` on emerging items, it is enforced editorially.
 
 ### 5. Visualize
 
@@ -260,25 +270,43 @@ python3 skills/playbooks/value-map/viewer.py \
   [--svg <chain.svg>]
 ```
 
-The HTML is the **primary consumer artefact**: an interactive document a stakeholder can open in any browser. It contains:
+The HTML is the **primary consumer artefact** — a self-contained interactive document the leader opens in a browser. It contains, in order:
 
-1. A header with anchor title, id, and free-text description (from structure).
-2. A **process introduction** explaining how to read the map (axes, shapes, the AI overlay arrows).
-3. The map itself (inline SVG) with clickable nodes — clicking an anchor or component opens a modal showing label, kind, current/target evolution stage, AI effect, and the AEI top-K matches as evidence.
-4. A text fallback below the map: components grouped by stage, each clickable to open the same modal.
+1. **Header** (eyebrow `value map` + h1 title + lead description), centered in a 820px column inside the 1240px container.
+2. **Map** (inline SVG, full container width). End-users at top, anchors as diamonds, components as circles. Implicit edges drawn from each end-user to each anchor and from each anchor to each unit-level component, so the value chain is always visually connected. Component-to-component edges from the JSON `edges[]` array.
+3. **Legend** (centered 820px column): five marks — end user, user need, part of the chain, new / emerging, where AI is pushing.
+4. **AI-overlay missing notice** (only when no component has `evolution_target` or `ai_effect`): a single block prompting the agent to run `ai-exposure` first.
+5. **What's new on the map** (only when `new_end_users` or `is_new` components exist): a centered 820px section listing every emerging item as a coral-bordered card with the kind label ("New stakeholder" / "New piece of the chain"), the name, and the why-it's-on-the-map text from `rationale` (stakeholders) or `ai_effect` (components). Lead paragraph explicitly frames each as a candidate, not a commitment.
+6. **How to read this map** (the decisions section): an h2 + lead + each decision rendered as `.question` + `.answer` (one or more paragraphs) + `.source` citation. The load-bearing interpretive surface — the map shows where things sit, this section says what to do about it.
 
-Visual conventions (mirror the play-new-dashboard's `WardleyMapView` component):
+**Visual code (frozen)**:
 
-- 1400×900 (or 1100 if more than 14 items)
-- End-user nodes at the top, with extra padding so labels don't clip
-- Anchors as diamond polygons; labels placed *below* the diamond to avoid colliding with end-user labels above
-- Components as circles, positioned at `(evolution, visibility)`
-- Edges as gentle curved arcs
-- New components/anchors highlighted with accent color
-- `evolution_target` rendered as a dashed arrow from current to target position
-- Long labels truncated in SVG (~22 chars) — the modal shows the full label
+- **Shape = kind**: circle for end-users and components; diamond for anchors (the user need / the value).
+- **Colour = state**: white fill = exists today; coral fill = new / emerging.
+- The shape **never** changes when an item is new — only the colour does. This keeps the geometric vocabulary consistent: a circle is always a stakeholder or a component, a diamond is always a value, regardless of whether it's already there or about to emerge.
 
-The optional `--svg` flag also produces a standalone SVG file useful for embedding in the markdown play (`![](data/<map>.svg)`). The standalone SVG has the same truncations and is non-interactive.
+**Other visual conventions**:
+
+- 1400 × 900 base canvas (taller if more than 14 items).
+- End-user nodes at the top, with extra padding so labels don't clip; new end-users sit 220px to the right of the last existing one to avoid label collision.
+- Anchors as diamonds; labels placed below the diamond to avoid colliding with end-user labels above.
+- Components positioned at `(evolution, visibility)`.
+- Edges as gentle curved arcs (`MUTED` stroke, 0.4 opacity).
+- `evolution_target` rendered as a dashed coral arrow from current to target position; arrow length capped to keep the arrowhead inside the plot area.
+- Long labels truncated in SVG (~22 chars). The popover (on click) shows the full label and content.
+
+**Click on a node** opens a small floating popover next to the clicked element (never a full-screen modal). The popover contains:
+
+- Eyebrow with the kind ("End user" / "User need" / "Unit" / "Activity" / "External stakeholder" / "Part of the chain", or "New / emerging" if `is_new`).
+- The full label as h3.
+- Description (from `description` / `_description` / `_body` field, in that fallback order).
+- For components: stage in plain English (no jargon — "common practice — vendors and patterns exist, you can buy it" instead of "product"), placement hint based on visibility, evolution_target heading if present, ai_effect prose if present.
+- For emerging items (`is_new` components and `new_end_users`): a dedicated coral-accent **"Why it's on the map"** block rendering the `ai_effect` (components) or `rationale` (stakeholders). Falls back to a generic "Emerging — does not exist today" line only when neither field is filled.
+- Footer citation: the `_structure_id` if present.
+
+Esc / click outside / close button dismisses. The popover positions itself relative to the click target with viewport-edge clamping.
+
+The optional `--svg` flag produces a standalone SVG (same visual conventions as the inline SVG, non-interactive) for markdown embedding via `![](data/<map>.svg)`.
 
 ### 6. Audit (anti-hallucination gate, mandatory)
 
