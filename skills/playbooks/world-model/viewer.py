@@ -95,9 +95,13 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .interface { background: transparent; border: 1px solid var(--fg-hairline); border-radius: 4px; padding: 7px 14px; font-size: 0.85rem; cursor: pointer; color: var(--fg); transition: border-color 0.15s; }
 .interface:hover { border-color: var(--fg); }
 
-/* Intelligence layer / world model — single column inside the 820px
-   editorial grid; sub-sections stack vertically with their own labels. */
-.il-grid, .wm-grid { display: flex; flex-direction: column; gap: 20px; margin-top: 14px; }
+/* Intelligence layer / world model — two columns side-by-side inside
+   the 820px column, because each layer is a comparison: held-by-
+   people-today vs could-be-held-by-systems on the intelligence layer,
+   about-itself vs about-the-people-it-serves on the world model. The
+   contrast is the point. */
+.il-grid, .wm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+@media (max-width: 720px) { .il-grid, .wm-grid { grid-template-columns: 1fr; gap: 16px; } }
 .il-section .il-title, .wm-section .wm-title { font-family: var(--font-display); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 10px; font-weight: 500; }
 .il-card, .wm-card { padding: 14px 16px; margin-bottom: 10px; font-size: 0.88rem; border: 1px solid var(--fg-hairline); border-radius: 4px; transition: border-color 0.15s; cursor: pointer; }
 .il-card:hover, .wm-card:hover { border-color: var(--fg); }
