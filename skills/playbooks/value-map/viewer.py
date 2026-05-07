@@ -253,11 +253,36 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
         f'<path d="M0,0 L10,5 L0,10 z" fill="{ACCENT}"/></marker></defs>'
     )
 
-    # Edges
-    edges = map_data.get("edges", [])
+    # Edges. The JSON only carries component→component dependency edges
+    # (built from activity input/output and unit→activity relationships).
+    # The Wardley chain user→anchor→top-level-components is logical and
+    # should always render; we infer those edges here so the value-map
+    # is connected even if the agent forgot them.
+    edges = list(map_data.get("edges") or [])
     end_users = map_data["end_user"]
     if isinstance(end_users, str):
         end_users = [end_users] if end_users else []
+    components = map_data.get("components") or []
+    anchors = map_data.get("anchors") or []
+
+    # Implicit user → anchor edges: every end-user connects to every
+    # anchor (the user need the org promises to fulfill).
+    for uid in user_ids:
+        for a in anchors:
+            edges.append({"from": uid, "to": a["id"], "_implicit": True})
+
+    # Implicit anchor → unit-level component edges. Top-level components
+    # are anything with `_kind: "unit"` — these are the entry points of
+    # the chain that delivers the user need. (Activities sit under units.)
+    unit_ids = [c["id"] for c in components if c.get("_kind") == "unit"]
+    if not unit_ids:
+        # Fallback: components with no incoming dependency edges.
+        incoming = {e.get("to") for e in (map_data.get("edges") or [])}
+        unit_ids = [c["id"] for c in components if c["id"] not in incoming]
+    for a in anchors:
+        for cid in unit_ids:
+            edges.append({"from": a["id"], "to": cid, "_implicit": True})
+
     for e in edges:
         a_id = e["from"]
         b_id = e["to"]
