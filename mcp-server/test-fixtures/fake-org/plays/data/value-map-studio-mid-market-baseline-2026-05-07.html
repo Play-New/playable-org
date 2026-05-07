@@ -715,11 +715,13 @@ header h1 { font-size: 1.9rem; font-weight: 600; letter-spacing: -0.02em; margin
 .modal .row { display: grid; grid-template-columns: 180px 1fr; gap: 8px 20px; font-size: 0.85rem; margin-bottom: 8px; }
 .modal .row .key { color: var(--muted); }
 .modal .row strong { color: var(--fg); font-weight: 500; }
-.modal .stage-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; border: 1px solid var(--line); }
-.modal .stage-pill.genesis { background: var(--success-bg); color: var(--success); border-color: #a7f3d0; }
-.modal .stage-pill.custom { background: var(--info-bg); color: var(--info); border-color: #bfdbfe; }
-.modal .stage-pill.product { background: var(--info-bg); color: var(--info); border-color: #bfdbfe; }
-.modal .stage-pill.commodity { background: var(--bg-soft); color: var(--fg); border-color: var(--line); }
+/* Stage pills route through the data-viz palette in design.py — one
+   distinct hue per stage so the four bands read at a glance. */
+.modal .stage-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; border: 1px solid; }
+.modal .stage-pill.genesis   { background: var(--ds-sage-bg);  color: var(--fg); border-color: var(--ds-sage); }
+.modal .stage-pill.custom    { background: var(--ds-lilac-bg); color: var(--fg); border-color: var(--ds-lilac); }
+.modal .stage-pill.product   { background: var(--ds-slate-bg); color: var(--fg); border-color: var(--ds-slate); }
+.modal .stage-pill.commodity { background: var(--ds-sand-bg);  color: var(--fg); border-color: var(--ds-sand); }
 .modal .ai-effect { background: var(--bg-soft); border-left: 2px solid var(--fg); padding: 12px 18px; margin: 14px 0; border-radius: 0 3px 3px 0; font-size: 0.92rem; line-height: 1.65; }
 .modal .ai-effect .label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; font-weight: 500; }
 .modal .aei-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 12px; }
@@ -935,14 +937,19 @@ function renderModal(node) {
   document.getElementById('modal-backdrop').classList.add('open');
 }
 
+// Robust event delegation: closest() on SVG is unreliable across
+// engines, so we walk up the DOM manually to find the .node or
+// .comp-card ancestor.
 document.addEventListener('click', (e) => {
-  const node = e.target.closest('.node, .comp-card');
-  if (!node) return;
-  const id = node.dataset.nodeId || node.dataset.id;
-  if (!id) return;
-  const data = NODES[id];
-  if (!data) return;
-  renderModal(data);
+  let n = e.target;
+  while (n && n.nodeType === 1) {
+    if (n.classList && (n.classList.contains('node') || n.classList.contains('comp-card'))) {
+      const id = n.dataset && (n.dataset.nodeId || n.dataset.id);
+      if (id && NODES[id]) renderModal(NODES[id]);
+      return;
+    }
+    n = n.parentNode;
+  }
 });
 
 document.getElementById('modal-close').addEventListener('click', () => {
