@@ -694,13 +694,13 @@ function renderCard(d) {{
   const isLow = d.level === 'low-confidence';
   let squaresHtml = '';
   if (!isLow) {{
-    const real = d.matches.slice(0, 25).map((m, idx) => ({{m, idx, cls: classifyMatch(m)}}));
+    // Render exactly the matches that exist — no padding to a fixed
+    // grid size. With top-K = 5 (default) this gives 5 squares per
+    // activity; the grid CSS wraps them into rows of 5.
+    const real = d.matches.map((m, idx) => ({{m, idx, cls: classifyMatch(m)}}));
     const order = {{automated: 0, augmented: 1, assistive: 2, 'no-data': 3}};
     real.sort((a, b) => order[a.cls] - order[b.cls]);
-    const slots = real.slice();
-    while (slots.length < 25) slots.push(null);
-    squaresHtml = slots.map(s => {{
-      if (!s) return '<div class="task-square no-data" style="opacity:0.2"></div>';
+    squaresHtml = real.map(s => {{
       const m = s.m;
       const cls = s.cls;
       const taskShort = (m.task_it || m.task || '');
