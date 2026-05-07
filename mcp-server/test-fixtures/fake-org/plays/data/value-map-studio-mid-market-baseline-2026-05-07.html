@@ -697,19 +697,20 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .decision .answer { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 6px; max-width: 720px; }
 .decision .source { font-size: 0.78rem; color: var(--fg-muted); font-family: ui-monospace, SF Mono, Menlo, monospace; }
 
-/* Modal — editorial popup */
-.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.32); display: none; align-items: flex-start; justify-content: center; padding: 80px 16px 16px; z-index: 100; overflow-y: auto; backdrop-filter: blur(4px); }
-.modal-backdrop.open { display: flex; animation: pn-fade 0.2s ease; }
-.modal { background: #FFFFFF; border-radius: 4px; border: 1px solid var(--fg-hairline); max-width: 600px; width: 100%; padding: 36px 44px 40px; animation: pn-pop 0.25s ease; }
-.modal .close { float: right; background: transparent; border: 0; cursor: pointer; font-size: 1.4rem; color: var(--fg-muted); margin: -10px -10px 0 0; padding: 0; line-height: 1; }
-.modal .close:hover { color: var(--fg); background: transparent; }
-.modal .eyebrow { font-family: var(--font-display); font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 12px; color: var(--fg-muted); }
-.modal .eyebrow.is-new { color: var(--ds-coral); }
-.modal h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 18px; line-height: 1.2; color: var(--fg); }
-.modal .body p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; }
-.modal .body p:last-child { margin-bottom: 0; }
-.modal .body em.placement { color: var(--fg-muted); font-style: normal; }
-.modal .citation { font-size: 0.78rem; color: var(--fg-muted); padding-top: 16px; margin-top: 22px; border-top: 1px solid var(--fg-hairline); font-family: ui-monospace, SF Mono, Menlo, monospace; }
+/* Popover — small floating card next to the clicked node. Replaces the
+   full-screen modal: pop-overs read as 'a tooltip you can read', not 'a
+   page you have to dismiss'. */
+.popover { position: absolute; display: none; max-width: 320px; min-width: 220px; padding: 14px 18px 16px; background: #FFFFFF; border: 1px solid var(--fg-hairline); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); z-index: 100; animation: pn-pop 0.18s ease; }
+.popover.open { display: block; }
+.popover .close { position: absolute; top: 6px; right: 8px; background: transparent; border: 0; cursor: pointer; font-size: 1.1rem; color: var(--fg-muted); padding: 0; line-height: 1; }
+.popover .close:hover { color: var(--fg); background: transparent; }
+.popover .eyebrow { font-family: var(--font-display); font-size: 0.62rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 6px; color: var(--fg-muted); }
+.popover .eyebrow.is-new { color: var(--ds-coral); }
+.popover h3 { font-family: var(--font-display); font-size: 1rem; font-weight: 500; letter-spacing: -0.015em; margin: 0 0 8px; line-height: 1.25; color: var(--fg); padding-right: 18px; }
+.popover .body p { font-size: 0.84rem; line-height: 1.55; color: var(--fg); margin: 0 0 8px; }
+.popover .body p:last-child { margin-bottom: 0; }
+.popover .body em.placement { color: var(--fg-muted); font-style: normal; }
+.popover .citation { font-size: 0.7rem; color: var(--fg-muted); padding-top: 8px; margin-top: 10px; border-top: 1px solid var(--fg-hairline); font-family: ui-monospace, SF Mono, Menlo, monospace; }
 </style>
 </head>
 <body>
@@ -818,15 +819,13 @@ When AI augments execution, the defensible studio asset becomes the contextual o
 Name it Context Lead, Knowledge Steward, Engagement Memory Owner — the title matters less than the function. This is the role that ages best as the studio scales toward the 30-person cap.</div><div class="source">outline-charter-2024 §20; outline-roles-2025</div></div></div>
   </div>
 
-  <div class="modal-backdrop" id="modal-backdrop">
-    <div class="modal">
-      <button class="close" id="modal-close">×</button>
-      <div id="modal-body"></div>
-    </div>
+  <div class="popover" id="popover">
+    <button class="close" id="popover-close" aria-label="Close">×</button>
+    <div id="popover-body"></div>
   </div>
 
 <script>
-const NODES = {"__user_0__": {"label": "mid-market-clients", "_kind": "user"}, "a1": {"id": "a1", "label": "Strategy → identity → digital product, on time, on fixed price", "evolution": 0.55, "description": "The cardinal user need: a mid-market client receives the studio's signature flow as a single coherent package, delivered in 12-16 weeks at a price agreed at pitch.", "_kind": "anchor"}, "c1": {"id": "c1", "label": "Strategy", "_structure_id": "strategy", "_kind": "unit", "_description": "Brand strategy area. Positioning, audience research, naming, narrative workshops, competitive audits.", "evolution": 0.42, "visibility": 0.55}, "c2": {"id": "c2", "label": "Design", "_structure_id": "design", "_kind": "unit", "_description": "Brand identity area. Identity systems, visual languages, brand books, motion systems.", "evolution": 0.45, "visibility": 0.7}, "c3": {"id": "c3", "label": "Digital product", "_structure_id": "digital-product", "_kind": "unit", "_description": "Digital product area. UI design for B2B web and apps; design systems for client product teams; embedded UX research.", "evolution": 0.55, "visibility": 0.78}, "c4": {"id": "c4", "label": "Client services", "_structure_id": "client-services", "_kind": "unit", "_description": "Client services area. Kickoff workshops, weekly check-ins, asset handovers, scoping for new pitches.", "evolution": 0.72, "visibility": 0.92}, "c5": {"id": "c5", "label": "Audience research", "_structure_id": "audience-research", "_kind": "activity", "_unit": "strategy", "_description": "Interview the client's customers and stakeholders, transcribe and synthesise into an insights document feeding positioning.", "_body": "# Audience research\n\nThe strategy lead and one strategist run the audience-research interviews for an engagement. They transcribe and synthesise into an insights document that feeds [brand positioning](brand-positioning.md) (outline-roles-2025).\n\nThe four mid-level strategists run interviews and transcripts on assigned engagements; each strategist runs roughly four engagements per year, in parallel rather than serial (outline-roles-2025).", "_inputs": ["engagement-scope"], "_outputs": ["insights-document"], "evolution": 0.4, "visibility": 0.5}, "c6": {"id": "c6", "label": "Brand positioning", "_structure_id": "brand-positioning", "_kind": "activity", "_unit": "strategy", "_description": "Author the positioning document for an engagement: how the client should be understood, against whom, with what proof points.", "_body": "# Brand positioning\n\nThe strategy lead writes the positioning document for every engagement. Inputs come from [audience research](audience-research.md) and the [competitive audit](competitive-audit.md); the output is a written brief that the [design lead](../people/lena-thorvaldsen.md) builds the identity system on top of (outline-roles-2025, outline-charter-2024 §1).\n\nThe artefact is owned by [Marco Bellini](../people/marco-bellini.md) and is not delegated — every positioning document goes out under his signature (outline-roles-2025).", "_inputs": ["insights-document", "market-map"], "_outputs": ["positioning-brief"], "evolution": 0.3, "visibility": 0.65}, "c7": {"id": "c7", "label": "Competitive audit", "_structure_id": "competitive-audit", "_kind": "activity", "_unit": "strategy", "_description": "Map a client's competitive landscape: who else exists in the category, what they sound like, where the white space is.", "_body": "# Competitive audit\n\nStrategists write competitive audits on briefed projects: who else exists in the category, what they sound like, where the white space is. The audit feeds the positioning brief (outline-roles-2025).\n\nThe strategy lead also does competitive-audit work for new pitches when the studio is in front of a prospect — the audit is the pitch's evidence base (outline-roles-2025).", "_inputs": ["engagement-scope"], "_outputs": ["market-map"], "evolution": 0.52, "visibility": 0.45}, "c8": {"id": "c8", "label": "Brand book", "_structure_id": "brand-book", "_kind": "activity", "_unit": "design", "_description": "Author the brand book — the studio's signature artefact. Built personally by the design lead on every engagement.", "_body": "# Brand book\n\nThe design lead builds the brand book personally on every engagement. The brand book is the artefact the studio is best known for and the design lead does not delegate it (outline-roles-2025).\n\nMid-level designers may produce individual brand-book chapters under the lead's review, but the integration into a single artefact is the lead's hand (outline-roles-2025).", "_inputs": ["identity-system"], "_outputs": ["brand-book-deliverable"], "evolution": 0.32, "visibility": 0.85}, "c9": {"id": "c9", "label": "Identity system build", "_structure_id": "identity-system-build", "_kind": "activity", "_unit": "design", "_description": "Build the full identity system for an engagement: typography, colour, grid, motion, illustration direction, photo direction.", "_body": "# Identity system build\n\nSenior designers run the identity-system build for individual engagements: typography, colour, grid, motion logic, illustration direction, photo direction. They typically own one engagement at a time (outline-roles-2025).\n\nMid-level designers support the senior on the system build. The design lead reviews every deliverable before it leaves the studio per the senior-eyes-on-every-output rule (outline-roles-2025, outline-charter-2024 §9).", "_inputs": ["visual-system"], "_outputs": ["identity-system"], "evolution": 0.45, "visibility": 0.72}, "c10": {"id": "c10", "label": "Visual language", "_structure_id": "visual-language", "_kind": "activity", "_unit": "design", "_description": "Define the visual language for an engagement: typography, colour, imagery direction, motion logic, on top of the positioning brief.", "_body": "# Visual language\n\nThe design lead defines the visual language for the brief from strategy: typography choice, colour direction, imagery treatment, motion logic. The visual language feeds the [identity system build](identity-system-build.md) (outline-roles-2025).", "_inputs": ["positioning-brief"], "_outputs": ["visual-system"], "evolution": 0.28, "visibility": 0.6}, "c11": {"id": "c11", "label": "Design system build", "_structure_id": "design-system-build", "_kind": "activity", "_unit": "digital-product", "_description": "Build a design system for clients who maintain their own product engineering. Documented system, ready for client handoff.", "_body": "# Design system build\n\nMid-level product designers own design-system documentation when the client is building a system the studio will hand off. The senior product designer leads the system architecture; the mid-level produces the documentation that lets the client team maintain it (outline-roles-2025).\n\nThe system build feeds the [asset handover](asset-handover.md) ritual at the end of the engagement.", "_inputs": ["identity-system", "ui-screens"], "_outputs": ["design-system"], "evolution": 0.65, "visibility": 0.55}, "c12": {"id": "c12", "label": "UI design", "_structure_id": "ui-design", "_kind": "activity", "_unit": "digital-product", "_description": "UI design for B2B web and apps: screens, components, interactions, accessibility, paired with client front-end engineers.", "_body": "# UI design\n\nSenior product designers own UI design for individual engagements: screens, components, interactions, prototyping, accessibility audits, pairing with the client's front-end developers (outline-roles-2025).\n\nThe product lead reviews every UI deliverable; on enterprise engagements the lead or a senior typically embeds with the client product team for the duration (outline-roles-2025, outline-charter-2024 §16).", "_inputs": ["identity-system"], "_outputs": ["ui-screens"], "evolution": 0.58, "visibility": 0.85}, "c13": {"id": "c13", "label": "UX research", "_structure_id": "ux-research", "_kind": "activity", "_unit": "digital-product", "_description": "Embedded UX research with the client product team: usability testing, observation, synthesis.", "_body": "# UX research\n\nThe product lead runs UX research when the engagement asks for it: embedded with the client's product team, usability testing, observation, synthesis into a research report (outline-roles-2025).\n\nUser insights from research feed back into [UI design](ui-design.md) and into the [positioning](brand-positioning.md) brief on engagements where the strategy work hasn't yet closed.", "_inputs": ["engagement-scope"], "_outputs": ["user-insights"], "evolution": 0.5, "visibility": 0.4}, "c14": {"id": "c14", "label": "Asset handover", "_structure_id": "asset-handover", "_kind": "activity", "_unit": "client-services", "_description": "Run the asset-handover ritual at the end of each engagement: delivery of all artefacts, sign-off, archival.", "_body": "# Asset handover\n\nThe client services lead manages the asset-handover ritual at the end of each engagement. The handover package collects the brand book, identity system files, design-system documentation, UI screens, and any source files the client owns under the contract (outline-roles-2025).\n\nThe relevant discipline lead is present at handover; the lead and Tomás together walk the client through what they're receiving and confirm sign-off (outline-roles-2025).", "_inputs": ["brand-book-deliverable", "identity-system", "design-system", "ui-screens"], "_outputs": ["client-handoff"], "evolution": 0.75, "visibility": 0.95}, "c15": {"id": "c15", "label": "Kickoff workshop", "_structure_id": "kickoff-workshop", "_kind": "activity", "_unit": "client-services", "_description": "Run the kickoff workshop for every engagement: scope agreement, calendar, weekly cadence, single point of contact on client side.", "_body": "# Kickoff workshop\n\nThe client services lead runs the kickoff workshop for every engagement: scoping, calendar, weekly cadence agreement, single point of contact on the client side. The output is the engagement-scope document that anchors weekly check-ins, asset handovers, and the fixed-price agreement (outline-roles-2025, outline-charter-2024 §4, §12).\n\nThe relevant discipline lead sits at the kickoff alongside [Tomás Reis](../people/tomas-reis.md). Enterprise kickoffs additionally include the founder (outline-roles-2025).", "_inputs": [], "_outputs": ["engagement-scope"], "evolution": 0.78, "visibility": 0.95}, "c16": {"id": "c16", "label": "Weekly check-in", "_structure_id": "weekly-check-in", "_kind": "activity", "_unit": "client-services", "_description": "Run the weekly check-in call on each active engagement: progress, blockers, next-week scope confirmation.", "_body": "# Weekly check-in\n\nAccount managers run the weekly check-ins on three assigned engagements each. The lead [Tomás Reis](../people/tomas-reis.md) does not run weekly check-ins himself but reviews the notes and intervenes when an engagement is sliding (outline-roles-2025).\n\nThe weekly check-in is the rhythm of an Outline engagement; it's where scope drifts get caught, where client approvals get chased, and where the discipline lead is pulled in if the work needs adjustment (outline-roles-2025).", "_inputs": ["engagement-scope"], "_outputs": ["weekly-status"], "evolution": 0.82, "visibility": 0.9}};
+const NODES = {"__user_0__": {"label": "mid-market-clients", "_kind": "user"}, "a1": {"id": "a1", "label": "Strategy → identity → digital product, on time, on fixed price", "evolution": 0.55, "description": "The cardinal user need: a mid-market client receives the studio's signature flow as a single coherent package, delivered in 12-16 weeks at a price agreed at pitch.", "_kind": "anchor"}, "c1": {"id": "c1", "label": "Strategy", "_structure_id": "strategy", "_kind": "unit", "_description": "Brand strategy area. Positioning, audience research, naming, narrative workshops, competitive audits.", "evolution": 0.42, "visibility": 0.55}, "c2": {"id": "c2", "label": "Design", "_structure_id": "design", "_kind": "unit", "_description": "Brand identity area. Identity systems, visual languages, brand books, motion systems.", "evolution": 0.45, "visibility": 0.7}, "c3": {"id": "c3", "label": "Digital product", "_structure_id": "digital-product", "_kind": "unit", "_description": "Digital product area. UI design for B2B web and apps; design systems for client product teams; embedded UX research.", "evolution": 0.55, "visibility": 0.78}, "c4": {"id": "c4", "label": "Client services", "_structure_id": "client-services", "_kind": "unit", "_description": "Client services area. Kickoff workshops, weekly check-ins, asset handovers, scoping for new pitches.", "evolution": 0.72, "visibility": 0.92}, "c5": {"id": "c5", "label": "Audience research", "_structure_id": "audience-research", "_kind": "activity", "_unit": "strategy", "_description": "Interview the client's customers and stakeholders, transcribe and synthesise into an insights document feeding positioning.", "_body": "The strategy lead and one strategist run the audience-research interviews for an engagement. They transcribe and synthesise into an insights document that feeds [brand positioning](brand-positioning.md) (outline-roles-2025).\n\nThe four mid-level strategists run interviews and transcripts on assigned engagements; each strategist runs roughly four engagements per year, in parallel rather than serial (outline-roles-2025).", "_inputs": ["engagement-scope"], "_outputs": ["insights-document"], "evolution": 0.4, "visibility": 0.5}, "c6": {"id": "c6", "label": "Brand positioning", "_structure_id": "brand-positioning", "_kind": "activity", "_unit": "strategy", "_description": "Author the positioning document for an engagement: how the client should be understood, against whom, with what proof points.", "_body": "The strategy lead writes the positioning document for every engagement. Inputs come from [audience research](audience-research.md) and the [competitive audit](competitive-audit.md); the output is a written brief that the [design lead](../people/lena-thorvaldsen.md) builds the identity system on top of (outline-roles-2025, outline-charter-2024 §1).\n\nThe artefact is owned by [Marco Bellini](../people/marco-bellini.md) and is not delegated — every positioning document goes out under his signature (outline-roles-2025).", "_inputs": ["insights-document", "market-map"], "_outputs": ["positioning-brief"], "evolution": 0.3, "visibility": 0.65}, "c7": {"id": "c7", "label": "Competitive audit", "_structure_id": "competitive-audit", "_kind": "activity", "_unit": "strategy", "_description": "Map a client's competitive landscape: who else exists in the category, what they sound like, where the white space is.", "_body": "Strategists write competitive audits on briefed projects: who else exists in the category, what they sound like, where the white space is. The audit feeds the positioning brief (outline-roles-2025).\n\nThe strategy lead also does competitive-audit work for new pitches when the studio is in front of a prospect — the audit is the pitch's evidence base (outline-roles-2025).", "_inputs": ["engagement-scope"], "_outputs": ["market-map"], "evolution": 0.52, "visibility": 0.45}, "c8": {"id": "c8", "label": "Brand book", "_structure_id": "brand-book", "_kind": "activity", "_unit": "design", "_description": "Author the brand book — the studio's signature artefact. Built personally by the design lead on every engagement.", "_body": "The design lead builds the brand book personally on every engagement. The brand book is the artefact the studio is best known for and the design lead does not delegate it (outline-roles-2025).\n\nMid-level designers may produce individual brand-book chapters under the lead's review, but the integration into a single artefact is the lead's hand (outline-roles-2025).", "_inputs": ["identity-system"], "_outputs": ["brand-book-deliverable"], "evolution": 0.32, "visibility": 0.85}, "c9": {"id": "c9", "label": "Identity system build", "_structure_id": "identity-system-build", "_kind": "activity", "_unit": "design", "_description": "Build the full identity system for an engagement: typography, colour, grid, motion, illustration direction, photo direction.", "_body": "Senior designers run the identity-system build for individual engagements: typography, colour, grid, motion logic, illustration direction, photo direction. They typically own one engagement at a time (outline-roles-2025).\n\nMid-level designers support the senior on the system build. The design lead reviews every deliverable before it leaves the studio per the senior-eyes-on-every-output rule (outline-roles-2025, outline-charter-2024 §9).", "_inputs": ["visual-system"], "_outputs": ["identity-system"], "evolution": 0.45, "visibility": 0.72}, "c10": {"id": "c10", "label": "Visual language", "_structure_id": "visual-language", "_kind": "activity", "_unit": "design", "_description": "Define the visual language for an engagement: typography, colour, imagery direction, motion logic, on top of the positioning brief.", "_body": "The design lead defines the visual language for the brief from strategy: typography choice, colour direction, imagery treatment, motion logic. The visual language feeds the [identity system build](identity-system-build.md) (outline-roles-2025).", "_inputs": ["positioning-brief"], "_outputs": ["visual-system"], "evolution": 0.28, "visibility": 0.6}, "c11": {"id": "c11", "label": "Design system build", "_structure_id": "design-system-build", "_kind": "activity", "_unit": "digital-product", "_description": "Build a design system for clients who maintain their own product engineering. Documented system, ready for client handoff.", "_body": "Mid-level product designers own design-system documentation when the client is building a system the studio will hand off. The senior product designer leads the system architecture; the mid-level produces the documentation that lets the client team maintain it (outline-roles-2025).\n\nThe system build feeds the [asset handover](asset-handover.md) ritual at the end of the engagement.", "_inputs": ["identity-system", "ui-screens"], "_outputs": ["design-system"], "evolution": 0.65, "visibility": 0.55}, "c12": {"id": "c12", "label": "UI design", "_structure_id": "ui-design", "_kind": "activity", "_unit": "digital-product", "_description": "UI design for B2B web and apps: screens, components, interactions, accessibility, paired with client front-end engineers.", "_body": "Senior product designers own UI design for individual engagements: screens, components, interactions, prototyping, accessibility audits, pairing with the client's front-end developers (outline-roles-2025).\n\nThe product lead reviews every UI deliverable; on enterprise engagements the lead or a senior typically embeds with the client product team for the duration (outline-roles-2025, outline-charter-2024 §16).", "_inputs": ["identity-system"], "_outputs": ["ui-screens"], "evolution": 0.58, "visibility": 0.85}, "c13": {"id": "c13", "label": "UX research", "_structure_id": "ux-research", "_kind": "activity", "_unit": "digital-product", "_description": "Embedded UX research with the client product team: usability testing, observation, synthesis.", "_body": "The product lead runs UX research when the engagement asks for it: embedded with the client's product team, usability testing, observation, synthesis into a research report (outline-roles-2025).\n\nUser insights from research feed back into [UI design](ui-design.md) and into the [positioning](brand-positioning.md) brief on engagements where the strategy work hasn't yet closed.", "_inputs": ["engagement-scope"], "_outputs": ["user-insights"], "evolution": 0.5, "visibility": 0.4}, "c14": {"id": "c14", "label": "Asset handover", "_structure_id": "asset-handover", "_kind": "activity", "_unit": "client-services", "_description": "Run the asset-handover ritual at the end of each engagement: delivery of all artefacts, sign-off, archival.", "_body": "The client services lead manages the asset-handover ritual at the end of each engagement. The handover package collects the brand book, identity system files, design-system documentation, UI screens, and any source files the client owns under the contract (outline-roles-2025).\n\nThe relevant discipline lead is present at handover; the lead and Tomás together walk the client through what they're receiving and confirm sign-off (outline-roles-2025).", "_inputs": ["brand-book-deliverable", "identity-system", "design-system", "ui-screens"], "_outputs": ["client-handoff"], "evolution": 0.75, "visibility": 0.95}, "c15": {"id": "c15", "label": "Kickoff workshop", "_structure_id": "kickoff-workshop", "_kind": "activity", "_unit": "client-services", "_description": "Run the kickoff workshop for every engagement: scope agreement, calendar, weekly cadence, single point of contact on client side.", "_body": "The client services lead runs the kickoff workshop for every engagement: scoping, calendar, weekly cadence agreement, single point of contact on the client side. The output is the engagement-scope document that anchors weekly check-ins, asset handovers, and the fixed-price agreement (outline-roles-2025, outline-charter-2024 §4, §12).\n\nThe relevant discipline lead sits at the kickoff alongside [Tomás Reis](../people/tomas-reis.md). Enterprise kickoffs additionally include the founder (outline-roles-2025).", "_inputs": [], "_outputs": ["engagement-scope"], "evolution": 0.78, "visibility": 0.95}, "c16": {"id": "c16", "label": "Weekly check-in", "_structure_id": "weekly-check-in", "_kind": "activity", "_unit": "client-services", "_description": "Run the weekly check-in call on each active engagement: progress, blockers, next-week scope confirmation.", "_body": "Account managers run the weekly check-ins on three assigned engagements each. The lead [Tomás Reis](../people/tomas-reis.md) does not run weekly check-ins himself but reviews the notes and intervenes when an engagement is sliding (outline-roles-2025).\n\nThe weekly check-in is the rhythm of an Outline engagement; it's where scope drifts get caught, where client approvals get chased, and where the discipline lead is pulled in if the work needs adjustment (outline-roles-2025).", "_inputs": ["engagement-scope"], "_outputs": ["weekly-status"], "evolution": 0.82, "visibility": 0.9}};
 
 function stageFor(ev) {
   if (ev < 0.17) return 'genesis';
@@ -858,7 +857,7 @@ function kindLabel(node) {
   return 'Part of the chain';
 }
 
-function renderModal(node) {
+function renderPopoverContent(node) {
   const isUser = node._kind === 'user';
   const stage = node.evolution != null ? stageFor(node.evolution) : null;
   const eyebrowCls = node.is_new ? 'eyebrow is-new' : 'eyebrow';
@@ -867,22 +866,24 @@ function renderModal(node) {
   html += `<h3>${escapeHtml(node.label || node.id)}</h3>`;
   html += '<div class="body">';
 
-  const desc = node._body || node.description || node._description;
+  // Prefer the short frontmatter description for popover punch; fall
+  // through to longer extracts only if it's missing.
+  const desc = node.description || node._description || node._body;
   if (desc) {
     html += `<p>${escapeHtml(desc)}</p>`;
   }
 
   if (!isUser && node.evolution != null) {
     const visText = node.visibility != null
-      ? (node.visibility >= 0.7 ? ' — and the client sees it directly.'
-         : node.visibility >= 0.4 ? ' — mid-chain, partly visible to the client.'
-         : ' — deep behind the scenes; the client never touches it.')
-      : '.';
-    html += `<p><em class="placement">${STAGE_PLAIN[stage]}${visText}</em></p>`;
+      ? (node.visibility >= 0.7 ? ' Visible to the client.'
+         : node.visibility >= 0.4 ? ' Mid-chain.'
+         : ' Behind the scenes.')
+      : '';
+    html += `<p><em class="placement">${STAGE_PLAIN[stage]}.${visText}</em></p>`;
   }
 
   if (node.evolution_target != null && !node.is_new) {
-    html += `<p><em class="placement">Heading toward standardization: ${STAGE_PLAIN[stageFor(node.evolution_target)]}.</em></p>`;
+    html += `<p><em class="placement">→ Heading toward ${STAGE_PLAIN[stageFor(node.evolution_target)]}.</em></p>`;
   }
 
   if (node.ai_effect) {
@@ -890,7 +891,7 @@ function renderModal(node) {
   }
 
   if (node.is_new) {
-    html += `<p><em class="placement">Doesn't exist today — surfaces if the chain shift the map describes plays out.</em></p>`;
+    html += `<p><em class="placement">Emerging — does not exist today.</em></p>`;
   }
 
   html += '</div>';
@@ -899,40 +900,105 @@ function renderModal(node) {
     html += `<div class="citation">${escapeHtml(node._structure_id)}</div>`;
   }
 
-  document.getElementById('modal-body').innerHTML = html;
-  document.getElementById('modal-backdrop').classList.add('open');
+  return html;
+}
+
+const popoverEl   = document.getElementById('popover');
+const popoverBody = document.getElementById('popover-body');
+
+function showPopover(node, anchorRect) {
+  popoverBody.innerHTML = renderPopoverContent(node);
+  // Position to the right of the node, vertically aligned to the top.
+  const margin = 12;
+  // Step 1: place at preferred position (right of node), measure.
+  popoverEl.style.left = '0px';
+  popoverEl.style.top = '0px';
+  popoverEl.classList.add('open');
+  const popRect = popoverEl.getBoundingClientRect();
+  const popW = popRect.width;
+  const popH = popRect.height;
+
+  // Right of node by default
+  let x = anchorRect.right + margin;
+  let y = anchorRect.top;
+
+  // Flip to left if it would overflow the right edge
+  const viewportRight = window.scrollX + window.innerWidth;
+  if (x + popW > viewportRight - margin) {
+    x = anchorRect.left - margin - popW;
+  }
+  // Clamp into viewport horizontally
+  if (x < window.scrollX + margin) x = window.scrollX + margin;
+
+  // Clamp into viewport vertically (so it never falls off-screen)
+  const viewportBottom = window.scrollY + window.innerHeight;
+  if (y + popH > viewportBottom - margin) {
+    y = viewportBottom - popH - margin;
+  }
+  if (y < window.scrollY + margin) y = window.scrollY + margin;
+
+  popoverEl.style.left = x + 'px';
+  popoverEl.style.top  = y + 'px';
+}
+
+function hidePopover() {
+  popoverEl.classList.remove('open');
 }
 
 // Inline onclick="pnNodeClick(this)" on every <g class="node"> in the
 // SVG calls this. Reliable across renderers; no event delegation gymnastics.
 window.pnNodeClick = function(el) {
   const id = el.dataset && el.dataset.nodeId;
-  if (id && NODES[id]) renderModal(NODES[id]);
+  if (id && NODES[id]) {
+    const rect = el.getBoundingClientRect();
+    // Convert to absolute coords (positions live in the document, not
+    // the viewport).
+    const absRect = {
+      left:   rect.left   + window.scrollX,
+      right:  rect.right  + window.scrollX,
+      top:    rect.top    + window.scrollY,
+      bottom: rect.bottom + window.scrollY,
+    };
+    showPopover(NODES[id], absRect);
+  }
 };
 
 // Belt-and-suspenders: a document-level click listener in case inline
 // onclick is stripped by some sanitizer or doesn't bind on a given
 // renderer. Walks up parentNode manually (closest() on SVG is uneven).
 document.addEventListener('click', function(e) {
+  // Close on click outside the popover and outside any node.
   let n = e.target;
+  let onNode = false, onPopover = false;
   while (n && n.nodeType === 1) {
-    if (n.classList && n.classList.contains('node')) {
-      const id = n.dataset && n.dataset.nodeId;
-      if (id && NODES[id]) { renderModal(NODES[id]); return; }
-    }
+    if (n.classList && n.classList.contains('node')) { onNode = true; break; }
+    if (n.id === 'popover') { onPopover = true; break; }
     n = n.parentNode;
+  }
+  if (onNode) {
+    // pnNodeClick already handled it via inline onclick, but also do it
+    // here for renderers that strip inline onclick.
+    let g = e.target;
+    while (g && !(g.classList && g.classList.contains('node'))) g = g.parentNode;
+    if (g) {
+      const id = g.dataset && g.dataset.nodeId;
+      if (id && NODES[id]) {
+        const rect = g.getBoundingClientRect();
+        showPopover(NODES[id], {
+          left:   rect.left   + window.scrollX,
+          right:  rect.right  + window.scrollX,
+          top:    rect.top    + window.scrollY,
+          bottom: rect.bottom + window.scrollY,
+        });
+      }
+    }
+  } else if (!onPopover) {
+    hidePopover();
   }
 }, true);
 
-document.getElementById('modal-close').addEventListener('click', () => {
-  document.getElementById('modal-backdrop').classList.remove('open');
-});
-document.getElementById('modal-backdrop').addEventListener('click', (e) => {
-  if (e.target.id === 'modal-backdrop') document.getElementById('modal-backdrop').classList.remove('open');
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') document.getElementById('modal-backdrop').classList.remove('open');
-});
+document.getElementById('popover-close').addEventListener('click', hidePopover);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePopover(); });
 </script>
 </body>
 </html>

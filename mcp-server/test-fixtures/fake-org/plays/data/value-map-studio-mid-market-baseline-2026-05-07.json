@@ -68,7 +68,7 @@
       "_kind": "activity",
       "_unit": "strategy",
       "_description": "Interview the client's customers and stakeholders, transcribe and synthesise into an insights document feeding positioning.",
-      "_body": "# Audience research\n\nThe strategy lead and one strategist run the audience-research interviews for an engagement. They transcribe and synthesise into an insights document that feeds [brand positioning](brand-positioning.md) (outline-roles-2025).\n\nThe four mid-level strategists run interviews and transcripts on assigned engagements; each strategist runs roughly four engagements per year, in parallel rather than serial (outline-roles-2025).",
+      "_body": "The strategy lead and one strategist run the audience-research interviews for an engagement. They transcribe and synthesise into an insights document that feeds [brand positioning](brand-positioning.md) (outline-roles-2025).\n\nThe four mid-level strategists run interviews and transcripts on assigned engagements; each strategist runs roughly four engagements per year, in parallel rather than serial (outline-roles-2025).",
       "_inputs": [
         "engagement-scope"
       ],
@@ -85,7 +85,7 @@
       "_kind": "activity",
       "_unit": "strategy",
       "_description": "Author the positioning document for an engagement: how the client should be understood, against whom, with what proof points.",
-      "_body": "# Brand positioning\n\nThe strategy lead writes the positioning document for every engagement. Inputs come from [audience research](audience-research.md) and the [competitive audit](competitive-audit.md); the output is a written brief that the [design lead](../people/lena-thorvaldsen.md) builds the identity system on top of (outline-roles-2025, outline-charter-2024 \u00a71).\n\nThe artefact is owned by [Marco Bellini](../people/marco-bellini.md) and is not delegated \u2014 every positioning document goes out under his signature (outline-roles-2025).",
+      "_body": "The strategy lead writes the positioning document for every engagement. Inputs come from [audience research](audience-research.md) and the [competitive audit](competitive-audit.md); the output is a written brief that the [design lead](../people/lena-thorvaldsen.md) builds the identity system on top of (outline-roles-2025, outline-charter-2024 \u00a71).\n\nThe artefact is owned by [Marco Bellini](../people/marco-bellini.md) and is not delegated \u2014 every positioning document goes out under his signature (outline-roles-2025).",
       "_inputs": [
         "insights-document",
         "market-map"
@@ -103,7 +103,7 @@
       "_kind": "activity",
       "_unit": "strategy",
       "_description": "Map a client's competitive landscape: who else exists in the category, what they sound like, where the white space is.",
-      "_body": "# Competitive audit\n\nStrategists write competitive audits on briefed projects: who else exists in the category, what they sound like, where the white space is. The audit feeds the positioning brief (outline-roles-2025).\n\nThe strategy lead also does competitive-audit work for new pitches when the studio is in front of a prospect \u2014 the audit is the pitch's evidence base (outline-roles-2025).",
+      "_body": "Strategists write competitive audits on briefed projects: who else exists in the category, what they sound like, where the white space is. The audit feeds the positioning brief (outline-roles-2025).\n\nThe strategy lead also does competitive-audit work for new pitches when the studio is in front of a prospect \u2014 the audit is the pitch's evidence base (outline-roles-2025).",
       "_inputs": [
         "engagement-scope"
       ],
@@ -120,7 +120,7 @@
       "_kind": "activity",
       "_unit": "design",
       "_description": "Author the brand book \u2014 the studio's signature artefact. Built personally by the design lead on every engagement.",
-      "_body": "# Brand book\n\nThe design lead builds the brand book personally on every engagement. The brand book is the artefact the studio is best known for and the design lead does not delegate it (outline-roles-2025).\n\nMid-level designers may produce individual brand-book chapters under the lead's review, but the integration into a single artefact is the lead's hand (outline-roles-2025).",
+      "_body": "The design lead builds the brand book personally on every engagement. The brand book is the artefact the studio is best known for and the design lead does not delegate it (outline-roles-2025).\n\nMid-level designers may produce individual brand-book chapters under the lead's review, but the integration into a single artefact is the lead's hand (outline-roles-2025).",
       "_inputs": [
         "identity-system"
       ],
@@ -137,7 +137,7 @@
       "_kind": "activity",
       "_unit": "design",
       "_description": "Build the full identity system for an engagement: typography, colour, grid, motion, illustration direction, photo direction.",
-      "_body": "# Identity system build\n\nSenior designers run the identity-system build for individual engagements: typography, colour, grid, motion logic, illustration direction, photo direction. They typically own one engagement at a time (outline-roles-2025).\n\nMid-level designers support the senior on the system build. The design lead reviews every deliverable before it leaves the studio per the senior-eyes-on-every-output rule (outline-roles-2025, outline-charter-2024 \u00a79).",
+      "_body": "Senior designers run the identity-system build for individual engagements: typography, colour, grid, motion logic, illustration direction, photo direction. They typically own one engagement at a time (outline-roles-2025).\n\nMid-level designers support the senior on the system build. The design lead reviews every deliverable before it leaves the studio per the senior-eyes-on-every-output rule (outline-roles-2025, outline-charter-2024 \u00a79).",
       "_inputs": [
         "visual-system"
       ],
@@ -154,7 +154,7 @@
       "_kind": "activity",
       "_unit": "design",
       "_description": "Define the visual language for an engagement: typography, colour, imagery direction, motion logic, on top of the positioning brief.",
-      "_body": "# Visual language\n\nThe design lead defines the visual language for the brief from strategy: typography choice, colour direction, imagery treatment, motion logic. The visual language feeds the [identity system build](identity-system-build.md) (outline-roles-2025).",
+      "_body": "The design lead defines the visual language for the brief from strategy: typography choice, colour direction, imagery treatment, motion logic. The visual language feeds the [identity system build](identity-system-build.md) (outline-roles-2025).",
       "_inputs": [
         "positioning-brief"
       ],
@@ -171,7 +171,7 @@
       "_kind": "activity",
       "_unit": "digital-product",
       "_description": "Build a design system for clients who maintain their own product engineering. Documented system, ready for client handoff.",
-      "_body": "# Design system build\n\nMid-level product designers own design-system documentation when the client is building a system the studio will hand off. The senior product designer leads the system architecture; the mid-level produces the documentation that lets the client team maintain it (outline-roles-2025).\n\nThe system build feeds the [asset handover](asset-handover.md) ritual at the end of the engagement.",
+      "_body": "Mid-level product designers own design-system documentation when the client is building a system the studio will hand off. The senior product designer leads the system architecture; the mid-level produces the documentation that lets the client team maintain it (outline-roles-2025).\n\nThe system build feeds the [asset handover](asset-handover.md) ritual at the end of the engagement.",
       "_inputs": [
         "identity-system",
         "ui-screens"
@@ -189,7 +189,7 @@
       "_kind": "activity",
       "_unit": "digital-product",
       "_description": "UI design for B2B web and apps: screens, components, interactions, accessibility, paired with client front-end engineers.",
-      "_body": "# UI design\n\nSenior product designers own UI design for individual engagements: screens, components, interactions, prototyping, accessibility audits, pairing with the client's front-end developers (outline-roles-2025).\n\nThe product lead reviews every UI deliverable; on enterprise engagements the lead or a senior typically embeds with the client product team for the duration (outline-roles-2025, outline-charter-2024 \u00a716).",
+      "_body": "Senior product designers own UI design for individual engagements: screens, components, interactions, prototyping, accessibility audits, pairing with the client's front-end developers (outline-roles-2025).\n\nThe product lead reviews every UI deliverable; on enterprise engagements the lead or a senior typically embeds with the client product team for the duration (outline-roles-2025, outline-charter-2024 \u00a716).",
       "_inputs": [
         "identity-system"
       ],
@@ -206,7 +206,7 @@
       "_kind": "activity",
       "_unit": "digital-product",
       "_description": "Embedded UX research with the client product team: usability testing, observation, synthesis.",
-      "_body": "# UX research\n\nThe product lead runs UX research when the engagement asks for it: embedded with the client's product team, usability testing, observation, synthesis into a research report (outline-roles-2025).\n\nUser insights from research feed back into [UI design](ui-design.md) and into the [positioning](brand-positioning.md) brief on engagements where the strategy work hasn't yet closed.",
+      "_body": "The product lead runs UX research when the engagement asks for it: embedded with the client's product team, usability testing, observation, synthesis into a research report (outline-roles-2025).\n\nUser insights from research feed back into [UI design](ui-design.md) and into the [positioning](brand-positioning.md) brief on engagements where the strategy work hasn't yet closed.",
       "_inputs": [
         "engagement-scope"
       ],
@@ -223,7 +223,7 @@
       "_kind": "activity",
       "_unit": "client-services",
       "_description": "Run the asset-handover ritual at the end of each engagement: delivery of all artefacts, sign-off, archival.",
-      "_body": "# Asset handover\n\nThe client services lead manages the asset-handover ritual at the end of each engagement. The handover package collects the brand book, identity system files, design-system documentation, UI screens, and any source files the client owns under the contract (outline-roles-2025).\n\nThe relevant discipline lead is present at handover; the lead and Tom\u00e1s together walk the client through what they're receiving and confirm sign-off (outline-roles-2025).",
+      "_body": "The client services lead manages the asset-handover ritual at the end of each engagement. The handover package collects the brand book, identity system files, design-system documentation, UI screens, and any source files the client owns under the contract (outline-roles-2025).\n\nThe relevant discipline lead is present at handover; the lead and Tom\u00e1s together walk the client through what they're receiving and confirm sign-off (outline-roles-2025).",
       "_inputs": [
         "brand-book-deliverable",
         "identity-system",
@@ -243,7 +243,7 @@
       "_kind": "activity",
       "_unit": "client-services",
       "_description": "Run the kickoff workshop for every engagement: scope agreement, calendar, weekly cadence, single point of contact on client side.",
-      "_body": "# Kickoff workshop\n\nThe client services lead runs the kickoff workshop for every engagement: scoping, calendar, weekly cadence agreement, single point of contact on the client side. The output is the engagement-scope document that anchors weekly check-ins, asset handovers, and the fixed-price agreement (outline-roles-2025, outline-charter-2024 \u00a74, \u00a712).\n\nThe relevant discipline lead sits at the kickoff alongside [Tom\u00e1s Reis](../people/tomas-reis.md). Enterprise kickoffs additionally include the founder (outline-roles-2025).",
+      "_body": "The client services lead runs the kickoff workshop for every engagement: scoping, calendar, weekly cadence agreement, single point of contact on the client side. The output is the engagement-scope document that anchors weekly check-ins, asset handovers, and the fixed-price agreement (outline-roles-2025, outline-charter-2024 \u00a74, \u00a712).\n\nThe relevant discipline lead sits at the kickoff alongside [Tom\u00e1s Reis](../people/tomas-reis.md). Enterprise kickoffs additionally include the founder (outline-roles-2025).",
       "_inputs": [],
       "_outputs": [
         "engagement-scope"
@@ -258,7 +258,7 @@
       "_kind": "activity",
       "_unit": "client-services",
       "_description": "Run the weekly check-in call on each active engagement: progress, blockers, next-week scope confirmation.",
-      "_body": "# Weekly check-in\n\nAccount managers run the weekly check-ins on three assigned engagements each. The lead [Tom\u00e1s Reis](../people/tomas-reis.md) does not run weekly check-ins himself but reviews the notes and intervenes when an engagement is sliding (outline-roles-2025).\n\nThe weekly check-in is the rhythm of an Outline engagement; it's where scope drifts get caught, where client approvals get chased, and where the discipline lead is pulled in if the work needs adjustment (outline-roles-2025).",
+      "_body": "Account managers run the weekly check-ins on three assigned engagements each. The lead [Tom\u00e1s Reis](../people/tomas-reis.md) does not run weekly check-ins himself but reviews the notes and intervenes when an engagement is sliding (outline-roles-2025).\n\nThe weekly check-in is the rhythm of an Outline engagement; it's where scope drifts get caught, where client approvals get chased, and where the discipline lead is pulled in if the work needs adjustment (outline-roles-2025).",
       "_inputs": [
         "engagement-scope"
       ],

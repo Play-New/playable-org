@@ -428,19 +428,20 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .decision .answer { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 6px; max-width: 720px; }
 .decision .source { font-size: 0.78rem; color: var(--fg-muted); font-family: ui-monospace, SF Mono, Menlo, monospace; }
 
-/* Modal — editorial popup */
-.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.32); display: none; align-items: flex-start; justify-content: center; padding: 80px 16px 16px; z-index: 100; overflow-y: auto; backdrop-filter: blur(4px); }
-.modal-backdrop.open { display: flex; animation: pn-fade 0.2s ease; }
-.modal { background: #FFFFFF; border-radius: 4px; border: 1px solid var(--fg-hairline); max-width: 600px; width: 100%; padding: 36px 44px 40px; animation: pn-pop 0.25s ease; }
-.modal .close { float: right; background: transparent; border: 0; cursor: pointer; font-size: 1.4rem; color: var(--fg-muted); margin: -10px -10px 0 0; padding: 0; line-height: 1; }
-.modal .close:hover { color: var(--fg); background: transparent; }
-.modal .eyebrow { font-family: var(--font-display); font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 12px; color: var(--fg-muted); }
-.modal .eyebrow.is-new { color: var(--ds-coral); }
-.modal h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 18px; line-height: 1.2; color: var(--fg); }
-.modal .body p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; }
-.modal .body p:last-child { margin-bottom: 0; }
-.modal .body em.placement { color: var(--fg-muted); font-style: normal; }
-.modal .citation { font-size: 0.78rem; color: var(--fg-muted); padding-top: 16px; margin-top: 22px; border-top: 1px solid var(--fg-hairline); font-family: ui-monospace, SF Mono, Menlo, monospace; }
+/* Popover — small floating card next to the clicked node. Replaces the
+   full-screen modal: pop-overs read as 'a tooltip you can read', not 'a
+   page you have to dismiss'. */
+.popover { position: absolute; display: none; max-width: 320px; min-width: 220px; padding: 14px 18px 16px; background: #FFFFFF; border: 1px solid var(--fg-hairline); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); z-index: 100; animation: pn-pop 0.18s ease; }
+.popover.open { display: block; }
+.popover .close { position: absolute; top: 6px; right: 8px; background: transparent; border: 0; cursor: pointer; font-size: 1.1rem; color: var(--fg-muted); padding: 0; line-height: 1; }
+.popover .close:hover { color: var(--fg); background: transparent; }
+.popover .eyebrow { font-family: var(--font-display); font-size: 0.62rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 6px; color: var(--fg-muted); }
+.popover .eyebrow.is-new { color: var(--ds-coral); }
+.popover h3 { font-family: var(--font-display); font-size: 1rem; font-weight: 500; letter-spacing: -0.015em; margin: 0 0 8px; line-height: 1.25; color: var(--fg); padding-right: 18px; }
+.popover .body p { font-size: 0.84rem; line-height: 1.55; color: var(--fg); margin: 0 0 8px; }
+.popover .body p:last-child { margin-bottom: 0; }
+.popover .body em.placement { color: var(--fg-muted); font-style: normal; }
+.popover .citation { font-size: 0.7rem; color: var(--fg-muted); padding-top: 8px; margin-top: 10px; border-top: 1px solid var(--fg-hairline); font-family: ui-monospace, SF Mono, Menlo, monospace; }
 """
 
 
@@ -480,11 +481,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     {decisions_section}
   </div>
 
-  <div class="modal-backdrop" id="modal-backdrop">
-    <div class="modal">
-      <button class="close" id="modal-close">×</button>
-      <div id="modal-body"></div>
-    </div>
+  <div class="popover" id="popover">
+    <button class="close" id="popover-close" aria-label="Close">×</button>
+    <div id="popover-body"></div>
   </div>
 
 <script>
@@ -520,7 +519,7 @@ function kindLabel(node) {{
   return 'Part of the chain';
 }}
 
-function renderModal(node) {{
+function renderPopoverContent(node) {{
   const isUser = node._kind === 'user';
   const stage = node.evolution != null ? stageFor(node.evolution) : null;
   const eyebrowCls = node.is_new ? 'eyebrow is-new' : 'eyebrow';
@@ -529,22 +528,24 @@ function renderModal(node) {{
   html += `<h3>${{escapeHtml(node.label || node.id)}}</h3>`;
   html += '<div class="body">';
 
-  const desc = node._body || node.description || node._description;
+  // Prefer the short frontmatter description for popover punch; fall
+  // through to longer extracts only if it's missing.
+  const desc = node.description || node._description || node._body;
   if (desc) {{
     html += `<p>${{escapeHtml(desc)}}</p>`;
   }}
 
   if (!isUser && node.evolution != null) {{
     const visText = node.visibility != null
-      ? (node.visibility >= 0.7 ? ' — and the client sees it directly.'
-         : node.visibility >= 0.4 ? ' — mid-chain, partly visible to the client.'
-         : ' — deep behind the scenes; the client never touches it.')
-      : '.';
-    html += `<p><em class="placement">${{STAGE_PLAIN[stage]}}${{visText}}</em></p>`;
+      ? (node.visibility >= 0.7 ? ' Visible to the client.'
+         : node.visibility >= 0.4 ? ' Mid-chain.'
+         : ' Behind the scenes.')
+      : '';
+    html += `<p><em class="placement">${{STAGE_PLAIN[stage]}}.${{visText}}</em></p>`;
   }}
 
   if (node.evolution_target != null && !node.is_new) {{
-    html += `<p><em class="placement">Heading toward standardization: ${{STAGE_PLAIN[stageFor(node.evolution_target)]}}.</em></p>`;
+    html += `<p><em class="placement">→ Heading toward ${{STAGE_PLAIN[stageFor(node.evolution_target)]}}.</em></p>`;
   }}
 
   if (node.ai_effect) {{
@@ -552,7 +553,7 @@ function renderModal(node) {{
   }}
 
   if (node.is_new) {{
-    html += `<p><em class="placement">Doesn't exist today — surfaces if the chain shift the map describes plays out.</em></p>`;
+    html += `<p><em class="placement">Emerging — does not exist today.</em></p>`;
   }}
 
   html += '</div>';
@@ -561,40 +562,105 @@ function renderModal(node) {{
     html += `<div class="citation">${{escapeHtml(node._structure_id)}}</div>`;
   }}
 
-  document.getElementById('modal-body').innerHTML = html;
-  document.getElementById('modal-backdrop').classList.add('open');
+  return html;
+}}
+
+const popoverEl   = document.getElementById('popover');
+const popoverBody = document.getElementById('popover-body');
+
+function showPopover(node, anchorRect) {{
+  popoverBody.innerHTML = renderPopoverContent(node);
+  // Position to the right of the node, vertically aligned to the top.
+  const margin = 12;
+  // Step 1: place at preferred position (right of node), measure.
+  popoverEl.style.left = '0px';
+  popoverEl.style.top = '0px';
+  popoverEl.classList.add('open');
+  const popRect = popoverEl.getBoundingClientRect();
+  const popW = popRect.width;
+  const popH = popRect.height;
+
+  // Right of node by default
+  let x = anchorRect.right + margin;
+  let y = anchorRect.top;
+
+  // Flip to left if it would overflow the right edge
+  const viewportRight = window.scrollX + window.innerWidth;
+  if (x + popW > viewportRight - margin) {{
+    x = anchorRect.left - margin - popW;
+  }}
+  // Clamp into viewport horizontally
+  if (x < window.scrollX + margin) x = window.scrollX + margin;
+
+  // Clamp into viewport vertically (so it never falls off-screen)
+  const viewportBottom = window.scrollY + window.innerHeight;
+  if (y + popH > viewportBottom - margin) {{
+    y = viewportBottom - popH - margin;
+  }}
+  if (y < window.scrollY + margin) y = window.scrollY + margin;
+
+  popoverEl.style.left = x + 'px';
+  popoverEl.style.top  = y + 'px';
+}}
+
+function hidePopover() {{
+  popoverEl.classList.remove('open');
 }}
 
 // Inline onclick="pnNodeClick(this)" on every <g class="node"> in the
 // SVG calls this. Reliable across renderers; no event delegation gymnastics.
 window.pnNodeClick = function(el) {{
   const id = el.dataset && el.dataset.nodeId;
-  if (id && NODES[id]) renderModal(NODES[id]);
+  if (id && NODES[id]) {{
+    const rect = el.getBoundingClientRect();
+    // Convert to absolute coords (positions live in the document, not
+    // the viewport).
+    const absRect = {{
+      left:   rect.left   + window.scrollX,
+      right:  rect.right  + window.scrollX,
+      top:    rect.top    + window.scrollY,
+      bottom: rect.bottom + window.scrollY,
+    }};
+    showPopover(NODES[id], absRect);
+  }}
 }};
 
 // Belt-and-suspenders: a document-level click listener in case inline
 // onclick is stripped by some sanitizer or doesn't bind on a given
 // renderer. Walks up parentNode manually (closest() on SVG is uneven).
 document.addEventListener('click', function(e) {{
+  // Close on click outside the popover and outside any node.
   let n = e.target;
+  let onNode = false, onPopover = false;
   while (n && n.nodeType === 1) {{
-    if (n.classList && n.classList.contains('node')) {{
-      const id = n.dataset && n.dataset.nodeId;
-      if (id && NODES[id]) {{ renderModal(NODES[id]); return; }}
-    }}
+    if (n.classList && n.classList.contains('node')) {{ onNode = true; break; }}
+    if (n.id === 'popover') {{ onPopover = true; break; }}
     n = n.parentNode;
+  }}
+  if (onNode) {{
+    // pnNodeClick already handled it via inline onclick, but also do it
+    // here for renderers that strip inline onclick.
+    let g = e.target;
+    while (g && !(g.classList && g.classList.contains('node'))) g = g.parentNode;
+    if (g) {{
+      const id = g.dataset && g.dataset.nodeId;
+      if (id && NODES[id]) {{
+        const rect = g.getBoundingClientRect();
+        showPopover(NODES[id], {{
+          left:   rect.left   + window.scrollX,
+          right:  rect.right  + window.scrollX,
+          top:    rect.top    + window.scrollY,
+          bottom: rect.bottom + window.scrollY,
+        }});
+      }}
+    }}
+  }} else if (!onPopover) {{
+    hidePopover();
   }}
 }}, true);
 
-document.getElementById('modal-close').addEventListener('click', () => {{
-  document.getElementById('modal-backdrop').classList.remove('open');
-}});
-document.getElementById('modal-backdrop').addEventListener('click', (e) => {{
-  if (e.target.id === 'modal-backdrop') document.getElementById('modal-backdrop').classList.remove('open');
-}});
-document.addEventListener('keydown', (e) => {{
-  if (e.key === 'Escape') document.getElementById('modal-backdrop').classList.remove('open');
-}});
+document.getElementById('popover-close').addEventListener('click', hidePopover);
+document.addEventListener('keydown', (e) => {{ if (e.key === 'Escape') hidePopover(); }});
 </script>
 </body>
 </html>"""

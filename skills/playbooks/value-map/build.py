@@ -96,8 +96,12 @@ def get_body_text(text: str, max_chars: int = 600) -> str:
     """
     # Strip frontmatter.
     body = re.sub(r"^---\n.*?\n---\n", "", text, flags=re.S)
-    # Drop title heading.
+    # Drop leading whitespace then drop the title heading. Without the
+    # lstrip the regex `^#` doesn't match because the string starts with
+    # the blank line following the closing `---`.
+    body = body.lstrip()
     body = re.sub(r"^#\s+.*\n", "", body, count=1)
+    body = body.lstrip()
     # Truncate at first sub-heading.
     parts = re.split(r"\n##\s+", body, maxsplit=1)
     body = parts[0]
