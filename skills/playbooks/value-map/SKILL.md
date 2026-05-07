@@ -27,7 +27,7 @@ If `org_play_run` returns an error (wrong arguments, audit failure, missing pyth
 1. As soon as render returns with `status: "ok"`, call `org_open` immediately with the value of `artefacts.html` (the relative path). This opens the file in the user's default browser without further interaction.
 2. In your chat reply, paste the response field `presentation_markdown` **verbatim**, exactly as returned. It is already a `[text](file://absolute-path)` Markdown link; do not wrap it in code fences, do not surround it with quotes, do not rephrase. Pasted verbatim it renders as clickable in Claude Desktop and serves as a backup for the user if step 1's auto-open is blocked.
 3. Add one sentence of context above or below the link summarizing the result (e.g. "12 componenti posizionati, 3 con evolution_target, audit pass").
-4. Do NOT extract the SVG from the artefacts and inline-render it as a widget. The HTML opened in step 1 is the canonical visualization (Play New design system, font Mirage embedded, click-to-modal on every component).
+4. Do NOT extract the SVG from the artefacts and inline-render it as a widget. The HTML opened in step 1 is the canonical visualization (Play New design system, brand font embedded, click-to-modal on every component).
 
 If the user later asks to re-open the artefact, call `org_open` again. If they ask for a smaller preview, send the SVG path — but only on explicit request, not by default.
 

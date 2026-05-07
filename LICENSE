@@ -24,12 +24,12 @@ SOFTWARE.
 
 Bundled assets and datasets ship under their respective licenses:
 
-- `skills/_assets/fonts/mirage-variable.woff2` — Mirage variable typeface,
-  part of the Play New design system. License terms to be confirmed
-  before public redistribution; if shipping a fork that cannot include
-  Mirage, drop the woff2 file and the design system falls through to
-  the system-ui / -apple-system fallback chain declared in
-  `skills/design.py`.
+- `skills/_assets/fonts/inter-variable.woff2` — Inter Variable typeface,
+  copyright Rasmus Andersson, licensed under the SIL Open Font License v1.1
+  (https://github.com/rsms/inter/blob/master/LICENSE.txt). Forks may
+  swap in a different brand font by replacing the woff2 at the same
+  path; design.py reads whatever is at that location and falls back
+  to the system-ui chain when the file is missing.
 
 - `skills/playbooks/ai-exposure/data/anthropic-aei-onet-*.csv` and
   `anthropic-task-penetration.csv` — Anthropic Economic Index dataset,

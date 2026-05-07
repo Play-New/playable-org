@@ -8,21 +8,28 @@ Convention: viewers compose primitives, never write inline CSS. This module
 is the only place where typography, spacing, color, and layout decisions
 live. Update once, every viewer follows.
 
-Visual version: 2 (Play New)
+Visual version: 3
 - v1: Inter Variable + monochrome-with-state-accents (#1a1a1a / #e5e5e5).
-- v2 (current): Play New design system. Mirage variable as the single
-  font family (display/body/mono all aliased). Pure monochrome —
-  opacity-layered black on white, no chromatic colors. Backward-compat
-  aliases (--bg-soft, --line, --muted, --soft) preserved so existing
-  viewer EXTRA_CSS keeps building. State colors (--warn, --success,
-  --error, --info) preserved for now, scheduled for phase-2 removal in
-  favor of weight/opacity/eyebrow-label differentiation.
+- v2: Mirage variable + Play New pure monochrome. Rolled back —
+  Klim Type Foundry's standard Mirage license does not permit public
+  redistribution; the public template ships with the open-licensed
+  Inter Variable instead, and forks can swap in their own brand font
+  by replacing `_assets/fonts/inter-variable.woff2`.
+- v3 (current): Inter Variable as the single font family + Play New
+  token system (opacity-layered grayscale, full type scale, --pn-hero
+  / --pn-eyebrow / --pn-num typography classes, motion + radii +
+  spacing tokens) + a small pastel data-viz palette (--ds-sage /
+  --ds-lilac / --ds-slate / --ds-sand / --ds-coral) for heatmaps,
+  stage bands, category swatches, and any viewer surface that needs
+  category differentiation. Brand surfaces stay monochrome; pastels
+  live only in viewer-specific data viz.
 
-License note: the bundled `_assets/fonts/mirage-variable.woff2` is
-Mirage variable — confirm licensing terms before re-distributing the
-public template. If shipping a fork that cannot use Mirage, drop the
-woff2 file and the @font-face block falls through to the system-ui
-fallback chain declared on `html, body`.
+License note: `_assets/fonts/inter-variable.woff2` is Inter Variable
+by Rasmus Andersson, SIL Open Font License v1.1, freely
+redistributable. If a fork wants to ship a different brand font, drop
+in a replacement woff2 at the same path and update the
+@font-face family name below. Per-instance branding is the deployment
+model.
 
 Public API:
 
@@ -38,7 +45,7 @@ Public API:
     )
 
 The `base_css()` string already contains an `@font-face` block for
-Mirage variable, embedded as a base64 data URL so the rendered HTML is
+Inter Variable, embedded as a base64 data URL so the rendered HTML is
 fully offline-portable.
 """
 
@@ -49,7 +56,7 @@ from html import escape
 from pathlib import Path
 from typing import Iterable
 
-_FONT_PATH = Path(__file__).resolve().parent / "_assets" / "fonts" / "mirage-variable.woff2"
+_FONT_PATH = Path(__file__).resolve().parent / "_assets" / "fonts" / "inter-variable.woff2"
 
 
 # ----------------------------------------------------------------------
@@ -57,7 +64,7 @@ _FONT_PATH = Path(__file__).resolve().parent / "_assets" / "fonts" / "mirage-var
 # ----------------------------------------------------------------------
 
 def _font_data_url() -> str:
-    """Mirage variable as a base64 data URL. Empty if the woff2 is missing."""
+    """Inter Variable as a base64 data URL. Empty if the woff2 is missing."""
     if not _FONT_PATH.is_file():
         return ""
     encoded = base64.b64encode(_FONT_PATH.read_bytes()).decode("ascii")
@@ -65,16 +72,17 @@ def _font_data_url() -> str:
 
 
 def _font_face_block() -> str:
-    """`@font-face` for Mirage variable.
+    """`@font-face` for Inter Variable.
 
     Falls back to system-ui / -apple-system if the woff2 is not present
-    (e.g. the public-template fork chooses to ship without Mirage).
+    (e.g. an instance fork that swapped in its own brand font under a
+    different file name).
     """
     data_url = _font_data_url()
     if not data_url:
         return ""
     return f"""@font-face {{
-  font-family: 'Mirage';
+  font-family: 'Inter';
   src: url('{data_url}') format('woff2');
   font-weight: 100 900;
   font-display: swap;
@@ -135,28 +143,51 @@ def _base_css() -> str:
   --line:             rgba(0, 0, 0, 0.1);    /* alias of --fg-hairline */
 
   /* ------------------------------------------------------------------
-     State colors — preserved for now; Play New is monochrome and these
-     should phase out in favor of weight/opacity/eyebrow-label differen-
-     tiation. Used today by .pn-pill--warn / --error / --ok / --info and a handful
-     of legacy viewer rules.
+     Data-viz palette — pastel secondary. Used only where category
+     differentiation is necessary (AEI heatmaps, value-map stage
+     bands, world-model moat/commodity, reshuffle constraint colours).
+     Brand surfaces stay monochrome; pastels live in viz only.
+     Five hues + soft-tint companions. Saturation is uniformly low
+     for Play New editorial restraint. The warm anchor (coral) is the
+     same #c47558 the brand uses as the "principio condiviso" backdrop.
      ------------------------------------------------------------------ */
-  --warn:             #c47558;
-  --warn-bg:          #fbf2eb;
+  --ds-sage:          #88a884;     /* genesis · automated · success */
+  --ds-sage-bg:       #ecf2ea;
+  --ds-lilac:         #a5a3c8;     /* custom · augmented */
+  --ds-lilac-bg:      #efeef5;
+  --ds-slate:         #99b3d4;     /* product · assistive · info */
+  --ds-slate-bg:      #ebf0f7;
+  --ds-sand:          #d8cfb6;     /* commodity · no-data */
+  --ds-sand-bg:       #f7f3ea;
+  --ds-coral:         #c47558;     /* warn · moat · brand accent */
+  --ds-coral-bg:      #fbf2eb;
+
+  /* ------------------------------------------------------------------
+     State semantic — re-points to the data-viz palette so brand and
+     viz stay in sync. --error stays a deeper red: true emphasis
+     (broken commitment, audit fail), not a category.
+     ------------------------------------------------------------------ */
+  --warn:             var(--ds-coral);
+  --warn-bg:          var(--ds-coral-bg);
+  --success:          var(--ds-sage);
+  --success-bg:       var(--ds-sage-bg);
+  --info:             var(--ds-slate);
+  --info-bg:          var(--ds-slate-bg);
   --error:            #b91c1c;
   --error-bg:         #fef2f2;
-  --success:          #047857;
-  --success-bg:       #ecfdf5;
-  --info:             #2563eb;
-  --info-bg:          #eff6ff;
 
   /* ==================================================================
-     TYPE — Mirage variable. One family, weight 100..900.
-     Display, body, and the historical "mono" role all alias to Mirage.
+     TYPE — Inter Variable. One family, weight 100..900.
+     Display, body, and the historical "mono" role all alias to Inter
+     (Play New convention: a single family across all roles). Forks
+     that swap in a different brand font replace the woff2 at
+     `_assets/fonts/inter-variable.woff2` and update the family name
+     in the three tokens below.
      ================================================================== */
 
-  --font-display:     'Mirage', system-ui, -apple-system, sans-serif;
-  --font-body:        'Mirage', system-ui, -apple-system, sans-serif;
-  --font-mono:        'Mirage', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-display:     'Inter', system-ui, -apple-system, sans-serif;
+  --font-body:        'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:        'Inter', ui-monospace, 'SF Mono', Menlo, monospace;
 
   --w-regular:        400;
   --w-medium:         500;
