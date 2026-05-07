@@ -1,0 +1,24 @@
+{
+  "playbook": "world-model",
+  "judge_mode": "subscription (in-context, Claude Opus 4.7 / Claude Code)",
+  "decisions": [
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Names exactly four things the studio uniquely owns (Marco's positioning, Lena's visual language, Lena's brand book, the integrated flow as one engagement) and the move ('naming this distinction at pitch'). Hard to copy without the studio's specific people."
+    },
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Three concrete failure cases (returning-client refresh, scope-drift detection, pitch prep) where the studio currently pays alignment cost. Names Tomás, Marco, and the discipline leads. The next-hire move follows directly from the diagnosis."
+    },
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Connects three named failure-signals to one capability that closes all three (the context-keeping practice). The 'compounding effect on every engagement after' is a studio-specific ROI argument, not a generic claim."
+    }
+  ]
+}

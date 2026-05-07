@@ -1,0 +1,24 @@
+{
+  "playbook": "reshuffle",
+  "judge_mode": "subscription (in-context, Claude Opus 4.7 / Claude Code)",
+  "decisions": [
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Diagnosis with implicit directive: the four scarcity-bound activities (Marco's positioning, Lena's visual language and brand book, audience research) shouldn't be targeted for AI dissolution; the eight alignment-bound ones should. Borderline as a Monday move but sharpens every later decision's frame."
+    },
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Three specific deployment targets (kickoff workshops, asset handover, competitive audits) plus an explicit warning against the wrong deployment (UI design, design-system documentation). Each deployment named with the constraint it dissolves. Distinctive to the studio's process structure."
+    },
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Quarterly sequence: hire context lead Q3 2026, ship returning-client kickoff use-case by Q4, revisit pricing reframe in 2027. Names the two specific direction options (compounding context, production-handed-off) and orders them with reasons. Very actionable."
+    }
+  ]
+}

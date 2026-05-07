@@ -1,0 +1,36 @@
+{
+  "playbook": "value-map",
+  "judge_mode": "subscription (in-context, Claude Opus 4.7 / Claude Code)",
+  "decisions": [
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Names the move ('name the three differentiated pieces at pitch') and identifies the differentiated 25% of work by person (Marco, Lena) and by artefact (positioning, visual language, brand book). Reframes pricing without changing the price."
+    },
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Roversi-style pricing reframe with two concrete moves: annual updates of brand-book and positioning as retainer; production layer included or sold as capacity. Specific to the studio's work types and feedback-speed split."
+    },
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Specific move: gift the design-system handoff at zero margin paired with strategy engagement. Names UI design, design-system-build, ux-research synthesis as the funnel layer. Distinctive funnel framing."
+    },
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Concrete: operations lead reviews Q1 2026 senior hours and re-targets ≥20% upstream onto positioning, brand-book authorship, visual language. Named owner, named target, named time window."
+    },
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Names a candidate role (Context Lead / Knowledge Steward) and what it would own (positioning + visual language + brand book + decisions per engagement). Distinctive to a studio whose engagement deliverables are signature artefacts."
+    }
+  ]
+}

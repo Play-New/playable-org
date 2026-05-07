@@ -1,0 +1,30 @@
+{
+  "playbook": "ai-exposure",
+  "judge_mode": "subscription (in-context, Claude Opus 4.7 / Claude Code)",
+  "decisions": [
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Borderline actionable — the move is cautionary ('do not assume the senior-craft layer is naturally insulated') rather than a Monday step, but it explicitly tells the leader to revisit a load-bearing assumption. Distinctive: names Lena's visual-language work, identity-system build, audience-research synthesis."
+    },
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Two directional moves on two segments: strategy lead leans into the assistive band to take more engagements; visual language stays human and is priced as named-person work (Lena). Both grounded in the observed autonomy bands."
+    },
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Explicit owner (operations lead), explicit target (≥20%), explicit time window (Q1 2026), explicit destinations (positioning briefs, brand-book authorship, visual-language definition). Same pattern as the value-map roles decision."
+    },
+    {
+      "actionable": "yes",
+      "distinctive": "high",
+      "readable": "yes",
+      "note": "Connects the AEI signal (audience research + competitive audit in middle band) to a hire (the context-keeping practice owner). The hire is studio-specific and the compounding rationale is grounded in their per-engagement workflow."
+    }
+  ]
+}
