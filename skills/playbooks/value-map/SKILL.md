@@ -369,16 +369,18 @@ The agent generates narrative around audited structure; the agent does not asser
 
 ## Autoresearch loop
 
-The agent runs the playbook iteratively. Each iteration produces a play (JSON + HTML + SVG); each iteration is then scored on four dimensions before the next pass.
+The agent runs the playbook iteratively. Each iteration produces a play (JSON + HTML + SVG); each iteration is then scored on five dimensions before the next pass — four deterministic gates plus an opt-in LLM judge.
 
 **Score**:
 
 ```bash
 python3 skills/playbooks/value-map/autoresearch.py \
-  --map <chain.json>
+  --map <chain.json> \
+  --org-dir <org-dir> \
+  [--llm]
 ```
 
-The script runs four checks against the play and prints a per-dimension score plus an overall pass/fail.
+The script runs the checks and prints a per-dimension score plus an overall pass/fail.
 
 | Dimension | What it checks |
 |---|---|
@@ -386,13 +388,14 @@ The script runs four checks against the play and prints a per-dimension score pl
 | **Plain language** | Density of jargon: standalone Wardley terms, "evolution 0.X" patterns, technical acronyms without expansion. |
 | **Decision anchoring** | At least three items in `decisions[]`, each ≥ 60 chars in `answer`, each citing a non-empty `source`. |
 | **Audit grounded** | Every component has `_structure_id` resolving to a real file. (Inherits from `audit.py`.) |
+| **LLM judge** *(opt-in: `--llm`)* | Claude Sonnet 4.6 scores each decision on three axes the deterministic checks can't see: `actionable` (yes/no — names a Monday move, not just an observation), `distinctive` (high/medium/low — could only be made of *this* org), `readable` (yes/no — would the leader of this org track the prose). Skipped (does not fail the gate) when `ANTHROPIC_API_KEY` is not set. |
 
-The script returns exit code 0 only if all four pass. The agent's iteration loop:
+The script returns exit code 0 only if every non-skipped dimension passes. The agent's iteration loop:
 
 1. Run `org_play_run` build → render → first HTML.
 2. Run `autoresearch.py`. If a dimension fails, the script prints which.
 3. Read the failure mode, edit the JSON (positions, decisions, ai_effect prose), call render again.
-4. Re-score. Repeat until all four pass or the operator intervenes.
+4. Re-score. Repeat until everything passes or the operator intervenes.
 
 The reference iteration (the canonical example produced for `Outline & Co.`) reached pass on iter-2 after the iter-1 decisions were rewritten in plain English with the Roversi pricing frame.
 

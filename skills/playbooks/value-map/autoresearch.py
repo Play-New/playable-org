@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 """
-value-map / autoresearch.py — Score a value-map play on four dimensions
+value-map / autoresearch.py — Score a value-map play on five dimensions
 that the SKILL.md's autoresearch loop iterates against.
 
-This is a deterministic gate, not an LLM-as-judge. It catches the common
-failure modes a play can ship with: jargon that the leader can't read,
-decisions that are missing or too thin, components that aren't grounded
-in the structure, prose that doesn't actually mention the org by name.
+Four dimensions are deterministic gates: they catch the common failure
+modes a play can ship with — jargon that the leader can't read, decisions
+that are missing or too thin, components that aren't grounded in the
+structure, prose that doesn't actually mention the org by name.
+
+The fifth dimension (--llm) calls Claude Sonnet 4.6 as a judge and scores
+each decision on three axes (actionable, distinctive, readable). It
+requires ANTHROPIC_API_KEY; without it, the dimension is skipped (does
+not fail the gate).
 
 Usage:
-    python3 autoresearch.py --map <chain.json> [--org-dir <path>]
+    python3 autoresearch.py --map <chain.json> [--org-dir <path>] [--llm]
 
 Exit code:
-    0 = all four dimensions pass
+    0 = all dimensions pass (or are skipped)
     1 = one or more dimensions fail (script prints which)
 """
 
@@ -20,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -170,13 +176,189 @@ def score_audit_grounded(map_data: dict, org_dir: Path | None) -> tuple[bool, st
 
 
 # ----------------------------------------------------------------------
+# LLM-as-judge (opt-in, --llm) — Claude Sonnet 4.6 scores each decision
+# on three axes that the deterministic checks can't see:
+#
+#   actionable  — yes / no.  Does the answer name a move the leader could
+#                 make on Monday, not just an observation?
+#   distinctive — high / medium / low.  Is the framing one this org could
+#                 only have made of itself, or is it consultant-generic?
+#   readable    — yes / no.  Would the founder of this studio nod along,
+#                 or stop on a sentence that reads as jargon-by-paraphrase?
+#
+# The dimension fails if any decision is non-actionable or non-readable,
+# or if more than half score "low" on distinctive. Skipped (PASS) when
+# no API key is present so the gate stays usable offline.
+# ----------------------------------------------------------------------
+
+JUDGE_MODEL = "claude-sonnet-4-6"
+
+JUDGE_RUBRIC = """\
+You are reviewing the interpretive 'decisions' attached to a value-map of a real organization.
+A value-map sits over a structure of named units, activities, and commitments. Each decision is
+a question the leader of the organization should be able to answer after reading the map, plus
+the answer the play asserts.
+
+Score each decision on three independent axes. Be strict — the point of the review is to catch
+decisions that read fine in isolation but don't actually help the leader.
+
+  actionable  — "yes" if the answer names a concrete move the leader could make on Monday
+                (a re-allocation, a new role, a pricing change, a structural shift). "no" if the
+                answer is descriptive only ("X is commoditizing") with no implication for action.
+
+  distinctive — "high" if the framing reads as something only this organization could have
+                arrived at — it uses the org's named units, named people, named commitments, and
+                its specific mix. "medium" if it's plausible but could apply to a similar shop
+                with the names swapped. "low" if it's consultant-generic — true of any creative
+                services firm, any agency, any studio.
+
+  readable    — "yes" if a smart non-technical leader of this org would track the prose without
+                hitting jargon (Wardley terms, framework vocabulary, abstract management speak,
+                paraphrased jargon like "high judgment density"). "no" if they would stop and
+                ask what a sentence means.
+
+Add a one-sentence note per decision explaining the scores. Be specific about which sentence or
+move triggered the score, not generic praise."""
+
+
+def _build_judge_payload(map_data: dict) -> dict[str, Any]:
+    """Reduce the map down to what the judge needs: anchor, components,
+    and the decisions themselves."""
+    components = [
+        {"label": c.get("label"), "kind": c.get("_kind"), "structure_id": c.get("_structure_id")}
+        for c in map_data.get("components", [])
+        if not c.get("is_new")
+    ]
+    return {
+        "anchor": {
+            "title": (map_data.get("_anchor") or {}).get("title"),
+            "kind": (map_data.get("_anchor") or {}).get("kind"),
+        },
+        "components": components,
+        "decisions": map_data.get("decisions") or [],
+    }
+
+
+def score_llm_judge(map_data: dict) -> tuple[bool, str]:
+    """Sonnet 4.6 scores each decision on actionable / distinctive / readable.
+    Skipped (PASS) when no key or SDK is available so the gate stays usable offline."""
+    decisions = map_data.get("decisions") or []
+    if not decisions:
+        return False, "no decisions to judge"
+
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        return True, "skipped (no ANTHROPIC_API_KEY in environment)"
+
+    try:
+        import anthropic  # noqa: F401  (imported for availability check + use below)
+    except ImportError:
+        return True, "skipped (anthropic SDK not installed)"
+
+    client = anthropic.Anthropic()
+
+    payload = _build_judge_payload(map_data)
+    schema = {
+        "type": "object",
+        "properties": {
+            "decisions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "actionable": {"type": "string", "enum": ["yes", "no"]},
+                        "distinctive": {"type": "string", "enum": ["high", "medium", "low"]},
+                        "readable": {"type": "string", "enum": ["yes", "no"]},
+                        "note": {"type": "string"},
+                    },
+                    "required": ["actionable", "distinctive", "readable", "note"],
+                    "additionalProperties": False,
+                },
+            },
+        },
+        "required": ["decisions"],
+        "additionalProperties": False,
+    }
+
+    try:
+        response = client.messages.create(
+            model=JUDGE_MODEL,
+            max_tokens=4096,
+            system=[{
+                "type": "text",
+                "text": JUDGE_RUBRIC,
+                "cache_control": {"type": "ephemeral"},
+            }],
+            messages=[{
+                "role": "user",
+                "content": (
+                    "Score each decision in this value-map. Return one entry per decision, in the "
+                    "same order as the input.\n\n"
+                    + json.dumps(payload, ensure_ascii=False, indent=2)
+                ),
+            }],
+            output_config={"format": {"type": "json_schema", "schema": schema}},
+            thinking={"type": "adaptive"},
+        )
+    except anthropic.AuthenticationError as e:
+        return True, f"skipped (auth error: {e})"
+    except anthropic.APIConnectionError as e:
+        return True, f"skipped (connection error: {e})"
+    except anthropic.APIError as e:
+        return False, f"judge call failed: {e}"
+
+    # Pull the JSON out of the first text block.
+    text_blocks = [b.text for b in response.content if getattr(b, "type", None) == "text"]
+    if not text_blocks:
+        return False, "judge returned no text blocks"
+
+    try:
+        verdict = json.loads(text_blocks[0])
+    except json.JSONDecodeError as e:
+        return False, f"judge returned invalid JSON: {e}"
+
+    items = verdict.get("decisions") or []
+    if len(items) != len(decisions):
+        return False, f"judge returned {len(items)} verdicts for {len(decisions)} decisions"
+
+    fails: list[str] = []
+    low_distinct = 0
+    lines: list[str] = []
+    for i, (d, v) in enumerate(zip(decisions, items)):
+        q = d.get("question", "").strip()
+        short_q = q if len(q) <= 60 else q[:57] + "…"
+        lines.append(
+            f"    [{i}] {v['actionable']:<3}  "
+            f"{v['distinctive']:<6}  "
+            f"{v['readable']:<3}  —  {short_q}"
+        )
+        lines.append(f"        note: {v['note']}")
+        if v["actionable"] == "no":
+            fails.append(f"  decision[{i}] not actionable")
+        if v["readable"] == "no":
+            fails.append(f"  decision[{i}] not readable")
+        if v["distinctive"] == "low":
+            low_distinct += 1
+
+    if low_distinct > len(decisions) // 2:
+        fails.append(f"  {low_distinct}/{len(decisions)} decisions read as consultant-generic (distinctive=low)")
+
+    detail_header = "        actionable  distinctive  readable  question"
+    body = "\n" + detail_header + "\n" + "\n".join(lines)
+
+    if fails:
+        return False, "judge findings:\n" + "\n".join(fails) + body
+    return True, f"{len(decisions)} decisions, all actionable + readable, distinctiveness acceptable" + body
+
+
+# ----------------------------------------------------------------------
 # Driver
 # ----------------------------------------------------------------------
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Score a value-map play on four autoresearch dimensions.")
+    parser = argparse.ArgumentParser(description="Score a value-map play on the autoresearch dimensions.")
     parser.add_argument("--map", required=True, help="Path to the value-map JSON")
     parser.add_argument("--org-dir", help="Path to org/ for audit-grounded check")
+    parser.add_argument("--llm", action="store_true", help="Also run the LLM-as-judge dimension (Claude Sonnet 4.6, requires ANTHROPIC_API_KEY)")
     args = parser.parse_args()
 
     map_path = Path(args.map)
@@ -195,12 +377,19 @@ def main() -> int:
         ("decision anchoring",   *score_decision_anchoring(map_data)),
         ("audit grounded",       *score_audit_grounded(map_data, org_dir)),
     ]
+    if args.llm:
+        checks.append(("llm judge",          *score_llm_judge(map_data)))
 
     width = max(len(name) for name, _, _ in checks)
     fails = 0
     for name, ok, detail in checks:
         mark = "PASS" if ok else "FAIL"
-        print(f"  [{mark}]  {name:<{width}}  —  {detail}")
+        # Multi-line details: print the first line on the header row, the rest indented.
+        first, _, rest = detail.partition("\n")
+        print(f"  [{mark}]  {name:<{width}}  —  {first}")
+        if rest:
+            for line in rest.split("\n"):
+                print(f"          {line}" if not line.startswith("    ") and not line.startswith("        ") else line)
         if not ok:
             fails += 1
 
