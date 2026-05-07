@@ -327,3 +327,10 @@ python3 skills/playbooks/reshuffle/autoresearch.py \
 | **LLM judge** *(opt-in: `--llm`)* | Claude Sonnet 4.6 scores each decision on `actionable` (yes/no), `distinctive` (high/medium/low), `readable` (yes/no). Skipped when `ANTHROPIC_API_KEY` is not set. |
 
 The play's primary interpretive surface is the top-level `decisions[]` array — the leader-facing reading of which capability becomes the new constraint, where the see-saw becomes a flywheel, what to hire / divest / reorganise around. Engine candidates and rebundle candidates are the structured intermediates; the decisions translate them for action. The agent fills this array as the final step of the playbook, then iterates until every dimension passes.
+
+**Reference example** — the canonical artefact for this skill is the Outline & Co. fake-org play:
+
+- `mcp-server/test-fixtures/fake-org/plays/data/reshuffle-outline-2026-05-07.json` — the source JSON with components classified, engine candidates, rebundle candidates, bundle state, and `decisions[]`
+- `mcp-server/test-fixtures/fake-org/plays/data/reshuffle-outline-2026-05-07.html` — the rendered viewer
+
+Open the HTML in a browser to see exactly what this skill produces. The play covers the studio's mid-market baseline commitment (12 activities across 4 units): 8 coordination-bound, 4 scarcity-bound; 3 engine candidates (kickoff workshop, asset handover, competitive audit) where AI as shared-knowledge infrastructure would dissolve a structural cost; 2 direction options (compounding context as the conservative move, production-handed-off as the radical follow-on). Three leader-facing decisions sequence the moves over 2026-2027.

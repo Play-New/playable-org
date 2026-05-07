@@ -213,7 +213,7 @@ P75 = 3.57
 
 STRINGS = {
     "en": {
-        "subtitle": "Activities matched to O*NET tasks via multilingual embedding. Each square is one of the top-K closest tasks; color shows how Anthropic users delegate that task to Claude. Hover for a quick read, click for details.",
+        "subtitle": "Each activity in this organization is matched against the closest task in a public catalog of work, and shown against how Claude was actually used on that task in a sample of public conversations. Each square is one of the closest matches; the colour shows how much autonomy Claude had — from assist-only to working alone. Hover for a quick read, click a square for the detail behind.",
         "legend_automated": "Mostly automated",
         "legend_augmented": "Mostly augmented",
         "legend_assistive": "Assistive",
@@ -252,7 +252,7 @@ STRINGS = {
         "modal_category": "Anthropic category for the sample",
         "modal_no_rich": "Below the minimum activity count for stable estimates. The square is shown as 'no data'.",
         "modal_chain": "What this card actually says",
-        "modal_chain_text": "org activity → closest O*NET task by semantic similarity → category assigned by Anthropic to that task's Claude.ai conversations. The category labels the conversation sample, not your activity.",
+        "modal_chain_text": "this org's activity → closest match in the public catalog of work → category from how Claude was used on that catalog task in the Anthropic sample. The category describes that sample, not your activity.",
         "area_summary_label": "Snapshot",
         "area_distribution": "Distribution",
         "area_avg_confidence": "Avg. top-1 confidence",

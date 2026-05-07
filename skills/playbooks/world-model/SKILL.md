@@ -269,3 +269,10 @@ python3 skills/playbooks/world-model/autoresearch.py \
 | **LLM judge** *(opt-in: `--llm`)* | Claude Sonnet 4.6 scores each decision on `actionable` (yes/no), `distinctive` (high/medium/low), `readable` (yes/no). Skipped when `ANTHROPIC_API_KEY` is not set. |
 
 The play's primary interpretive surface is the top-level `decisions[]` array — the leader-facing reading of which capabilities are moat vs commodity, which interfaces are real vs aspirational, and which failure-signals indicate a missing capability the org should build. The agent fills this array as the final step of the playbook, then iterates against the autoresearch output until every dimension passes.
+
+**Reference example** — the canonical artefact for this skill is the Outline & Co. fake-org play:
+
+- `mcp-server/test-fixtures/fake-org/plays/data/world-model-outline-2026-05-07.json` — the source JSON with capabilities, interfaces, intelligence-layer compositions, world-model observations, failure-signals, and `decisions[]`
+- `mcp-server/test-fixtures/fake-org/plays/data/world-model-outline-2026-05-07.html` — the rendered viewer
+
+Open the HTML in a browser to see exactly what this skill produces. The play covers the studio's whole-org structure: 7 capabilities (3 differentiated, 4 standard), 4 touchpoints, 3 currently-human-mediated compositions + 2 potentially automatic, knowledge observations on the org and on each stakeholder type, and 3 failure-signals that all converge on the same missing capability — a context-keeping practice the studio doesn't yet have anyone owning. Three leader-facing decisions name Marco, Lena, and Tomás by role and the studio's units by name.

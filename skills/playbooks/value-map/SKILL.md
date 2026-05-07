@@ -399,6 +399,14 @@ The script returns exit code 0 only if every non-skipped dimension passes. The a
 
 The reference iteration (the canonical example produced for `Outline & Co.`) reached pass on iter-2 after the iter-1 decisions were rewritten in plain English with the Roversi pricing frame.
 
+**Reference example** — the canonical artefact for this skill is the Outline & Co. fake-org play, shipped in the public template's test fixtures:
+
+- `mcp-server/test-fixtures/fake-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.json` — the source JSON with `decisions[]` filled in
+- `mcp-server/test-fixtures/fake-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.html` — the rendered viewer
+- `mcp-server/test-fixtures/fake-org/plays/data/value-map-studio-mid-market-baseline-2026-05-07.svg` — the static SVG companion
+
+Open the HTML in a browser to see exactly what this skill produces. The play sits over the studio's mid-market baseline commitment and frames where the studio's value actually lives, the pricing reframe (separating slow-feedback judgment work from fast-feedback production), the AI commodity funnel, and the missing context-steward role.
+
 **Output of the loop**: the same JSON + HTML + SVG triplet, but the JSON now has audited decisions and the HTML renders them in the "How to read this map" section. The play markdown under `org/plays/` is optional; when written it mirrors the JSON's decisions verbatim.
 
 ## Author-name policy
