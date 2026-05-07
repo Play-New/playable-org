@@ -211,15 +211,16 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
         f'fill="none" stroke="{LINE}" stroke-width="1"/>'
     )
 
-    # Stage bands
+    # Stage divisions — thin dashed hairlines at the four boundaries.
+    # Coloured stage bands removed: they were 8% fills that fought the
+    # actual content. Play New convention: hairlines do the work, white
+    # space carries the page.
     band_x = lambda ev: plot_x0 + ev * plot_w
-    bands = [(0.00, 0.17, GENESIS), (0.17, 0.40, CUSTOM), (0.40, 0.70, PRODUCT), (0.70, 1.00, COMMODITY)]
-    for lo, hi, color in bands:
-        x = band_x(lo)
-        w = band_x(hi) - x
+    for boundary in (0.17, 0.40, 0.70):
+        x = band_x(boundary)
         parts.append(
-            f'<rect x="{x:.1f}" y="{plot_y0}" width="{w:.1f}" height="{plot_h}" '
-            f'fill="{color}" fill-opacity="0.08" stroke="none"/>'
+            f'<line x1="{x:.1f}" y1="{plot_y0}" x2="{x:.1f}" y2="{plot_y1}" '
+            f'stroke="{LINE}" stroke-width="0.5" stroke-dasharray="2,4"/>'
         )
 
     # X axis stage labels
@@ -274,7 +275,7 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
     for uid in user_ids:
         p = positions[uid]
         parts.append(
-            f'<g class="node node-user" data-node-id="{uid}">'
+            f'<g class="node node-user" data-node-id="{uid}" onclick="pnNodeClick(this)">'
             f'<title>{escape(p["label"])}</title>'
             f'<circle cx="{p["px"]:.1f}" cy="{p["py"]:.1f}" r="14" fill="{FG}"/>'
             f'<text x="{p["px"]:.1f}" y="{p["py"] - 26:.1f}" text-anchor="middle" '
@@ -288,7 +289,7 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
         if not p:
             continue
         parts.append(
-            f'<g class="node node-user node-new" data-node-id="__new_user_{j}__">'
+            f'<g class="node node-user node-new" data-node-id="__new_user_{j}__" onclick="pnNodeClick(this)">'
             f'<title>{escape(p["label"])}</title>'
             f'<circle cx="{p["px"]:.1f}" cy="{p["py"]:.1f}" r="12" fill="{ACCENT}"/>'
             f'<text x="{p["px"]:.1f}" y="{p["py"] - 22:.1f}" text-anchor="middle" '
@@ -316,7 +317,7 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
         # Label below diamond to avoid colliding with end-user labels above.
         label_y = cy + size + 18
         parts.append(
-            f'<g class="node node-anchor" data-node-id="{a["id"]}" style="cursor:pointer">'
+            f'<g class="node node-anchor" data-node-id="{a["id"]}" onclick="pnNodeClick(this)" style="cursor:pointer">'
             f'<title>{escape(a.get("label", ""))}</title>'
             f'<polygon points="{diamond}" fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>'
             f'{et_arrow}'
@@ -361,7 +362,7 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
         if line2:
             text_lines += f'<tspan x="{cx:.1f}" dy="14">{escape(line2)}</tspan>'
         parts.append(
-            f'<g class="node node-component" data-node-id="{c["id"]}" style="cursor:pointer">'
+            f'<g class="node node-component" data-node-id="{c["id"]}" onclick="pnNodeClick(this)" style="cursor:pointer">'
             f'<title>{escape(c.get("label", ""))}</title>'
             f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>'
             f'{et_arrow}'
@@ -384,121 +385,93 @@ def render_svg_standalone(map_data: dict) -> str:
 
 
 EXTRA_CSS = """
-:root {
-  --bg: var(--bg-soft);
-  --fg: var(--fg);
-  --muted: var(--muted);
-  --line: var(--line);
-  --card: var(--bg);
-  --accent: var(--fg);
-}
+/* Value-map viewer — Play New design.
+   Pure white surface, editorial typography, hairlines, single accent. */
 
-body { background: var(--bg-soft); }
+body { background: #FFFFFF; color: var(--fg); }
 
-.container { max-width: 1480px; margin: 0 auto; padding: 48px 32px 80px; }
-.anchor-line { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; font-family: ui-monospace, SF Mono, Menlo, monospace; text-transform: uppercase; letter-spacing: 0.04em; }
-.description { font-size: 0.95rem; color: var(--fg); max-width: 900px; margin-bottom: 0; line-height: 1.65; }
+.container { max-width: 1240px; margin: 0 auto; padding: 80px 40px 96px; }
 
-header { padding-bottom: 24px; border-bottom: 1px solid var(--line); margin-bottom: 32px; }
-header h1 { font-size: 1.9rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 6px; }
+header { margin-bottom: 48px; max-width: 820px; }
+header .eyebrow { font-family: var(--font-display); font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 16px; }
+header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); }
+header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0; max-width: 720px; }
 
-.intro { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 24px 28px; margin-bottom: 24px; max-width: 920px; }
-.intro h2 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 500; margin: 0 0 12px; }
-.intro p { margin: 0 0 10px; font-size: 0.92rem; line-height: 1.65; color: var(--fg); }
-.intro .legend-bullets { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; font-size: 0.85rem; margin-top: 14px; color: var(--muted); }
-.intro .legend-bullets strong { color: var(--fg); font-weight: 500; }
-.intro .legend-shape { display: inline-block; width: 12px; height: 12px; vertical-align: middle; margin-right: 6px; }
-.intro .legend-shape.user { background: var(--fg); border-radius: 50%; }
-.intro .legend-shape.anchor { background: var(--card); border: 1.5px solid var(--fg); transform: rotate(45deg); }
-.intro .legend-shape.component { background: var(--card); border: 1.5px solid var(--fg); border-radius: 50%; }
-.intro .legend-shape.new { background: var(--fg); }
-.intro .legend-shape.arrow { width: 18px; height: 1.5px; background: var(--fg); border: none; vertical-align: middle; margin-right: 6px; }
-
-.map-wrap { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-bottom: 28px; overflow-x: auto; }
-.map-wrap svg .node-component circle:hover, .map-wrap svg .node-anchor polygon:hover { stroke-width: 2.5; filter: drop-shadow(0 0 4px rgba(23,23,23,0.18)); }
+.map-wrap { padding: 24px 0; margin: 24px 0; overflow-x: auto; }
+.map-wrap svg { display: block; }
 .map-wrap svg .node { cursor: pointer; }
+.map-wrap svg .node:hover circle, .map-wrap svg .node:hover polygon { stroke-width: 2; }
 
-.stages-fallback { max-width: 920px; }
-.stage-section { margin-bottom: 28px; }
-.stage-section h2 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 500; margin: 0 0 12px; }
-.comp-card { background: var(--card); border: 1px solid var(--line); border-left: 2px solid var(--soft); border-radius: 3px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
-.comp-card:hover { border-color: var(--line); box-shadow: none; }
-.comp-card.is-new { border-left-color: var(--fg); background: var(--bg-soft); }
-.comp-label { font-weight: 500; font-size: 0.92rem; color: var(--fg); }
-.comp-effect { color: var(--muted); font-size: 0.85rem; margin-top: 6px; line-height: 1.55; }
-.comp-target { color: var(--fg); font-size: 0.78rem; margin-top: 6px; font-weight: 500; }
+.legend { display: flex; gap: 28px; flex-wrap: wrap; font-size: 0.82rem; color: var(--fg-muted); margin: 8px 0 0; align-items: center; }
+.legend .item { display: flex; align-items: center; gap: 8px; }
+.legend .shape { display: inline-block; width: 12px; height: 12px; }
+.legend .shape.user { background: var(--fg); border-radius: 50%; }
+.legend .shape.anchor { background: transparent; border: 1.5px solid var(--fg); transform: rotate(45deg); }
+.legend .shape.component { background: transparent; border: 1.5px solid var(--fg); border-radius: 50%; }
+.legend .shape.new { background: var(--ds-coral); }
+.legend .shape.arrow { width: 22px; height: 1.5px; background: var(--ds-coral); }
 
-.modal-backdrop { position: fixed; inset: 0; background: rgba(23,23,23,0.32); display: none; align-items: flex-start; justify-content: center; padding: 60px 16px 16px; z-index: 100; overflow-y: auto; backdrop-filter: blur(4px); }
+.section { margin-top: 80px; padding-top: 36px; border-top: 1px solid var(--fg-hairline); max-width: 820px; }
+.section h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 20px; }
+.section p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; max-width: 720px; }
+.section .lead { font-size: 0.95rem; color: var(--fg-muted); line-height: 1.65; max-width: 720px; margin: 0 0 28px; }
+
+.no-overlay { font-size: 0.9rem; color: var(--fg-muted); padding: 18px 22px; background: var(--bg-alt); border-radius: 4px; max-width: 720px; line-height: 1.6; }
+.no-overlay code { font-size: 0.85em; }
+
+.decision { margin-bottom: 32px; }
+.decision .question { font-family: var(--font-display); font-size: 1.05rem; font-weight: 500; color: var(--fg); margin: 0 0 8px; letter-spacing: -0.01em; }
+.decision .answer { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 6px; max-width: 720px; }
+.decision .source { font-size: 0.78rem; color: var(--fg-muted); font-family: ui-monospace, SF Mono, Menlo, monospace; }
+
+/* Modal — editorial popup */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.32); display: none; align-items: flex-start; justify-content: center; padding: 80px 16px 16px; z-index: 100; overflow-y: auto; backdrop-filter: blur(4px); }
 .modal-backdrop.open { display: flex; animation: pn-fade 0.2s ease; }
-.modal { background: var(--card); border-radius: 4px; border: 1px solid var(--line); max-width: 720px; width: 100%; padding: 32px; box-shadow: none; animation: pn-pop 0.25s ease; }
-.modal .close { float: right; background: transparent; border: 0; cursor: pointer; font-size: 1.5rem; color: var(--muted); margin: -10px -10px 0 0; padding: 0; }
+.modal { background: #FFFFFF; border-radius: 4px; border: 1px solid var(--fg-hairline); max-width: 600px; width: 100%; padding: 36px 44px 40px; animation: pn-pop 0.25s ease; }
+.modal .close { float: right; background: transparent; border: 0; cursor: pointer; font-size: 1.4rem; color: var(--fg-muted); margin: -10px -10px 0 0; padding: 0; line-height: 1; }
 .modal .close:hover { color: var(--fg); background: transparent; }
-.modal h3 { margin: 0 0 4px; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.01em; }
-.modal .kind { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 18px; }
-.modal .desc { font-size: 0.92rem; line-height: 1.7; margin-bottom: 14px; color: var(--fg); }
-.modal .section-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; margin-top: 18px; margin-bottom: 6px; }
-.modal .placement { font-size: 0.9rem; line-height: 1.55; margin-bottom: 4px; color: var(--fg); }
-.modal .placement .placement-nums { color: var(--muted); font-size: 0.78rem; font-family: ui-monospace, SF Mono, Menlo, monospace; }
-.modal .row { display: grid; grid-template-columns: 180px 1fr; gap: 8px 20px; font-size: 0.85rem; margin-bottom: 8px; }
-.modal .row .key { color: var(--muted); }
-.modal .row strong { color: var(--fg); font-weight: 500; }
-/* Stage pills route through the data-viz palette in design.py — one
-   distinct hue per stage so the four bands read at a glance. */
-.modal .stage-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; border: 1px solid; }
-.modal .stage-pill.genesis   { background: var(--ds-sage-bg);  color: var(--fg); border-color: var(--ds-sage); }
-.modal .stage-pill.custom    { background: var(--ds-lilac-bg); color: var(--fg); border-color: var(--ds-lilac); }
-.modal .stage-pill.product   { background: var(--ds-slate-bg); color: var(--fg); border-color: var(--ds-slate); }
-.modal .stage-pill.commodity { background: var(--ds-sand-bg);  color: var(--fg); border-color: var(--ds-sand); }
-.modal .ai-effect { background: var(--bg-soft); border-left: 2px solid var(--fg); padding: 12px 18px; margin: 14px 0; border-radius: 0 3px 3px 0; font-size: 0.92rem; line-height: 1.65; }
-.modal .ai-effect .label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; font-weight: 500; }
-.modal .aei-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 12px; }
-.modal .aei-table th, .modal .aei-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
-.modal .aei-table th { color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.7rem; background: var(--bg-soft); }
-.modal .structure-ref { font-family: ui-monospace, SF Mono, Menlo, monospace; font-size: 0.75rem; color: var(--muted); margin-top: 14px; }
+.modal .eyebrow { font-family: var(--font-display); font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 12px; color: var(--fg-muted); }
+.modal .eyebrow.is-new { color: var(--ds-coral); }
+.modal h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 18px; line-height: 1.2; color: var(--fg); }
+.modal .body p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; }
+.modal .body p:last-child { margin-bottom: 0; }
+.modal .body em.placement { color: var(--fg-muted); font-style: normal; }
+.modal .citation { font-size: 0.78rem; color: var(--fg-muted); padding-top: 16px; margin-top: 22px; border-top: 1px solid var(--fg-hairline); font-family: ui-monospace, SF Mono, Menlo, monospace; }
 """
 
 
 HTML_TEMPLATE = """<!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>{title}</title>
+<title>{title} · value map</title>
 <style>{css}</style>
 </head>
 <body>
   <div class="container">
     <header>
+      <div class="eyebrow">value map</div>
       <h1>{title}</h1>
-      <div class="anchor-line">{anchor_id} · {anchor_kind}</div>
-      <p class="description">{description}</p>
+      <p class="lead">{description}</p>
     </header>
 
-    <div class="intro">
-      <h2>Come leggere questa mappa</h2>
-      <p>Questa mappa serve a capire <strong>come funziona oggi un processo dell'organizzazione</strong> e dove si sta muovendo. Non serve conoscere l'organizzazione dall'interno: cliccando un qualsiasi nodo si legge cosa fa, perché si trova in quel punto della mappa, e cosa sta cambiando.</p>
-      <p><strong>Cosa rappresentano i nodi.</strong> In alto il cerchio nero è l'<em>utente finale</em>, cioè chi riceve il valore alla fine della catena. Sotto, i diamanti sono i <em>bisogni dell'utente</em>: cosa sta cercando di ottenere. Sotto ancora, i cerchi bianchi sono i <em>componenti del processo</em> che producono valore per soddisfare quei bisogni. I cerchi arancioni indicano cose <em>nuove o emergenti</em>: non esistono oggi ma compaiono se il processo si trasforma.</p>
-      <p><strong>Cosa significano le posizioni.</strong> L'asse orizzontale è l'<em>evoluzione del componente nel mercato</em>: a sinistra le cose ancora nuove o fatte su misura, a destra le cose standardizzate disponibili come servizio o commodity. La mappa è divisa in quattro fasce — territorio nuovo (genesis), su misura interna (custom), pratica diffusa con fornitori (product), standard di mercato (commodity). L'asse verticale è la <em>visibilità</em>: in alto i pezzi che l'utente percepisce direttamente, in basso l'infrastruttura che lavora dietro le quinte.</p>
-      <p><strong>Cosa significa l'overlay AI</strong> (le frecce tratteggiate arancioni). Sono spostamenti attesi verso destra basati sul campione di conversazioni Claude raccolto da Anthropic. Quel campione osserva come gli utenti di Claude usano l'AI su mansioni del catalogo americano dei mestieri, registrando per ognuna quanta autonomia Claude aveva (su scala 1=solo aiuto, 5=lavoro autonomo). Quando un componente di questo processo corrisponde semanticamente a una mansione che il campione vede usata con autonomia alta, è verosimile che il componente si standardizzi: la freccia mostra dove e in quale fascia. Cliccando il nodo si vede il dato specifico (vicinanza in %, autonomia di Claude, numero di conversazioni) che giustifica lo spostamento.</p>
-      <div class="legend-bullets">
-        <div><span class="legend-shape user"></span><strong>Cerchio nero</strong> · utente finale</div>
-        <div><span class="legend-shape anchor"></span><strong>Diamante</strong> · bisogno dell'utente</div>
-        <div><span class="legend-shape component"></span><strong>Cerchio bianco</strong> · componente del processo</div>
-        <div><span class="legend-shape new"></span><strong>Arancione</strong> · nuovo / emergente</div>
-        <div><span class="legend-shape arrow"></span><strong>Freccia tratteggiata</strong> · spostamento atteso (AI overlay)</div>
-        <div style="grid-column: span 2; margin-top: 6px; font-style: italic;">Click su qualsiasi nodo per il dettaglio: cosa è, dove sta sulla mappa, dove si sta spostando, dato Anthropic dietro.</div>
-      </div>
-    </div>
-
     <div class="map-wrap">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="100%" style="font-family: ui-serif, Georgia, serif; background: {bg};">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="100%" style="font-family: var(--font-display);">
 {svg_inner}
       </svg>
     </div>
 
-    <div class="stages-fallback">
-      <h2 style="font-size: 18px; font-weight: 500; margin: 0 0 14px;">Componenti raggruppati per stage</h2>
-      {stages_html}
+    <div class="legend">
+      <div class="item"><span class="shape user"></span><span>End user</span></div>
+      <div class="item"><span class="shape anchor"></span><span>User need</span></div>
+      <div class="item"><span class="shape component"></span><span>Part of the chain</span></div>
+      <div class="item"><span class="shape new"></span><span>New / emerging</span></div>
+      <div class="item"><span class="shape arrow"></span><span>Where AI is pushing</span></div>
     </div>
+
+    {ai_overlay_section}
+
+    {decisions_section}
   </div>
 
   <div class="modal-backdrop" id="modal-backdrop">
@@ -531,102 +504,75 @@ const STAGE_PLAIN = {{
   commodity: 'standard di mercato, indistinguibile fra fornitori',
 }};
 
+const STAGE_PLAIN = {{
+  genesis:   'new territory, still being figured out',
+  custom:    'built in-house, not yet a standard',
+  product:   'common practice, vendors and patterns exist',
+  commodity: 'market standard, indistinguishable across vendors',
+}};
+
+function kindLabel(node) {{
+  if (node.is_new) return 'New / emerging';
+  if (node._kind === 'anchor') return 'User need';
+  if (node._kind === 'user') return 'End user';
+  if (node._kind === 'unit') return 'Unit';
+  if (node._kind === 'activity') return 'Activity';
+  if (node._kind === 'stakeholder') return 'External stakeholder';
+  return 'Part of the chain';
+}}
+
 function renderModal(node) {{
-  const isAnchor = node._kind === 'anchor';
   const isUser = node._kind === 'user';
-  const stage = (node.evolution != null) ? stageFor(node.evolution) : null;
+  const stage = node.evolution != null ? stageFor(node.evolution) : null;
+  const eyebrowCls = node.is_new ? 'eyebrow is-new' : 'eyebrow';
 
-  let html = `<h3>${{escapeHtml(node.label || node.id)}}</h3>`;
-  let kind = isAnchor ? 'Bisogno-anchor (cosa l\\'utente vuole)' : (isUser ? 'Utente finale' : 'Componente del processo');
-  if (node._kind === 'unit') kind = 'Unità organizzativa';
-  if (node._kind === 'activity') kind = 'Attività del processo';
-  if (node._kind === 'stakeholder') kind = 'Stakeholder esterno (fornitore o controparte)';
-  if (node.is_new) kind = 'Nuovo / emergente · ' + kind;
-  html += `<div class="kind">${{escapeHtml(kind)}}</div>`;
+  let html = `<div class="${{eyebrowCls}}">${{escapeHtml(kindLabel(node))}}</div>`;
+  html += `<h3>${{escapeHtml(node.label || node.id)}}</h3>`;
+  html += '<div class="body">';
 
-  // 1. Cosa è — plain language
-  const desc = node._body || node.description;
+  const desc = node._body || node.description || node._description;
   if (desc) {{
-    html += `<div class="section-label">Cosa è</div>`;
-    html += `<div class="desc">${{escapeHtml(desc)}}</div>`;
+    html += `<p>${{escapeHtml(desc)}}</p>`;
   }}
 
-  // 2. Dove sta sulla mappa — plain language explanation of position
   if (!isUser && node.evolution != null) {{
-    const visText = (node.visibility != null)
-      ? (node.visibility >= 0.7 ? 'molto visibile all\\'utente' : (node.visibility >= 0.4 ? 'a metà strada tra utente e infrastruttura' : 'profondamente nell\\'infrastruttura'))
+    const visText = node.visibility != null
+      ? (node.visibility >= 0.7 ? ', visible to the end user'
+         : node.visibility >= 0.4 ? ', mid-chain'
+         : ', deep in the infrastructure')
       : '';
-    html += `<div class="section-label">Dove sta sulla mappa</div>`;
-    html += `<div class="placement"><span class="stage-pill ${{stage}}">${{stage}}</span>`;
-    html += ` <span class="placement-text">${{STAGE_PLAIN[stage]}}</span>`;
-    if (visText) html += `, <span class="placement-text">${{visText}}</span>`;
-    html += ` <span class="placement-nums">(evolution ${{Number(node.evolution).toFixed(2)}}${{node.visibility != null ? ', visibility ' + Number(node.visibility).toFixed(2) : ''}})</span></div>`;
+    html += `<p><em class="placement">Sits at <strong>${{stage}}</strong>${{visText}} — ${{STAGE_PLAIN[stage]}}.</em></p>`;
   }}
 
-  // 3. Spostamento atteso — narrative
   if (node.evolution_target != null && !node.is_new) {{
     const ts = stageFor(node.evolution_target);
-    const direction = (node.evolution_target > node.evolution + 0.05) ? 'a destra (verso più standardizzazione)' : 'movimento minimo';
-    html += `<div class="section-label">Dove si sta spostando</div>`;
-    html += `<div class="placement">→ <span class="stage-pill ${{ts}}">${{ts}}</span>`;
-    html += ` <span class="placement-text">— ${{direction}}; ${{STAGE_PLAIN[ts]}}</span>`;
-    html += ` <span class="placement-nums">(target ${{Number(node.evolution_target).toFixed(2)}})</span></div>`;
-  }}
-  if (node.is_new) {{
-    html += `<div class="section-label">Stato</div>`;
-    html += `<div class="placement"><strong>Componente nuovo</strong> — non esiste ancora oggi, ma emerge dal cambiamento del value chain. Le frecce in entrata indicano cosa ne abilita la nascita.</div>`;
+    html += `<p><em class="placement">Heading toward <strong>${{ts}}</strong> — ${{STAGE_PLAIN[ts]}}.</em></p>`;
   }}
 
-  // 4. AI effect — narrative framing
   if (node.ai_effect) {{
-    html += `<div class="ai-effect">`;
-    html += `<div class="label">Effetto AI — cosa cambia secondo i dati Anthropic</div>`;
-    html += `<div>${{escapeHtml(node.ai_effect)}}</div>`;
-    html += `</div>`;
-  }} else if (node.evolution_target != null) {{
-    html += `<div class="ai-effect">`;
-    html += `<div class="label">Effetto AI — cosa cambia secondo i dati Anthropic</div>`;
-    html += `<div>Lo spostamento è inferito dal dato Anthropic (vedi tabella sotto), ma non c'è un commento testuale specifico per questo componente.</div>`;
-    html += `</div>`;
+    html += `<p>${{escapeHtml(node.ai_effect)}}</p>`;
   }}
 
-  // 5. AEI evidence
-  if (node._aei && node._aei.top_matches && node._aei.top_matches.length) {{
-    html += `<div class="section-label" style="margin-top:18px">Dato Anthropic dietro</div>`;
-    html += `<div style="font-size:13px;color:var(--muted);margin-bottom:8px;line-height:1.55">Per ogni componente di questo processo ho cercato la mansione più vicina nel catalogo americano dei mestieri (descritto in inglese sotto). Per quella mansione il campione Anthropic delle conversazioni Claude osserva quanto Claude è stato usato (numero di conversazioni) e con quale autonomia (su scala 1=solo aiuto, 5=lavoro autonomo). Sotto le 100 conversazioni il dato è fragile.</div>`;
-    html += `<table class="aei-table"><thead><tr><th>Task O*NET (mansione US)</th><th>Sim.</th><th>Aut.</th><th>Conv.</th></tr></thead><tbody>`;
-    for (const m of node._aei.top_matches) {{
-      const sim = m.similarity != null ? Number(m.similarity).toFixed(2) : '—';
-      const aut = m.ai_autonomy_mean != null ? Number(m.ai_autonomy_mean).toFixed(2) : '<span style="color:#999">—</span>';
-      const cnt = m.count != null && m.count > 0 ? m.count : '<span style="color:#999">0</span>';
-      html += `<tr><td>${{escapeHtml((m.task||'').slice(0,110))}}</td><td>${{sim}}</td><td>${{aut}}</td><td>${{cnt}}</td></tr>`;
-    }}
-    html += `</tbody></table>`;
+  if (node.is_new) {{
+    html += `<p><em class="placement">Doesn't exist today — surfaces if the chain shift the map describes plays out.</em></p>`;
   }}
 
-  // 6. Structure ref
+  html += '</div>';
+
   if (node._structure_id) {{
-    html += `<div class="structure-ref">Nodo struttura: <code>${{escapeHtml(node._structure_id)}}</code>${{node._kind ? ' (' + escapeHtml(node._kind) + ')' : ''}}</div>`;
+    html += `<div class="citation">${{escapeHtml(node._structure_id)}}</div>`;
   }}
 
   document.getElementById('modal-body').innerHTML = html;
   document.getElementById('modal-backdrop').classList.add('open');
 }}
 
-// Robust event delegation: closest() on SVG is unreliable across
-// engines, so we walk up the DOM manually to find the .node or
-// .comp-card ancestor.
-document.addEventListener('click', (e) => {{
-  let n = e.target;
-  while (n && n.nodeType === 1) {{
-    if (n.classList && (n.classList.contains('node') || n.classList.contains('comp-card'))) {{
-      const id = n.dataset && (n.dataset.nodeId || n.dataset.id);
-      if (id && NODES[id]) renderModal(NODES[id]);
-      return;
-    }}
-    n = n.parentNode;
-  }}
-}});
+// Inline onclick="pnNodeClick(this)" on every <g class="node"> in the
+// SVG calls this. Reliable across renderers; no event delegation gymnastics.
+window.pnNodeClick = function(el) {{
+  const id = el.dataset && el.dataset.nodeId;
+  if (id && NODES[id]) renderModal(NODES[id]);
+}};
 
 document.getElementById('modal-close').addEventListener('click', () => {{
   document.getElementById('modal-backdrop').classList.remove('open');
@@ -646,40 +592,69 @@ def render_html(map_data: dict) -> str:
     inner, H = render_svg_inner(map_data, interactive=True)
     anchor = map_data.get("_anchor", {})
     title = anchor.get("title") or "Value map"
-    anchor_id = anchor.get("id", "")
-    anchor_kind = anchor.get("kind", "")
     description = anchor.get("description", "")
 
-    # Build stages_html (text fallback grouped by stage)
-    stages = [
-        ("Genesis (0.00–0.17)", 0.00, 0.17),
-        ("Custom (0.17–0.40)", 0.17, 0.40),
-        ("Product (0.40–0.70)", 0.40, 0.70),
-        ("Commodity (0.70–1.00)", 0.70, 1.01),
-    ]
-    blocks: list[str] = []
-    for label, lo, hi in stages:
-        comps = [c for c in map_data["components"] if lo <= c.get("evolution", 0) < hi]
-        if not comps:
-            continue
-        cards = []
-        for c in comps:
-            new_class = " is-new" if c.get("is_new") else ""
-            ai_eff = (
-                f'<div class="comp-effect">{escape(c["ai_effect"])}</div>'
-                if c.get("ai_effect") else ""
-            )
-            target = ""
-            et = c.get("evolution_target")
-            if et is not None and not c.get("is_new"):
-                target = f'<div class="comp-target">→ shift verso evolution {et:.2f}</div>'
-            cards.append(
-                f'<div class="comp-card{new_class}" data-id="{escape(c["id"])}">'
-                f'<div class="comp-label">{escape(c.get("label", ""))}</div>'
-                f'{ai_eff}{target}'
+    # AI overlay — surface a clear notice when no component carries either
+    # `evolution_target` or `ai_effect`. The arrows on the map carry the
+    # signal when present; when absent the reader needs to know it's a
+    # gap, not a "no AI shift expected here" claim.
+    components = map_data.get("components", [])
+    has_ai = any(c.get("ai_effect") or c.get("evolution_target") is not None for c in components)
+    if has_ai:
+        ai_overlay_section = ""
+    else:
+        ai_overlay_section = (
+            '<div class="section">'
+            '<h2>AI overlay</h2>'
+            '<div class="no-overlay">No AI signal is attached to this map. '
+            'To overlay where AI is pushing each piece of the chain, run an '
+            "<code>ai-exposure</code> play first and pass its matches JSON via "
+            "<code>--ai-exposure-matches</code> when building the value-map skeleton; "
+            "then refill the JSON with <code>evolution_target</code> and "
+            "<code>ai_effect</code> per component, citing AEI evidence."
+            '</div></div>'
+        )
+
+    # Decisions enabled — the load-bearing interpretive section. If the
+    # JSON carries a `decisions` array (each item: {question, answer,
+    # source}), render it; otherwise prompt for one.
+    decisions = map_data.get("decisions") or []
+    if decisions:
+        items: list[str] = []
+        for d in decisions:
+            q = escape(d.get("question", ""))
+            a = escape(d.get("answer", ""))
+            src = d.get("source", "") or d.get("citation", "")
+            src_div = f'<div class="source">{escape(src)}</div>' if src else ""
+            items.append(
+                f'<div class="decision">'
+                f'<div class="question">{q}</div>'
+                f'<div class="answer">{a}</div>'
+                f'{src_div}'
                 f'</div>'
             )
-        blocks.append(f'<div class="stage-section"><h2>{escape(label)}</h2>{"".join(cards)}</div>')
+        decisions_section = (
+            '<div class="section">'
+            '<h2>What this map says</h2>'
+            '<p class="lead">Operational moves the map enables. Each is a '
+            'concrete decision tied to component positions and grounded in '
+            'cited structural sources.</p>'
+            f'{"".join(items)}'
+            '</div>'
+        )
+    else:
+        decisions_section = (
+            '<div class="section">'
+            '<h2>What this map says</h2>'
+            '<div class="no-overlay">No interpretation is attached to this map yet. '
+            'The map shows where each piece of the chain sits today; the '
+            'interpretation — what to do about it — is the next step. Add a '
+            "<code>decisions</code> array to the JSON: each item is "
+            "<code>{ question, answer, source }</code>. Three to five concrete "
+            'operational decisions, each tied to component positions and citing '
+            'structural sources (charter §, role descriptions, financial summary).'
+            '</div></div>'
+        )
 
     # Build nodes JSON for modal lookup.
     nodes: dict[str, dict] = {}
@@ -698,14 +673,12 @@ def render_html(map_data: dict) -> str:
     return HTML_TEMPLATE.format(
         css=base_css() + EXTRA_CSS,
         title=escape(title),
-        anchor_id=escape(anchor_id),
-        anchor_kind=escape(anchor_kind),
         description=escape(description),
         W=W,
         H=H,
-        bg=BG,
         svg_inner=inner,
-        stages_html="\n".join(blocks),
+        ai_overlay_section=ai_overlay_section,
+        decisions_section=decisions_section,
         nodes_json=json.dumps(nodes, ensure_ascii=False),
     )
 

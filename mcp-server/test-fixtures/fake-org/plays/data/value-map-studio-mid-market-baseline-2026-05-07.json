@@ -382,5 +382,32 @@
       "to": "c16"
     }
   ],
-  "new_value": []
+  "new_value": [],
+  "decisions": [
+    {
+      "question": "Where to invest in tighter templating?",
+      "answer": "The four client-services activities (kickoff, weekly check-in, asset handover) sit at evolution 0.72-0.82 \u2014 already commodity. Tightening templates here saves time but does not gain margin. Real margin lives in the custom-built tier (brand-book, brand-positioning, visual-language at 0.28-0.32). Move: invest templating effort in the commodity tier so it consumes less senior time, freeing senior time for the custom-built tier. Concretely: account managers should be able to run 4 engagements each instead of 3 within a year.",
+      "source": "outline-roles-2025"
+    },
+    {
+      "question": "Which roles are most exposed if AI commoditizes their day-to-day?",
+      "answer": "Activities at evolution 0.50+ that are repetitive and well-defined: weekly-check-in (0.82), competitive-audit (0.52), ui-design (0.58). The roles running these are account managers, strategists, and senior product designers. Hedge: roles running these activities should not be the same roles defined as the studio's differentiation. Splitting custom and commodity work across role types \u2014 and having juniors specialize on the productized activities \u2014 is a structural hedge against the AI-commoditization scenario.",
+      "source": "outline-charter-2024 \u00a710 (junior development)"
+    },
+    {
+      "question": "Where can the studio raise prices?",
+      "answer": "Pricing power lives in two places: high evolution \u00d7 high visibility (clients pay because they cannot easily substitute), or low evolution \u00d7 high visibility (clients pay for differentiated craft). Strongest positions: brand-book (0.32, 0.85) \u2014 bespoke + visible, the studio's reputation lives here. Move: the brand-book is currently absorbed in the engagement scope. Carving out a brand-book retainer post-engagement (annual updates, evolution of the system) is a high-margin cross-sell with low senior-time demand.",
+      "source": "outline-roles-2025"
+    },
+    {
+      "question": "Which engagement components are at greatest risk of becoming undifferentiated?",
+      "answer": "UI-design (0.58, 0.85) and design-system-build (0.65, 0.55) are at the product tier with high visibility. Clients can compare them to other studios. As more competitors offer design systems and accessibility-baked-in UI, these activities drift toward commodity. The differentiation hedge is the upstream link: UI-design that flows from a custom-built positioning + brand book is hard to commoditize because the input is unique. The studio should refuse pure-product engagements that don't include strategy + identity upstream.",
+      "source": "outline-charter-2024 \u00a71"
+    },
+    {
+      "question": "What does the value chain say about the next hire?",
+      "answer": "The map shows no component owned at the production-handoff layer. Every discipline lead manages their own vendor partner relationships, and every engagement passes through asset-handover (commodity, 0.75) without a dedicated owner above the account-manager tier. As the studio grows toward the 30-person cap, this becomes a single point of failure. Move: before the next discipline-area headcount expansion, hire a production lead \u2014 one person who owns vendor partner relationships across all four client-facing areas, owns asset-handover quality, and owns the studio's vendor partner SLA conversations.",
+      "source": "outline-roles-2025, outline-annual-review-2025 (vendor spend \u20ac0.6M, no named owner)"
+    }
+  ]
 }
