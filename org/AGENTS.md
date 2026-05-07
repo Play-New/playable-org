@@ -119,7 +119,30 @@ outputs: [...]
 stakeholders_touched: [...]
 frequency: "..."           # daily, weekly, monthly, on-demand
 sources: [...]
+
+# OPTIONAL — agent-density fields. Required for an activity to seed
+# a Claude skill / slash-command or a Gherkin behavioural test. Skip
+# until the org wants to deploy agentic automation on this activity;
+# the structural fields above are enough for everything else.
+trigger:                  # the moment the activity actually starts —
+  - "..."                 # not "weekly", but "the Monday after handover"
+quality_gates:            # what must be true in INPUT before it's worth starting
+  - "..."
+decision_criteria:        # how the performer judges intermediate calls
+  - "..."
+output_format:            # the shape the output must take
+  description: "..."
+  example_artefact: "..." # path or id of a real prior output
+fallback:                 # what the performer does when an input is missing
+  - condition: "..."
+    action: "..."
+handoff:                  # who picks it up after, when
+  - "..."
 ```
+
+The `trigger / quality_gates / decision_criteria / output_format / fallback / handoff` fields are the **density layer** that makes an activity invocable as a function — the contract Cicero (Through The Boundary, May 2026) calls a "capability bundle" for agentic deployment. They live on the activity (not on a separate file) so the structure stays self-describing. They're filled by interviewing the performer with five-to-seven targeted questions, not by inferring from the description. The transcript becomes a source citation.
+
+A first-install structure does not need these. They get added when (and only when) the org decides to compile a Claude skill or a Given/When/Then test for that specific activity.
 
 ### stakeholder
 
