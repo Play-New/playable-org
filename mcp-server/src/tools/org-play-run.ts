@@ -16,7 +16,8 @@
 
 import { spawn } from 'node:child_process';
 import { writeFile, readFile, mkdir, access } from 'node:fs/promises';
-import { dirname, resolve, join } from 'node:path';
+import { resolve, join } from 'node:path';
+import { findRepoRoot } from '../lib/repo-root.js';
 import { z } from 'zod';
 
 import type { ToolDefinition } from '../server.js';
@@ -116,7 +117,7 @@ export const orgPlayRunTool: ToolDefinition = {
   inputSchema,
   handler: async (rawArgs, ctx) => {
     const args = ArgsSchema.parse(rawArgs);
-    const repoRoot = dirname(ctx.dataDir);
+    const repoRoot = await findRepoRoot(ctx.dataDir);
     const playbookDir = resolve(repoRoot, 'skills', 'playbooks', args.playbook);
     const dataDir = resolve(ctx.dataDir, 'plays', 'data');
     await ensureDir(dataDir);

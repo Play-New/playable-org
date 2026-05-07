@@ -14,26 +14,11 @@
  */
 
 import { spawn } from 'node:child_process';
-import { dirname, resolve, basename } from 'node:path';
-import { access, stat } from 'node:fs/promises';
+import { resolve, basename } from 'node:path';
+import { access } from 'node:fs/promises';
 
 import type { ToolDefinition } from '../server.js';
-
-/** Walk up from dataDir until we find a directory containing `skills/`. */
-async function findRepoRoot(dataDir: string): Promise<string> {
-  let dir = resolve(dataDir);
-  for (let i = 0; i < 8; i++) {
-    try {
-      const s = await stat(resolve(dir, 'skills'));
-      if (s.isDirectory()) return dir;
-    } catch {}
-    const parent = dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  // Fallback: dirname(dataDir) — original behaviour
-  return dirname(dataDir);
-}
+import { findRepoRoot } from '../lib/repo-root.js';
 
 const inputSchema = {
   type: 'object',

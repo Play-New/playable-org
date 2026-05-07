@@ -10,10 +10,11 @@
  */
 
 import { spawn } from 'node:child_process';
-import { dirname, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { access } from 'node:fs/promises';
 
 import type { ToolDefinition } from '../server.js';
+import { findRepoRoot } from '../lib/repo-root.js';
 
 const inputSchema = {
   type: 'object',
@@ -66,7 +67,7 @@ export const orgLintRunTool: ToolDefinition = {
   inputSchema,
   handler: async (rawArgs, ctx) => {
     const tier = (rawArgs as { tier?: string })?.tier ?? 'both';
-    const repoRoot = dirname(ctx.dataDir);
+    const repoRoot = await findRepoRoot(ctx.dataDir);
 
     const scripts: Array<{ key: string; path: string }> = [];
     if (tier === 'tier1' || tier === 'both') {
