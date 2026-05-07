@@ -205,16 +205,43 @@ Rebundle candidates are explicitly **proposals**, not plans. They do not modify 
 ```bash
 python3 skills/playbooks/reshuffle/viewer.py \
   --map <slice-map.json> \
-  --html <slice.html>
+  --html <slice.html> \
+  [--decisions <decisions.json>]
 ```
 
-The HTML viewer renders:
-- **Top**: process introduction explaining tool/engine, the 3 constraint types, the autonomy-coordination dimension
-- **Constraint distribution panel**: bar showing the share of activities per primary constraint (scarcity/risk/coordination)
-- **Tool/engine ledger**: list of AI uses, each tagged tool or engine, with cited evidence
-- **Sankey-like diagram**: current bundle on the left → AI engine arrows in the middle (each labeled with the constraint it dissolves) → rebundle candidates on the right
-- **Autonomy-coordination plot**: 2D plane with current bundle position and rebundle-candidate positions
-- **Click any node/arrow**: modal opens with full description, evidence citations, AEI matches if applicable
+The HTML is the **primary consumer artefact** — a self-contained interactive document the leader opens in a browser. **This shape is frozen**; the canonical Outline & Co. play under `mcp-server/test-fixtures/sample-org/plays/data/reshuffle-outline-2026-05-07.html` is the reference render. Page structure, in order, with all blocks living in a centered 820px column inside the 1240px container so nothing escapes the editorial grid:
+
+1. **Header** (eyebrow `reshuffle` + h1 process title + lead description + anchor-id mono line).
+2. **Intro** — three short editorial paragraphs framing what the page does, the two things AI can do (accelerator vs shared-knowledge infrastructure), the trap to avoid as a pull-quote, and the three things that hold each activity in place (rare resource / cost of being wrong / cost of keeping teams aligned).
+3. **Distribution panel**: a hairline-topped block titled "The process, grouped by what holds each activity in place". Stacked horizontal bar showing the split across the three constraint types, plus the per-constraint legend with one-line plain-language explanations. Below, a `bundle-state` block with how the process runs today (current_mode), where the read comes from (mode_evidence with citations), and the trap to avoid (coordination_paradox_risk) — all in plain English, no framework jargon.
+4. **Activity ledger**: a hairline-topped block titled "Each activity, one by one". Activities grouped by primary constraint, each group with its swatch + heading + count + plain-language explanation, then a grid of activity cards. Each card is full-bordered hairline by default; activities classified as `engine` get a coral border accent so the leader's eye picks out where AI changes structure. Card content: activity label + "AI is accelerator / infrastructure / not relevant" tag.
+5. **Engine candidates**: a hairline-topped block titled "Where AI would change structure, not just speed (N)". Each candidate is a coral-bordered card naming the activity + which constraint dissolves when AI is deployed there as shared-knowledge infrastructure.
+6. **Direction options**: a hairline-topped block titled "Direction options (N)". Each option is a hairline-bordered card naming the rebundle + what stays binding + how many activities are recombined.
+7. **Decisions section** "How to read this map": h2 + lead + each decision rendered as `.question` + `.answer` + `.source` citation. The load-bearing interpretive surface — the maps shows the structure, this section says which engine to deploy when and which direction option fits next year.
+
+**Visual code (frozen, matches value-map and world-model)**:
+
+- **Shape = kind**: cards (rounded-corner full hairline border) for everything content-rich. All clickable items use the same shape and the same hover signal (border darkens to `--fg`).
+- **Colour = state / role**: hairline border = standard / not-engine; coral border = `engine` (where AI changes structure, not just speed). The shape never changes when an activity is `engine`-classified — only the border colour does.
+- **No left-rule cards**. Every card has a full hairline border.
+
+**Click on any card** opens a small floating popover (never a modal) next to the clicked element. The popover contains:
+
+- Eyebrow with the kind: `activity in this process` (default) or `where AI changes structure` (engine, in coral).
+- The activity label as h3.
+- A description.
+- "What holds it in place" (constraint label + plain-language explanation + cited evidence).
+- "Where the main cost sits" (knowledge-management cost dominant: writing things down / organizing and finding / using at decision time).
+- "What AI does here" (accelerator / shared-knowledge infrastructure / not relevant — plain language, no framework jargon).
+- "Where the analysis comes from" (data block: closest matched tasks in the public catalog, similarity, observed autonomy /5, sample size; sample under 100 flagged).
+
+For direction-option cards, the popover instead renders: option name + description + activities recombined + what makes it possible (the engine that dissolves the constraint) + what stays binding even after + how the new process would run (old rule vs new rule) + what changes for people in the process + how risky the move is.
+
+Esc / click outside / close button dismisses. Position relative to click target, viewport-edge clamped.
+
+**Plain-language discipline (frozen)**. The closed-set codes in the JSON (`see-saw`, `flywheel`, `engine`, `tool`, `scarcity`, `risk`, `coordination`) stay as enums — the renderer translates them at display time. **In every user-visible string**, no framework vocabulary leaks: `see-saw` becomes "old rule: more autonomy means less alignment"; `flywheel` becomes "new rule: more autonomy and more alignment together"; `engine` becomes "shared-knowledge infrastructure"; `tool` becomes "accelerator"; `coordination paradox` becomes a plain explanation. The autoresearch jargon-list dimension catches leakage in the decisions text; the same discipline applies editorially to the constraint_evidence, ai_evidence, mode_evidence, and rebundle description / what_changes / risk_of_rebundle fields.
+
+**`--decisions <list.json>`** merges a JSON list of `{question, answer, source}` into the map's `decisions[]` field before rendering. **Required** for a shippable play — autoresearch fails without it.
 
 ### 7. Audit (anti-hallucination gate, mandatory)
 
