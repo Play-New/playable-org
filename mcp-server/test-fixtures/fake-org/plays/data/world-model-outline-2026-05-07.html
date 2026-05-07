@@ -817,19 +817,19 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
   </defs>
   <text x="360" y="22" text-anchor="middle" font-size="11" fill="#6b6b6b" font-weight="600" letter-spacing="1.2px">FIVE LAYERS, BOTTOM-UP</text>
   <rect x="160" y="48" width="400" height="56" rx="6" fill="#1a1a1a" stroke="#1a1a1a"/>
-  <text x="360" y="70" text-anchor="middle" font-size="14" fill="#FFFFFF" font-weight="600">People</text>
+  <text x="360" y="70" text-anchor="middle" font-size="14" fill="#FFFFFF" font-weight="600">Stakeholders</text>
   <text x="360" y="90" text-anchor="middle" font-size="11" fill="#cccccc">who the org serves and who serves it back</text>
   <line x1="360" y1="130" x2="360" y2="108" stroke="#6b6b6b" stroke-width="1.5" marker-end="url(#arr-up)"/>
   <rect x="160" y="130" width="400" height="56" rx="6" fill="#dde7f8" stroke="#9ab1d8"/>
-  <text x="360" y="152" text-anchor="middle" font-size="14" fill="#1a1a1a" font-weight="600">Touchpoints</text>
+  <text x="360" y="152" text-anchor="middle" font-size="14" fill="#1a1a1a" font-weight="600">Interfaces</text>
   <text x="360" y="172" text-anchor="middle" font-size="11" fill="#5a5a5a">where the org meets people</text>
   <line x1="360" y1="212" x2="360" y2="190" stroke="#6b6b6b" stroke-width="1.5" marker-end="url(#arr-up)"/>
   <rect x="160" y="212" width="400" height="56" rx="6" fill="#e1ddec" stroke="#a59cc4"/>
-  <text x="360" y="234" text-anchor="middle" font-size="14" fill="#1a1a1a" font-weight="600">Coordination</text>
+  <text x="360" y="234" text-anchor="middle" font-size="14" fill="#1a1a1a" font-weight="600">Intelligence layer</text>
   <text x="360" y="254" text-anchor="middle" font-size="11" fill="#5a5a5a">how a request gets composed into a response</text>
   <line x1="360" y1="294" x2="360" y2="272" stroke="#6b6b6b" stroke-width="1.5" marker-end="url(#arr-up)"/>
   <rect x="160" y="294" width="400" height="56" rx="6" fill="#dee7d8" stroke="#a0bf95"/>
-  <text x="360" y="316" text-anchor="middle" font-size="14" fill="#1a1a1a" font-weight="600">Knowledge</text>
+  <text x="360" y="316" text-anchor="middle" font-size="14" fill="#1a1a1a" font-weight="600">World model</text>
   <text x="360" y="336" text-anchor="middle" font-size="11" fill="#5a5a5a">what the org knows about itself and the people it serves</text>
   <line x1="360" y1="376" x2="360" y2="354" stroke="#6b6b6b" stroke-width="1.5" marker-end="url(#arr-up)"/>
   <rect x="160" y="376" width="400" height="56" rx="6" fill="#ede4ce" stroke="#c8b88a"/>
@@ -839,14 +839,14 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
   <text x="360" y="488" text-anchor="middle" font-size="11" fill="#8c4a30" font-weight="600" letter-spacing="0.6px">THE SHARED PRINCIPLE</text>
   <text x="360" y="508" text-anchor="middle" font-size="12" fill="#1a1a1a">replace hierarchical routing with a system that accumulates knowledge over time</text>
 </svg>
-      <div class="frame-diagram-caption">The five layers, schematic. The page below is this same shape filled with the organization's actual data — people, touchpoints, compositions, knowledge, capabilities — plus the failure-signals that name where a needed function isn't there yet.</div>
+      <div class="frame-diagram-caption">The five layers, schematic. The page below is this same shape filled with the organization's actual data — stakeholders, interfaces, compositions, world model, capabilities — plus the failure-signals that name where a needed function isn't there yet.</div>
     </div>
 
     <div class="stack">
 
       <div class="stack-layer layer-stakeholders">
         <div class="layer-head">
-          <div class="layer-name">People</div>
+          <div class="layer-name">Stakeholders</div>
           <div class="layer-hint">Who the organization serves and who serves it back. Every type both uses something the org offers and contributes something in return — the contribution makes the org better at serving the next person of the same type.</div>
         </div>
         <div class="layer-body">
@@ -857,7 +857,7 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 
       <div class="stack-layer layer-interfaces">
         <div class="layer-head">
-          <div class="layer-name">Touchpoints</div>
+          <div class="layer-name">Interfaces</div>
           <div class="layer-hint">The surfaces where the org meets people — a website, an app, a call, an event, a hand-off. Where work gets delivered, not where its value is made.</div>
         </div>
         <div class="layer-body">
@@ -870,7 +870,7 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 
       <div class="stack-layer layer-intelligence">
         <div class="layer-head">
-          <div class="layer-name">Coordination</div>
+          <div class="layer-name">Intelligence layer</div>
           <div class="layer-hint">When a request needs more than one thing the org does, the response is composed: the right things, in the right order. Today most of this lives in meetings and hand-offs. The right column is where it could live in shared systems instead.</div>
         </div>
         <div class="layer-body">
@@ -894,7 +894,7 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 
       <div class="stack-layer layer-worldmodel">
         <div class="layer-head">
-          <div class="layer-name">Knowledge</div>
+          <div class="layer-name">World model</div>
           <div class="layer-hint">What the organization knows about itself and the people it serves. The most honest signal is observed behaviour, not declared opinion.</div>
         </div>
         <div class="layer-body">
@@ -1005,7 +1005,7 @@ function renderCapabilityPopover(c) {
 
 function renderStakeholderPopover(stype) {
   const data = STAKEHOLDERS_BY_TYPE[stype] || {};
-  let html = `<div class="eyebrow">people · type</div>`;
+  let html = `<div class="eyebrow">stakeholder</div>`;
   html += `<h3>${escapeHtml(stype)}</h3>`;
   if (data.description) html += `<div class="desc">${escapeHtml(data.description)}</div>`;
   if (data.what_they_get_from_org) {
@@ -1035,7 +1035,7 @@ function renderStakeholderPopover(stype) {
 function renderInterfacePopover(idx) {
   const ifc = INTERFACES[idx];
   if (!ifc) return '';
-  let html = `<div class="eyebrow">touchpoint</div>`;
+  let html = `<div class="eyebrow">interface</div>`;
   html += `<h3>${escapeHtml(ifc.name)}</h3>`;
   if (ifc.description) html += `<div class="desc">${escapeHtml(ifc.description)}</div>`;
   if (ifc.surfaces_capabilities && ifc.surfaces_capabilities.length) {
