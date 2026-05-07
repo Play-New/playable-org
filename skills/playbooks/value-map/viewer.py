@@ -405,7 +405,8 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 .map-wrap svg .node { cursor: pointer; }
 .map-wrap svg .node:hover circle, .map-wrap svg .node:hover polygon { stroke-width: 2; }
 
-.legend { display: flex; gap: 28px; flex-wrap: wrap; font-size: 0.82rem; color: var(--fg-muted); margin: 8px 0 0; align-items: center; }
+.legend-wrap { max-width: 820px; margin: 8px auto 0; }
+.legend { display: flex; gap: 28px; flex-wrap: wrap; font-size: 0.82rem; color: var(--fg-muted); margin: 0; align-items: center; }
 .legend .item { display: flex; align-items: center; gap: 8px; }
 .legend .shape { display: inline-block; width: 12px; height: 12px; }
 .legend .shape.user { background: var(--fg); border-radius: 50%; }
@@ -464,12 +465,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       </svg>
     </div>
 
-    <div class="legend">
-      <div class="item"><span class="shape user"></span><span>End user</span></div>
-      <div class="item"><span class="shape anchor"></span><span>User need</span></div>
-      <div class="item"><span class="shape component"></span><span>Part of the chain</span></div>
-      <div class="item"><span class="shape new"></span><span>New / emerging</span></div>
-      <div class="item"><span class="shape arrow"></span><span>Where AI is pushing</span></div>
+    <div class="legend-wrap">
+      <div class="legend">
+        <div class="item"><span class="shape user"></span><span>End user</span></div>
+        <div class="item"><span class="shape anchor"></span><span>User need</span></div>
+        <div class="item"><span class="shape component"></span><span>Part of the chain</span></div>
+        <div class="item"><span class="shape new"></span><span>New / emerging</span></div>
+        <div class="item"><span class="shape arrow"></span><span>Where AI is pushing</span></div>
+      </div>
     </div>
 
     {ai_overlay_section}
@@ -499,13 +502,6 @@ function escapeHtml(s) {{
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }})[c]);
 }}
-
-const STAGE_PLAIN = {{
-  genesis:   'territorio nuovo, ancora da capire',
-  custom:    'fatto su misura per l'organizzazione, non standardizzato',
-  product:   'pratica diffusa, esistono fornitori e modelli',
-  commodity: 'standard di mercato, indistinguibile fra fornitori',
-}};
 
 const STAGE_PLAIN = {{
   genesis:   'new territory — nobody knows yet how to do this well',
