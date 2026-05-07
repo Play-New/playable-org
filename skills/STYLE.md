@@ -65,6 +65,44 @@ The result:, The point is:, The real question is:, The bottom line:, Here's the 
 
 Italian equivalents: Il punto è:, Il risultato:, La vera domanda è:, In sostanza:, La verità è:.
 
+### Framework jargon (paraphrased into prose)
+
+Names of internal model primitives are fine when they're the obvious label for a structural element a reader can see (e.g. "Stakeholders", "Capabilities", "Genesis / Custom / Product / Commodity" as axis labels). They become jargon when they're paraphrased into running prose where the reader has to translate them.
+
+Words that must not appear in user-facing prose (chat replies, play body, viewer copy, decision answers, rationale fields):
+
+- *moat* (replace with "differentiated"); *commodity* in body prose (replace with "standard" or "market-standard"); *commoditize* (replace with "standardise" / "level the field")
+- *judgment density*, *capability stack*, *capability bundle* (paraphrase or drop — replace with "how much expert judgment is needed" / "the things the org can actually do")
+- *coordination tax* (replace with "the cost of keeping everyone aligned" / "alignment cost")
+- *failure-signal* (replace with "a piece to build" / "a place where the response would fall short" / "a missing piece of the chain")
+- *thin* as architectural metaphor (replace with "what to build next" / "the pieces that aren't there yet" — `thin` reads as critique and the reader stops on it)
+- *see-saw*, *flywheel* as standalone labels (replace with "old rule: more autonomy means less alignment" / "new rule: more autonomy and more alignment together")
+- *engine candidate*, *rebundle*, *bundle state*, *constraint distribution* in body prose (paraphrase or drop)
+- *production-tier* (replace with "production-side")
+- *rich subset* (replace with "the observed sample")
+- *O\*NET*, *AEI*, *embedding*, *cosine similarity*, *MiniLM*, *paraphrase-multilingual* (replace with "the public catalog of work" / "the Anthropic sample" / "matched by meaning"; technical names belong only in the source-attribution footer)
+- *top-K*, *top-1*, *p25*, *p75* (replace with concrete description: "the closest five matches" / "the upper band of the autonomy scale")
+- JSON field names leaking into prose: *evolution_target*, *ai_effect*, *ai_autonomy_mean*, *_structure_id*, *_aei*
+
+The forbidden list grows. When a new framework gets composed in, its primitive names go on the list the moment they're added to a skill — the test is "would a reader who hasn't read the SKILL.md know what this means?". If no, the word stays in code and gets paraphrased in prose.
+
+### Conditional voice for emerging items
+
+Anything in `org/` or in a play that names a thing **that doesn't exist today** — a new component (`is_new: true`), a new stakeholder type (`new_end_users`), a new value flow (`new_value`), a missing capability (failure-signal / piece to build), a candidate role — must be written in conditional voice, not temporal/predictive voice. The map suggests preconditions are approaching; whether the org chooses to build the thing stays the org's call.
+
+| Don't write | Do write |
+|---|---|
+| "When the studio builds X, Y becomes viable." | "Y opens up only **if** the studio first builds X. Without that, Y stays too expensive." |
+| "AI makes this commoditize within 18 months." | "AI **could** push this toward standard inside 18 months, but the timing depends on..." |
+| "This will be the next hire." | "A **candidate** role that AI makes **feasible** — but it has to be staffed and built. The map shows where it **would** sit, not that it has been built." |
+| "The new capability arrives Q3." | "If the studio funds it, the capability **could** land by Q3." |
+
+Forbidden in this context: *when* (in the temporal sense, "when X happens"), *will*, *makes*, *arrives*, *becomes* (with a future-tense subject).
+
+Permitted: *if*, *would*, *could*, *depends on*, *stays the org's choice*, *conditional on*.
+
+Reason: emerging items are analyses, not roadmaps. The reader needs to feel the org's freedom to act, not the model's prediction that something is fated.
+
 ## Structural patterns to avoid
 
 - Rhetorical formulas: "Not X, but Y", "It's not... but...", "X isn't... it's..." — never use these structures.
