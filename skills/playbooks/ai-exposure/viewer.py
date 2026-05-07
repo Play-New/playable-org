@@ -45,13 +45,10 @@ from design import base_css  # noqa: E402
 
 
 EXTRA_CSS = """
+/* ai-exposure viewer — Play New design (unified with value-map).
+   Pure white surface, editorial typography, hairlines, single accent. */
+
 :root {
-  --bg: var(--bg-soft);
-  --fg: var(--fg);
-  --muted: var(--muted);
-  --line: var(--line);
-  --card: var(--bg);
-  --accent: var(--fg);
   /* Category colours route through the data-viz palette in design.py */
   --automated: var(--ds-sage);
   --augmented: var(--ds-lilac);
@@ -60,139 +57,133 @@ EXTRA_CSS = """
   --low-conf:  #c8c0b6;
 }
 
-body { background: var(--bg-soft); }
+body { background: #FFFFFF; color: var(--fg); }
 
-.container { max-width: 1280px; margin: 0 auto; padding: 48px 32px 80px; }
-header { padding-bottom: 24px; border-bottom: 1px solid var(--line); margin-bottom: 32px; }
-h1 { font-size: 2rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 12px; }
-.subtitle { font-size: 0.95rem; color: var(--muted); max-width: 720px; margin-bottom: 24px; line-height: 1.65; }
+.container { max-width: 1240px; margin: 0 auto; padding: 80px 40px 96px; }
 
-.legend { display: flex; gap: 22px; flex-wrap: wrap; margin-bottom: 24px; font-size: 0.82rem; color: var(--fg); }
+header { margin: 0 auto 40px; max-width: 820px; }
+header .eyebrow { font-family: var(--font-display); font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 16px; }
+header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); }
+header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0 0 8px; max-width: 720px; }
+
+.legend-wrap { max-width: 820px; margin: 0 auto 40px; }
+.legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 0.82rem; color: var(--fg-muted); align-items: center; }
 .legend-item { display: flex; align-items: center; gap: 7px; }
-.legend-square { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+.legend-square { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
 .legend-square.automated { background: var(--automated); }
 .legend-square.augmented { background: var(--augmented); }
 .legend-square.assistive { background: var(--assistive); }
 .legend-square.no-data { background: var(--no-data); }
 
-.controls { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+/* Filter row — restyled as inline editorial controls, no chunky borders. */
+.controls { max-width: 820px; margin: 0 auto 40px; display: flex; flex-direction: column; gap: 14px; }
 .control-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.control-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; min-width: 60px; font-weight: 500; }
-.search-box { flex: 1; min-width: 240px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 3px; font-size: 0.9rem; background: var(--card); font-family: inherit; color: var(--fg); }
-.search-box:focus { outline: 2px solid var(--fg); outline-offset: -1px; border-color: var(--fg); }
+.control-label { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; min-width: 60px; font-weight: 500; }
+.search-box { flex: 1; min-width: 240px; padding: 8px 14px; border: 1px solid var(--fg-hairline); border-radius: 3px; font-size: 0.9rem; background: #FFFFFF; font-family: inherit; color: var(--fg); }
+.search-box:focus { outline: none; border-color: var(--fg); }
 .filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
-.pill { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px; cursor: pointer; font-size: 0.78rem; font-family: inherit; color: var(--fg); transition: all 0.15s ease; white-space: nowrap; }
-.pill:hover { background: var(--bg-soft); border-color: var(--line); }
-.pill.active { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.pill { background: #FFFFFF; border: 1px solid var(--fg-hairline); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 0.76rem; font-family: inherit; color: var(--fg); transition: all 0.15s ease; white-space: nowrap; }
+.pill:hover { border-color: var(--fg); }
+.pill.active { background: var(--fg); color: #FFFFFF; border-color: var(--fg); }
 
-.summary { font-size: 0.9rem; color: var(--muted); margin-bottom: 24px; }
-.area-section { margin-bottom: 48px; }
-.area-section h2 { font-size: 1.25rem; font-weight: 500; margin: 0 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); color: var(--fg); letter-spacing: -0.01em; }
-.area-meta { font-size: 0.82rem; color: var(--muted); margin-bottom: 16px; }
+.summary { max-width: 820px; margin: 0 auto 24px; font-size: 0.82rem; color: var(--fg-muted); }
 
-.org-overview { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 24px 28px; margin-bottom: 28px; }
-.org-overview .label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; font-weight: 500; }
-.org-overview .org-desc { font-size: 0.92rem; line-height: 1.65; margin-bottom: 18px; color: var(--fg); }
-.org-overview .stats-row { display: flex; gap: 28px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; }
+/* Org snapshot — editorial block, not a card. */
+.org-overview { max-width: 820px; margin: 0 auto 56px; }
+.org-overview .label { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 14px; font-weight: 500; }
+.org-overview .org-desc { font-size: 0.95rem; line-height: 1.7; margin-bottom: 22px; color: var(--fg); max-width: 720px; }
+.org-overview .stats-row { display: flex; gap: 28px; flex-wrap: wrap; font-size: 0.85rem; color: var(--fg-muted); margin-bottom: 18px; }
 .org-overview .stats-row strong { color: var(--fg); font-weight: 500; }
 
-.dist-bar { display: flex; height: 14px; border-radius: 3px; overflow: hidden; margin: 8px 0; border: 1px solid var(--line); }
+.dist-bar { display: flex; height: 12px; border-radius: 2px; overflow: hidden; margin: 10px 0; }
 .dist-bar > div { height: 100%; }
 .dist-bar .seg.automated { background: var(--automated); }
 .dist-bar .seg.augmented { background: var(--augmented); }
 .dist-bar .seg.assistive { background: var(--assistive); }
 .dist-bar .seg.no-data { background: var(--no-data); }
-.dist-legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+.dist-legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.78rem; color: var(--fg-muted); margin-top: 8px; }
 .dist-legend .item { display: flex; align-items: center; gap: 6px; }
-.dist-legend .swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+.dist-legend .swatch { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
 .dist-legend .swatch.automated { background: var(--automated); }
 .dist-legend .swatch.augmented { background: var(--augmented); }
 .dist-legend .swatch.assistive { background: var(--assistive); }
 .dist-legend .swatch.no-data { background: var(--no-data); }
 
-.area-summary { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 20px 24px; margin-bottom: 20px; }
-.area-summary .area-desc { font-size: 0.88rem; line-height: 1.6; color: var(--fg); margin-bottom: 14px; }
-.area-summary .desc-label, .area-summary .summary-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; font-weight: 500; }
-.area-summary .summary-label { margin-top: 14px; margin-bottom: 10px; }
-.area-summary dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; font-size: 0.85rem; }
-.area-summary dt { color: var(--muted); margin: 0; }
-.area-summary dd { margin: 0; color: var(--fg); }
-.area-summary .dist-pill { display: inline-block; padding: 1px 8px; border-radius: 3px; font-size: 0.7rem; margin-right: 4px; color: var(--card); font-weight: 500; }
-.area-summary .dist-pill.strong { background: var(--automated); }
-.area-summary .dist-pill.medium { background: var(--augmented); }
-.area-summary .dist-pill.mixed { background: var(--assistive); color: var(--fg); }
-.area-summary .dist-pill.zero { background: var(--no-data); color: var(--fg); }
-.area-summary .dist-pill.low-confidence { background: var(--low-conf); color: var(--fg); }
-.area-summary .dist-pill.empty { background: transparent; color: var(--muted); border: 1px solid var(--line); }
-.area-summary .area-notes { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 0.88rem; line-height: 1.65; color: var(--fg); }
-.area-summary .area-notes-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; font-weight: 500; }
-.area-summary .activity-ref { font-style: italic; color: var(--muted); }
+/* Per-area sections. The section header sits in the editorial column;
+   the grid spans the full container width below. */
+.area-section { margin: 0 0 64px; }
+.area-section .area-head { max-width: 820px; margin: 0 auto 20px; padding-top: 36px; border-top: 1px solid var(--fg-hairline); }
+.area-section h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; margin: 0 0 14px; letter-spacing: -0.02em; }
+.area-section .area-desc { font-size: 0.95rem; color: var(--fg); line-height: 1.7; max-width: 720px; margin: 0 0 18px; }
+.area-section .desc-label, .area-section .summary-label, .area-section .area-notes-label { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 6px; font-weight: 500; }
+.area-section .area-notes { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--fg-hairline); font-size: 0.92rem; line-height: 1.7; color: var(--fg); max-width: 720px; }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 22px; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-.card:hover { border-color: var(--line); box-shadow: none; }
-.card-title { font-size: 1rem; font-weight: 500; margin: 0 0 4px; line-height: 1.4; color: var(--fg); }
-.card-id { font-family: ui-monospace, SF Mono, Menlo, monospace; font-size: 0.7rem; color: var(--muted); margin-bottom: 12px; }
-.card-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5; max-height: 4.2em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 28px 24px; }
+.card { background: transparent; border: 0; padding: 0; }
+.card-title { font-family: var(--font-display); font-size: 1.0rem; font-weight: 500; margin: 0 0 4px; line-height: 1.35; color: var(--fg); letter-spacing: -0.01em; }
+.card-id { font-family: ui-monospace, SF Mono, Menlo, monospace; font-size: 0.68rem; color: var(--fg-muted); margin-bottom: 12px; }
+.card-desc { font-size: 0.88rem; color: var(--fg-muted); margin-bottom: 14px; line-height: 1.55; }
 
-.closest-match { background: var(--bg-soft); border-left: 2px solid var(--fg); padding: 12px 14px; margin: 14px 0; border-radius: 0 3px 3px 0; font-size: 0.85rem; line-height: 1.5; }
-.closest-match .label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; font-weight: 500; }
+.closest-match { padding: 0 0 0 14px; margin: 14px 0; border-left: 1px solid var(--fg-hairline); font-size: 0.85rem; line-height: 1.55; }
+.closest-match .label { font-family: var(--font-display); font-size: 0.66rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 6px; font-weight: 500; }
 .closest-match .task-it { color: var(--fg); margin-bottom: 4px; }
-.closest-match .task-en { color: var(--muted); font-style: italic; font-size: 0.78rem; }
+.closest-match .task-en { color: var(--fg-muted); font-style: italic; font-size: 0.78rem; }
 .closest-match .metrics { display: flex; gap: 14px; margin-top: 8px; font-size: 0.78rem; flex-wrap: wrap; }
 .closest-match .metric strong { font-weight: 500; color: var(--fg); }
-.closest-match .metric .key { color: var(--muted); margin-right: 3px; }
-.closest-match.no-rich { border-left-color: var(--no-data); }
-.closest-match.no-rich .warn { color: var(--muted); font-size: 0.78rem; margin-top: 6px; }
+.closest-match .metric .key { color: var(--fg-muted); margin-right: 3px; }
+.closest-match.no-rich .warn { color: var(--fg-muted); font-size: 0.78rem; margin-top: 6px; }
 
-.task-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 12px 0 14px; max-width: 220px; }
-.task-square { aspect-ratio: 1; border-radius: 3px; cursor: pointer; transition: transform 0.1s; position: relative; }
-.task-square:hover { transform: scale(1.18); outline: 2px solid var(--fg); z-index: 5; }
+.task-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 12px 0 14px; max-width: 200px; }
+.task-square { aspect-ratio: 1; border-radius: 2px; cursor: pointer; transition: transform 0.1s; position: relative; }
+.task-square:hover { transform: scale(1.15); outline: 1.5px solid var(--fg); z-index: 5; }
 .task-square.automated { background: var(--automated); }
 .task-square.augmented { background: var(--augmented); }
 .task-square.assistive { background: var(--assistive); }
 .task-square.no-data { background: var(--no-data); }
-.task-square[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute; bottom: calc(100% + 8px); left: 50%;
-  transform: translateX(-50%) scale(calc(1 / 1.18)); transform-origin: bottom center;
-  background: var(--fg); color: var(--bg);
-  padding: 9px 12px; border-radius: 3px;
-  font-family: var(--font-sans); font-size: 0.75rem; line-height: 1.5;
-  width: max-content; max-width: 280px; white-space: pre-line; text-align: left;
-  pointer-events: none; z-index: 50; box-shadow: none;
-}
-.task-square[data-tooltip]:hover::before {
-  content: ""; position: absolute; bottom: 100%; left: 50%;
-  transform: translateX(-50%); border: 5px solid transparent;
-  border-top-color: var(--fg); z-index: 50; pointer-events: none;
-}
 
-.card-stat { font-size: 0.85rem; color: var(--muted); padding-top: 12px; border-top: 1px solid var(--line); }
-.card-stat .level-tag { display: inline-block; padding: 2px 9px; border-radius: 3px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--card); margin-right: 8px; font-weight: 500; }
-.level-tag.strong { background: var(--automated); }
-.level-tag.medium { background: var(--augmented); }
+.card-stat { font-size: 0.82rem; color: var(--fg-muted); padding-top: 10px; }
+.card-stat .level-tag { display: inline-block; padding: 1px 8px; border-radius: 2px; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.10em; color: #FFFFFF; margin-right: 8px; font-weight: 500; }
+.level-tag.strong { background: var(--automated); color: var(--fg); }
+.level-tag.medium { background: var(--augmented); color: var(--fg); }
 .level-tag.mixed { background: var(--assistive); color: var(--fg); }
 .level-tag.zero { background: var(--no-data); color: var(--fg); }
 .level-tag.low-confidence { background: var(--low-conf); color: var(--fg); }
 
-.card.low-confidence .task-grid::before { content: "Low confidence — top-1 similarity below threshold."; grid-column: 1 / -1; font-size: 0.78rem; color: var(--muted); padding: 10px; background: var(--low-conf); border-radius: 3px; }
+.card.low-confidence .task-grid::before { content: "Low confidence — top-1 similarity below threshold."; grid-column: 1 / -1; font-size: 0.76rem; color: var(--fg-muted); padding: 8px 10px; background: var(--bg-alt); border-radius: 2px; }
 .card.low-confidence .task-grid { max-width: none; }
 
-.modal-backdrop { position: fixed; inset: 0; background: rgba(23,23,23,0.32); display: none; align-items: flex-start; justify-content: center; padding: 60px 16px 16px; z-index: 100; overflow-y: auto; backdrop-filter: blur(4px); }
-.modal-backdrop.open { display: flex; animation: pn-fade 0.2s ease; }
-.modal { background: var(--card); border-radius: 4px; border: 1px solid var(--line); max-width: 640px; width: 100%; padding: 32px; box-shadow: none; animation: pn-pop 0.25s ease; }
-.modal h3 { margin: 0 0 8px; font-size: 1.2rem; font-weight: 600; letter-spacing: -0.01em; }
-.modal .modal-id { font-family: ui-monospace, SF Mono, Menlo, monospace; font-size: 0.7rem; color: var(--muted); margin-bottom: 18px; }
-.modal .modal-task { background: var(--bg-soft); padding: 14px 16px; border-radius: 3px; margin-bottom: 14px; font-size: 0.9rem; line-height: 1.55; border: 1px solid var(--line); }
-.modal .modal-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 24px; font-size: 0.88rem; }
-.modal .modal-stats .label { color: var(--muted); }
-.modal .modal-close { float: right; background: transparent; border: 0; cursor: pointer; font-size: 1.5rem; color: var(--muted); margin: -10px -10px 0 0; padding: 0; }
-.modal .modal-close:hover { color: var(--fg); background: transparent; }
+/* Decisions section — same shape as value-map. */
+.section { margin: 80px auto 0; padding-top: 36px; border-top: 1px solid var(--fg-hairline); max-width: 820px; }
+.section h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 20px; }
+.section p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; max-width: 720px; }
+.section .lead { font-size: 0.95rem; color: var(--fg-muted); line-height: 1.65; max-width: 720px; margin: 0 0 28px; }
 
-.empty { text-align: center; padding: 64px 0; color: var(--muted); font-size: 0.95rem; }
+.decision { margin-bottom: 32px; }
+.decision .question { font-family: var(--font-display); font-size: 1.05rem; font-weight: 500; color: var(--fg); margin: 0 0 8px; letter-spacing: -0.01em; }
+.decision .answer { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 6px; max-width: 720px; }
+.decision .source { font-size: 0.78rem; color: var(--fg-muted); font-family: ui-monospace, SF Mono, Menlo, monospace; }
 
-.footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.78rem; }
+/* Popover — small floating card next to the clicked square. Replaces
+   the full-screen modal: pop-overs read as 'a tooltip you can read',
+   not 'a page you have to dismiss'. */
+.popover { position: absolute; display: none; max-width: 360px; min-width: 240px; padding: 14px 18px 16px; background: #FFFFFF; border: 1px solid var(--fg-hairline); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); z-index: 100; animation: pn-pop 0.18s ease; }
+.popover.open { display: block; }
+.popover .close { position: absolute; top: 6px; right: 8px; background: transparent; border: 0; cursor: pointer; font-size: 1.1rem; color: var(--fg-muted); padding: 0; line-height: 1; }
+.popover .close:hover { color: var(--fg); }
+.popover .eyebrow { font-family: var(--font-display); font-size: 0.62rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 6px; color: var(--fg-muted); }
+.popover h3 { font-family: var(--font-display); font-size: 1rem; font-weight: 500; letter-spacing: -0.015em; margin: 0 0 4px; line-height: 1.25; color: var(--fg); padding-right: 18px; }
+.popover .pop-id { font-family: ui-monospace, SF Mono, Menlo, monospace; font-size: 0.7rem; color: var(--fg-muted); margin-bottom: 12px; }
+.popover .pop-task { font-size: 0.85rem; line-height: 1.55; color: var(--fg); padding: 10px 12px; background: var(--bg-alt); border-radius: 3px; margin-bottom: 10px; }
+.popover .pop-task strong { font-weight: 500; }
+.popover dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 0.82rem; }
+.popover dt { color: var(--fg-muted); margin: 0; }
+.popover dd { margin: 0; color: var(--fg); }
+.popover .pop-chain { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--fg-hairline); font-size: 0.76rem; color: var(--fg-muted); line-height: 1.5; }
+.popover .pop-chain strong { color: var(--fg); font-weight: 500; }
+
+.empty { text-align: center; padding: 64px 0; color: var(--fg-muted); font-size: 0.95rem; }
+
+.footer { max-width: 820px; margin: 80px auto 0; padding-top: 20px; border-top: 1px solid var(--fg-hairline); color: var(--fg-muted); font-size: 0.78rem; line-height: 1.6; }
 """
 
 P25 = 3.21
@@ -373,7 +364,7 @@ def classify_activity(activity: dict) -> dict:
     return {"level": level, "n_rich": cats["automated"] + cats["augmented"] + cats["assistive"], "n_total": len(matches), "categories": cats}
 
 
-def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang: str = "en", task_translations: dict[str, str] | None = None, area_notes: dict[str, str] | None = None, area_descriptions: dict[str, str] | None = None, org_description: str = "") -> str:
+def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang: str = "en", task_translations: dict[str, str] | None = None, area_notes: dict[str, str] | None = None, area_descriptions: dict[str, str] | None = None, org_description: str = "", decisions: list[dict] | None = None) -> str:
     if lang not in STRINGS:
         lang = "en"
     S = STRINGS[lang]
@@ -417,26 +408,52 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
     area_desc_js = json.dumps(area_descriptions or {}, ensure_ascii=False)
     org_desc_escaped = (org_description or "").replace("</", "<\\/")
 
+    decisions_html = ""
+    if decisions:
+        from html import escape as _esc
+        items = []
+        for d in decisions:
+            q = _esc(d.get("question", ""))
+            ans_paragraphs = "".join(f'<p class="answer">{_esc(p)}</p>' for p in (d.get("answer", "") or "").split("\n\n") if p.strip())
+            src = _esc(d.get("source", ""))
+            src_html = f'<div class="source">{src}</div>' if src else ""
+            items.append(f'<div class="decision"><div class="question">{q}</div>{ans_paragraphs}{src_html}</div>')
+        decisions_eyebrow = "How to read this map" if lang == "en" else "Come leggere questa mappa"
+        decisions_lead = (
+            "Each square above is one of the top-K closest O*NET tasks; the decisions below translate the pattern into moves the leader could make."
+            if lang == "en"
+            else "Ogni quadratino sopra è una delle mansioni del catalogo americano più vicine all'attività; le decisioni qui sotto traducono il pattern in mosse che chi guida l'organizzazione può fare."
+        )
+        decisions_html = f"""
+    <div class="section" id="decisions">
+      <h2>{decisions_eyebrow}</h2>
+      <p class="lead">{decisions_lead}</p>
+      {''.join(items)}
+    </div>"""
+
     return f"""<!DOCTYPE html>
 <html lang="{lang}">
 <head>
 <meta charset="UTF-8">
-<title>{title}</title>
+<title>{title} · ai exposure</title>
 <style>{base_css() + EXTRA_CSS}</style>
 </head>
 <body>
   <div class="container">
     <header>
+      <div class="eyebrow">ai exposure</div>
       <h1>{title}</h1>
-      <p class="subtitle">{S["subtitle"]}</p>
+      <p class="lead">{S["subtitle"]}</p>
+    </header>
 
+    <div class="legend-wrap">
       <div class="legend">
         <div class="legend-item"><span class="legend-square automated"></span>{S["legend_automated"]}</div>
         <div class="legend-item"><span class="legend-square augmented"></span>{S["legend_augmented"]}</div>
         <div class="legend-item"><span class="legend-square assistive"></span>{S["legend_assistive"]}</div>
         <div class="legend-item"><span class="legend-square no-data"></span>{S["legend_no_data"]}</div>
       </div>
-    </header>
+    </div>
 
     <div class="controls">
       <div class="control-row">
@@ -470,14 +487,14 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
     <div id="content"></div>
     <div class="empty" id="empty" style="display:none">{S["no_match"]}</div>
 
+    {decisions_html}
+
     <div class="footer">{S["footer"]}</div>
   </div>
 
-  <div class="modal-backdrop" id="modal-backdrop">
-    <div class="modal" id="modal">
-      <button class="modal-close" id="modal-close">×</button>
-      <div id="modal-body"></div>
-    </div>
+  <div class="popover" id="popover">
+    <button class="close" id="popover-close" aria-label="Close">×</button>
+    <div id="popover-body"></div>
   </div>
 
 <script>
@@ -604,13 +621,11 @@ function renderAreaSummary(area, items) {{
     noteRendered = `<div class="area-notes"><div class="area-notes-label">${{S.area_notes_label}}</div>${{safe}}</div>`;
   }}
   return `
-    <div class="area-summary">
-      ${{descHtml}}
-      ${{distLabel}}
-      ${{renderDistBar(dist.cats, dist.total)}}
-      ${{renderDistLegend(dist.cats, dist.total)}}
-      ${{noteRendered}}
-    </div>`;
+    ${{descHtml}}
+    ${{distLabel}}
+    ${{renderDistBar(dist.cats, dist.total)}}
+    ${{renderDistLegend(dist.cats, dist.total)}}
+    ${{noteRendered}}`;
 }}
 
 function fmtNum(value, decimals) {{
@@ -729,14 +744,16 @@ function render() {{
       const summaryHtml = renderAreaSummary(area, groups[area]);
       return `
         <div class="area-section">
-          <h2>${{escapeHtml(area)}}</h2>
-          ${{summaryHtml}}
+          <div class="area-head">
+            <h2>${{escapeHtml(area)}}</h2>
+            ${{summaryHtml}}
+          </div>
           <div class="grid">${{cards}}</div>
         </div>`;
     }}).join('');
   }} else if (currentArea !== 'all') {{
     const summaryHtml = renderAreaSummary(currentArea, items);
-    content.innerHTML = `${{summaryHtml}}<div class="grid">${{items.map(renderCard).join('')}}</div>`;
+    content.innerHTML = `<div class="area-head">${{summaryHtml}}</div><div class="grid">${{items.map(renderCard).join('')}}</div>`;
   }} else {{
     content.innerHTML = `<div class="grid">${{items.map(renderCard).join('')}}</div>`;
   }}
@@ -765,63 +782,99 @@ document.getElementById('search').addEventListener('input', e => {{
   render();
 }});
 
-// Click on a task square → open modal with details
-document.addEventListener('click', e => {{
-  if (!e.target.classList.contains('task-square')) return;
-  const aid = e.target.dataset.activity;
-  const idx = parseInt(e.target.dataset.idx, 10);
-  if (!aid || isNaN(idx)) return;
-  const a = data.find(x => x.id === aid);
-  if (!a) return;
-  const m = a.matches[idx];
-  if (!m) return;
-  const cls = classifyMatch(m);
-  const catLabel = CATS[cls] || cls;
-  const countWarn = (m.count != null && m.count < SAMPLE_SMALL) ? ` <span style="color:var(--accent)">(${{S.modal_count_warn_small}})</span>` : '';
-  const richInfo = m.ai_autonomy_mean != null
-    ? `<div class="modal-stats">
-         <div class="label">${{S.modal_autonomy}}</div><div>${{fmtNum(m.ai_autonomy_mean, 2)}} / 5</div>
-         <div class="label">${{S.modal_count}}</div><div>${{m.count != null ? m.count : 0}}${{countWarn}}</div>
-         <div class="label">${{S.modal_category}}</div><div>${{catLabel}}</div>
-       </div>`
-    : `<p style="color:var(--muted); font-size:14px">${{escapeHtml(S.modal_no_rich)}}</p>
-       <div class="modal-stats">
-         <div class="label">${{S.modal_category}}</div><div>${{catLabel}}</div>
-       </div>`;
-  const taskItHtml = m.task_it
-    ? `<div class="modal-task">
-         <strong>${{S.modal_task_it_label}}:</strong><br>
-         ${{escapeHtml(m.task_it)}}
-       </div>`
-    : '';
-  document.getElementById('modal-body').innerHTML = `
-    <h3>${{escapeHtml(a._title || a.id)}}</h3>
-    <div class="modal-id">${{escapeHtml(a.id)}} · ${{escapeHtml(a._area)}}</div>
-    ${{taskItHtml}}
-    <div class="modal-task">
-      <strong>${{S.modal_task_label}}:</strong><br>
-      ${{escapeHtml(m.task)}}
-    </div>
-    <div class="modal-stats">
-      <div class="label">${{S.modal_confidence}}</div><div>${{fmtPct(m.similarity)}}</div>
-    </div>
-    <div style="margin-top:12px">${{richInfo}}</div>
-    <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); line-height:1.5">
-      <strong style="color:var(--fg)">${{S.modal_chain}}.</strong> ${{escapeHtml(S.modal_chain_text)}}
-    </div>
-  `;
-  document.getElementById('modal-backdrop').classList.add('open');
-}});
+// Popover positioning + click handlers — same shape as value-map.
+const popoverEl   = document.getElementById('popover');
+const popoverBody = document.getElementById('popover-body');
 
-document.getElementById('modal-close').addEventListener('click', () => {{
-  document.getElementById('modal-backdrop').classList.remove('open');
-}});
+function showPopover(html, anchorRect) {{
+  popoverBody.innerHTML = html;
+  const margin = 12;
+  popoverEl.style.left = '0px';
+  popoverEl.style.top = '0px';
+  popoverEl.classList.add('open');
+  const popRect = popoverEl.getBoundingClientRect();
+  const popW = popRect.width;
+  const popH = popRect.height;
 
-document.getElementById('modal-backdrop').addEventListener('click', e => {{
-  if (e.target.id === 'modal-backdrop') {{
-    document.getElementById('modal-backdrop').classList.remove('open');
+  // Default: right of the clicked square, aligned to its top.
+  let x = anchorRect.right + margin;
+  let y = anchorRect.top;
+
+  const viewportRight = window.scrollX + window.innerWidth;
+  if (x + popW > viewportRight - margin) {{
+    x = anchorRect.left - margin - popW;
   }}
-}});
+  if (x < window.scrollX + margin) x = window.scrollX + margin;
+
+  const viewportBottom = window.scrollY + window.innerHeight;
+  if (y + popH > viewportBottom - margin) {{
+    y = viewportBottom - popH - margin;
+  }}
+  if (y < window.scrollY + margin) y = window.scrollY + margin;
+
+  popoverEl.style.left = x + 'px';
+  popoverEl.style.top  = y + 'px';
+}}
+
+function hidePopover() {{
+  popoverEl.classList.remove('open');
+}}
+
+document.addEventListener('click', e => {{
+  // Square click → popover with task detail
+  if (e.target.classList && e.target.classList.contains('task-square')) {{
+    const aid = e.target.dataset.activity;
+    const idx = parseInt(e.target.dataset.idx, 10);
+    if (!aid || isNaN(idx)) return;
+    const a = data.find(x => x.id === aid);
+    if (!a) return;
+    const m = a.matches[idx];
+    if (!m) return;
+    const cls = classifyMatch(m);
+    const catLabel = CATS[cls] || cls;
+    const countWarn = (m.count != null && m.count < SAMPLE_SMALL) ? ` <span style="color:var(--ds-coral)">(${{S.modal_count_warn_small}})</span>` : '';
+    const richHtml = m.ai_autonomy_mean != null
+      ? `<dl>
+           <dt>${{S.modal_autonomy}}</dt><dd>${{fmtNum(m.ai_autonomy_mean, 2)}} / 5</dd>
+           <dt>${{S.modal_count}}</dt><dd>${{m.count != null ? m.count : 0}}${{countWarn}}</dd>
+           <dt>${{S.modal_category}}</dt><dd>${{catLabel}}</dd>
+           <dt>${{S.modal_confidence}}</dt><dd>${{fmtPct(m.similarity)}}</dd>
+         </dl>`
+      : `<p style="color: var(--fg-muted); font-size: 0.82rem; margin: 0 0 10px">${{escapeHtml(S.modal_no_rich)}}</p>
+         <dl>
+           <dt>${{S.modal_category}}</dt><dd>${{catLabel}}</dd>
+           <dt>${{S.modal_confidence}}</dt><dd>${{fmtPct(m.similarity)}}</dd>
+         </dl>`;
+    const taskItHtml = m.task_it ? `<div class="pop-task"><strong>${{escapeHtml(m.task_it)}}</strong><br><span style="color: var(--fg-muted); font-size: 0.78rem; font-style: italic">${{escapeHtml(m.task)}}</span></div>` : `<div class="pop-task">${{escapeHtml(m.task)}}</div>`;
+    const html = `
+      <div class="eyebrow">${{escapeHtml(a._area || '')}}</div>
+      <h3>${{escapeHtml(a._title || a.id)}}</h3>
+      <div class="pop-id">${{escapeHtml(a.id)}}</div>
+      ${{taskItHtml}}
+      ${{richHtml}}
+      <div class="pop-chain"><strong>${{S.modal_chain}}.</strong> ${{escapeHtml(S.modal_chain_text)}}</div>
+    `;
+    const r = e.target.getBoundingClientRect();
+    showPopover(html, {{
+      left:   r.left   + window.scrollX,
+      right:  r.right  + window.scrollX,
+      top:    r.top    + window.scrollY,
+      bottom: r.bottom + window.scrollY,
+    }});
+    return;
+  }}
+
+  // Click outside the popover and outside any square → close
+  let n = e.target;
+  while (n && n.nodeType === 1) {{
+    if (n.id === 'popover') return;
+    n = n.parentNode;
+  }}
+  hidePopover();
+}}, true);
+
+document.getElementById('popover-close').addEventListener('click', hidePopover);
+document.addEventListener('keydown', e => {{ if (e.key === 'Escape') hidePopover(); }});
 
 render();
 </script>
@@ -859,6 +912,10 @@ def main() -> int:
         "--org-description-file",
         help="Optional path to a file containing the org description (overrides --org-description).",
     )
+    parser.add_argument(
+        "--decisions",
+        help="Optional JSON list of {question, answer, source} rendered in the bottom 'How to read this map' section. The agent fills these as the final step of the playbook; autoresearch.py scores them.",
+    )
     args = parser.parse_args()
 
     matches = json.loads(Path(args.matches).read_text())
@@ -895,10 +952,18 @@ def main() -> int:
     if args.org_description_file:
         org_description = Path(args.org_description_file).read_text().strip()
 
+    decisions: list[dict] = []
+    if args.decisions:
+        decisions = json.loads(Path(args.decisions).read_text())
+        if not isinstance(decisions, list):
+            print("--decisions must be a JSON list of {question, answer, source}", file=sys.stderr)
+            return 1
+
     html = render_html(
         matches, args.title, metadata, lang=args.lang,
         task_translations=translations, area_notes=area_notes,
         area_descriptions=area_descriptions, org_description=org_description,
+        decisions=decisions,
     )
     Path(args.out).write_text(html, encoding="utf-8")
     print(
