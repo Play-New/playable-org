@@ -401,20 +401,27 @@ const popoverEl   = document.getElementById('popover');
 const popoverBody = document.getElementById('popover-body');
 
 function showPopover(html, anchorRect) {{
+  // Open the popover BELOW the clicked card, centered horizontally
+  // on it. If there's not enough room below, flip above. Always
+  // clamped inside the viewport.
   popoverBody.innerHTML = html;
   const margin = 12;
   popoverEl.style.left = '0px';
   popoverEl.style.top  = '0px';
   popoverEl.classList.add('open');
   const r = popoverEl.getBoundingClientRect();
-  let x = anchorRect.right + margin;
-  let y = anchorRect.top;
+  const anchorCenterX = (anchorRect.left + anchorRect.right) / 2;
   const viewportRight  = window.scrollX + window.innerWidth;
   const viewportBottom = window.scrollY + window.innerHeight;
-  if (x + r.width > viewportRight - margin) x = anchorRect.left - margin - r.width;
+  let x = anchorCenterX - r.width / 2;
+  if (x + r.width > viewportRight - margin) x = viewportRight - r.width - margin;
   if (x < window.scrollX + margin) x = window.scrollX + margin;
-  if (y + r.height > viewportBottom - margin) y = viewportBottom - r.height - margin;
-  if (y < window.scrollY + margin) y = window.scrollY + margin;
+  let y = anchorRect.bottom + margin;
+  if (y + r.height > viewportBottom - margin) {{
+    const above = anchorRect.top - margin - r.height;
+    if (above >= window.scrollY + margin) y = above;
+    else y = viewportBottom - r.height - margin;
+  }}
   popoverEl.style.left = x + 'px';
   popoverEl.style.top  = y + 'px';
 }}
