@@ -114,10 +114,12 @@ def build_positions(map_data: dict) -> tuple[dict[str, dict], list[str], int]:
         }
 
     new_users = map_data.get("new_end_users") or []
+    # New end users sit 200px to the right of the last existing user so
+    # their labels don't collide horizontally with the existing user labels.
     for j, eu in enumerate(new_users):
         uid = f"__new_user_{j}__"
         positions[uid] = {
-            "px": eu_xs[-1] + 100 + j * 100, "py": USER_NODE_Y,
+            "px": eu_xs[-1] + 220 + j * 200, "py": USER_NODE_Y,
             "label": eu.get("label", ""), "kind": "user", "is_new": True,
         }
 
@@ -265,9 +267,11 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
     components = map_data.get("components") or []
     anchors = map_data.get("anchors") or []
 
-    # Implicit user → anchor edges: every end-user connects to every
-    # anchor (the user need the org promises to fulfill).
-    for uid in user_ids:
+    # Implicit user → anchor edges: every end-user (existing and new)
+    # connects to every anchor (the user need the org promises to
+    # fulfill). Without this, new stakeholders would float disconnected.
+    new_user_ids = [f"__new_user_{j}__" for j in range(len(map_data.get("new_end_users") or []))]
+    for uid in list(user_ids) + new_user_ids:
         for a in anchors:
             edges.append({"from": uid, "to": a["id"], "_implicit": True})
 
@@ -311,16 +315,18 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
             f'</g>'
         )
 
-    # New end users
+    # New end users — squares (matching the is_new component shape) so
+    # everything emerging shares the same visual code: square = new.
     for j, _ in enumerate(map_data.get("new_end_users") or []):
         p = positions.get(f"__new_user_{j}__")
         if not p:
             continue
+        sq = 14  # half-side; total side = 28, slightly larger than r=12 for visual parity
         parts.append(
             f'<g class="node node-user node-new" data-node-id="__new_user_{j}__" onclick="pnNodeClick(this)">'
             f'<title>{escape(p["label"])}</title>'
-            f'<circle cx="{p["px"]:.1f}" cy="{p["py"]:.1f}" r="12" fill="{ACCENT}"/>'
-            f'<text x="{p["px"]:.1f}" y="{p["py"] - 22:.1f}" text-anchor="middle" '
+            f'<rect x="{p["px"] - sq:.1f}" y="{p["py"] - sq:.1f}" width="{sq * 2}" height="{sq * 2}" fill="{ACCENT}"/>'
+            f'<text x="{p["px"]:.1f}" y="{p["py"] - sq - 8:.1f}" text-anchor="middle" '
             f'font-size="13" fill="{ACCENT}" font-weight="600">{escape(truncate(p["label"]))} ★</text>'
             f'</g>'
         )
@@ -354,13 +360,24 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
             f'</g>'
         )
 
-    # Components (circles)
+    # Components — circles for existing, squares for is_new (so the
+    # leader's eye separates "what shifts" from "what emerges" at a glance).
     for c in map_data["components"]:
         p = positions[c["id"]]
         cx, cy = p["px"], p["py"]
         r = 7
         fill = ACCENT if p["is_new"] else "#ffffff"
         stroke = ACCENT if p["is_new"] else FG
+        if p["is_new"]:
+            shape = (
+                f'<rect x="{cx - r:.1f}" y="{cy - r:.1f}" width="{r * 2}" height="{r * 2}" '
+                f'fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>'
+            )
+        else:
+            shape = (
+                f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" '
+                f'fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>'
+            )
         et = c.get("evolution_target")
         et_arrow = ""
         if et is not None and not p["is_new"]:
@@ -390,9 +407,9 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
         if line2:
             text_lines += f'<tspan x="{cx:.1f}" dy="14">{escape(line2)}</tspan>'
         parts.append(
-            f'<g class="node node-component" data-node-id="{c["id"]}" onclick="pnNodeClick(this)" style="cursor:pointer">'
+            f'<g class="node node-component{" node-new" if p["is_new"] else ""}" data-node-id="{c["id"]}" onclick="pnNodeClick(this)" style="cursor:pointer">'
             f'<title>{escape(c.get("label", ""))}</title>'
-            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>'
+            f'{shape}'
             f'{et_arrow}'
             f'<text x="{cx:.1f}" y="{cy + r + 14:.1f}" text-anchor="middle" '
             f'font-size="11" fill="{FG}">{text_lines}</text>'
