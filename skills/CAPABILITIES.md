@@ -241,3 +241,9 @@ Before applying the frame to an organization, a calibration question:
 If the answer is "depends on who you ask, depends on which area you reach", capabilities exist as practices, not as exposed functions. The frame applies and has value.
 
 If the answer is "this, this and this, each with a known contract, accessible to anyone who knows how to call it", the organization has already done the exposing work. The frame applies as a tool of maintenance and discovery of missing capabilities, not as structural reform.
+
+## Side note: are playable-org's skills "capabilities" by this frame?
+
+Partially. They meet four of the five properties (invocable, structured output, atomic, composable) and split the fifth (the file is easy to acquire; the practice around it isn't). They miss the ownership layer entirely — there is no DRI for `value-map` in the public template, only a maintainer of the codification.
+
+A separate note works through the distinction in detail: see [`docs/skills-as-capabilities.md`](../docs/skills-as-capabilities.md). The short answer is: **skills are the codified part of a capability, not a complete capability**. A complete capability is the skill + a named DRI + ICs + verified output + operating cadence. Playable Org ships the first ingredient; the org instantiating it adds the rest.
