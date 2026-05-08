@@ -24,6 +24,15 @@ failures = []
 passes = 0
 
 
+def _test_env() -> dict[str, str]:
+    """Subprocess env with PLAYABLE_ORG_TEST_MODE=1 so org_open doesn't
+    spawn the OS file-open handler during tests (was causing log.md to
+    pop up in the editor on every test run)."""
+    env = os.environ.copy()
+    env["PLAYABLE_ORG_TEST_MODE"] = "1"
+    return env
+
+
 def call(data_dir: str, name: str, args: dict[str, Any]) -> str:
     """Call a tool, return the text content of the first result."""
     req = {
@@ -38,6 +47,7 @@ def call(data_dir: str, name: str, args: dict[str, Any]) -> str:
         capture_output=True,
         text=True,
         timeout=15,
+        env=_test_env(),
     )
     out = proc.stdout.strip()
     if not out:
@@ -59,6 +69,7 @@ def list_tools(data_dir: str) -> list[str]:
     proc = subprocess.run(
         ["node", str(SERVER), "--data-dir", data_dir],
         input=json.dumps(req) + "\n",
+        env=_test_env(),
         capture_output=True,
         text=True,
         timeout=10,

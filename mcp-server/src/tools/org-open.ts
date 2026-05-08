@@ -69,9 +69,17 @@ export const orgOpenTool: ToolDefinition = {
       };
     }
 
-    const { cmd, args: argFn } = openCommand();
-    const proc = spawn(cmd, argFn(absPath), { detached: true, stdio: 'ignore' });
-    proc.unref();
+    // PLAYABLE_ORG_TEST_MODE=1 suppresses the actual OS open spawn.
+    // The test suite (test-e2e.py) sets this so verifying the tool's
+    // success path doesn't trigger the OS to open log.md / etc on the
+    // developer's machine each test run. The return value (ok + paths)
+    // is identical so assertions still pass.
+    const dryRun = process.env.PLAYABLE_ORG_TEST_MODE === '1';
+    if (!dryRun) {
+      const { cmd, args: argFn } = openCommand();
+      const proc = spawn(cmd, argFn(absPath), { detached: true, stdio: 'ignore' });
+      proc.unref();
+    }
 
     return {
       content: [
@@ -83,6 +91,7 @@ export const orgOpenTool: ToolDefinition = {
               opened: absPath,
               file_url: `file://${absPath}`,
               platform: process.platform,
+              dry_run: dryRun,
             },
             null,
             2
