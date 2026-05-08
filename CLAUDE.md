@@ -11,8 +11,8 @@ This `CLAUDE.md` is working memory for whoever maintains the template (me, futur
 - `org/README.md` — entry point for whoever opens `org/`.
 - `org/log.md` — prepend-only audit. Most-recent on top.
 - `org/index.md` — content-oriented catalog (link + one-line summary). Updated by the agent on every ingest.
-- `mcp-server/` — TypeScript stdio mcp server. 12 tools (4 read + 3 write + 1 meta + 4 executors), full e2e test suite at `mcp-server/test-e2e.py` against fixture in `mcp-server/test-fixtures/sample-org/`.
-- `skills/` — agent workflows + analytical playbooks + design system. Three operational skills (`init`, `ingest`, `lint`), four analytical playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`), one meta-skill (`new-playbook`). Cross-cutting docs: `CAPABILITIES.md` (the four-property frame), `STYLE.md` (anti-rhetoric charter), `ROADMAP.md` (the playbook order), `design.py` (single source of truth for the visual language), `_assets/fonts/inter-variable.woff2` (embedded font; instances swap in their brand font at the same path).
+- `mcp-server/` — TypeScript stdio mcp server. 13 tools (4 read + 3 write + 1 meta + 5 executors), full e2e test suite at `mcp-server/test-e2e.py` against fixture in `mcp-server/test-fixtures/sample-org/`.
+- `skills/` — agent workflows + analytical playbooks + design system. Three operational skills (`init`, `ingest`, `lint`), five analytical playbooks (`graph`, `ai-exposure`, `value-map`, `reshuffle`, `world-model`), two deployment skills (`compile-agent`, `interview-activity`), one meta-skill (`new-playbook`). Cross-cutting docs: `CAPABILITIES.md` (the four-property frame), `STYLE.md` (anti-rhetoric charter), `ROADMAP.md` (the playbook order), `design.py` (single source of truth for the visual language), `_assets/fonts/inter-variable.woff2` (embedded font; instances swap in their brand font at the same path).
 - `docs/` — public-facing architecture, playbooks reference, extension guide.
 - `CLAUDE.md` (this file) — working memory. Not exposed to customers.
 
@@ -47,12 +47,13 @@ When prose is in a language other than English, prefer the local equivalent over
 
 ## Public template state
 
-- 12 mcp tools.
+- 13 mcp tools.
 - 3 operational skills: `init`, `ingest`, `lint`.
-- 4 analytical playbooks: `ai-exposure`, `value-map`, `reshuffle`, `world-model`. All four use `design.py` primitives via inheritance through their viewer.py modules. Each ships with build.py + audit.py + viewer.py.
+- 5 analytical playbooks: `graph`, `ai-exposure`, `value-map`, `reshuffle`, `world-model`. All five use `design.py` primitives via inheritance through their viewer.py modules. Each ships with build.py + audit.py + viewer.py + autoresearch.py.
+- 2 deployment skills: `compile-agent` (Level 1, scope-limited Claude Code agents), `interview-activity` (Level 2, fills the activity density layer).
 - 1 meta-skill: `new-playbook`. Five-question interview that scaffolds a new playbook.
 - `org/` empty: 3 identity stubs (`# REPLACE ME`), zero other content. Lint Tier 1 reports 3 expected warnings on the stubs (empty `sources` arrays); these go to 0 after init.
-- mcp-server e2e: 84/84 PASS against `mcp-server/test-fixtures/sample-org/` (the Outline & Co. fake creative studio: 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources, plus the four canonical playbook artefacts under `plays/data/`).
+- mcp-server e2e: 88/88 PASS against `mcp-server/test-fixtures/sample-org/` (the Outline & Co. fake creative studio: 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources, plus the five canonical playbook artefacts under `plays/data/` — including the graph play with 41 nodes / 165 typed relations).
 - TypeScript build: clean.
 
 ## Maintenance
@@ -64,15 +65,16 @@ When adding a new mcp tool:
 4. Document in `docs/architecture.md` if the addition changes the surface area.
 
 When adding a new playbook:
-1. Create `skills/playbooks/<name>/{SKILL.md, build.py, audit.py, viewer.py}`.
+1. Create `skills/playbooks/<name>/{SKILL.md, build.py, audit.py, viewer.py, autoresearch.py}`.
 2. Use `design.py` primitives in viewer.py — no bespoke `<style>` blocks.
-3. Declare theoretical lineage explicitly in SKILL.md frontmatter and body.
-4. Add an entry to `skills/ROADMAP.md`.
-5. Document in `docs/playbooks.md`.
+3. Declare theoretical lineage explicitly in SKILL.md frontmatter and body. (For sourceless playbooks like `graph`, say so explicitly in the body — the absence of a source is itself a deliberate choice.)
+4. Wire in `mcp-server/src/tools/org-play-run.ts`: add to the playbook enum, branch the build args if needed.
+5. Add an entry to `skills/ROADMAP.md` and a section in `docs/playbooks.md`.
+6. Add a build-mode test to `mcp-server/test-e2e.py`; bump the skill-list count assertion.
 
 When changing the design system:
 1. Update `skills/design.py` only. Never edit the CSS in viewer.py files.
-2. If the change requires migration of existing viewers (renamed token, removed primitive), update all four base viewer.py files in the same commit.
+2. If the change requires migration of existing viewers (renamed token, removed primitive), update all five base viewer.py files in the same commit.
 3. Bump the visual-version comment at the top of `design.py` so downstream viewers can detect.
 
 When the public template gets new features that downstream forks should pull in:
@@ -83,6 +85,6 @@ When the public template gets new features that downstream forks should pull in:
 
 Direct: Andrej Karpathy's *Building an LLM Wiki* gist (https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f, May 2026). The pattern: dense markdown corpus maintained by an LLM agent that follows a `CLAUDE.md`/`AGENTS.md` contract, with `index.md` (catalog) and `log.md` (append-only) as special root files.
 
-The four base playbooks are explicit compositions of established frames: Anthropic Economic Index (ai-exposure), Wardley (value-map), Choudary (reshuffle), Dorsey + Botha (world-model). The term "structure" instead of "substrate" follows Simone Cicero, *What is an organization today?* (Through The Boundary, April 2026) — see the vocabulary entry above for the URL.
+Of the five base playbooks, four are explicit compositions of established frames: Anthropic Economic Index (ai-exposure), Wardley (value-map), Choudary (reshuffle), Dorsey + Botha (world-model). The fifth (graph) is sourceless — it renders the structure as the structure declares itself, with no interpretive frame in between. The term "structure" instead of "substrate" follows Simone Cicero, *What is an organization today?* (Through The Boundary, April 2026) — see the vocabulary entry above for the URL.
 
 We borrow the pattern; we call our artefact `org/`, not a wiki.

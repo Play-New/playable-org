@@ -438,6 +438,37 @@ def test_org_read_search_list_neighbors():
     assertion("neighbors depth>3 rejected",
               "<rpc-error" in out or "Error" in out, out[:100])
 
+    # ---- org_play_run (graph build) ----
+    # Graph build mechanically walks the structure — no AEI input needed.
+    # Asserts the build returns nodes + edges + a topology summary.
+    # Use a fixed out_name so the test cleans up after itself instead of
+    # leaking a date-stamped artefact into the fixture every run.
+    test_artefact = "graph-e2e-test-fixture"
+    test_artefact_path = REPO_ROOT / "mcp-server" / "test-fixtures" / "sample-org" / "plays" / "data" / f"{test_artefact}.json"
+    try:
+        out = call(d, "org_play_run", {
+            "playbook": "graph",
+            "mode": "build",
+            "out_name": test_artefact,
+        })
+        parsed = json.loads(out)
+        assertion("play_run graph build status ok",
+                  parsed.get("status") == "ok",
+                  f"status={parsed.get('status')}, stderr={parsed.get('stderr', '')[:200]}")
+        skel = parsed.get("skeleton") or {}
+        assertion("play_run graph build returns nodes",
+                  len(skel.get("nodes", [])) >= 30,
+                  f"nodes count: {len(skel.get('nodes', []))}")
+        assertion("play_run graph build returns edges",
+                  len(skel.get("edges", [])) >= 100,
+                  f"edges count: {len(skel.get('edges', []))}")
+        assertion("play_run graph build returns topology summary",
+                  "_topology" in skel and "by_node_kind" in skel["_topology"],
+                  str(skel.get("_topology", {}))[:200])
+    finally:
+        if test_artefact_path.exists():
+            test_artefact_path.unlink()
+
 
 
 def test_repo_root_tooling():
@@ -452,8 +483,9 @@ def test_repo_root_tooling():
     parsed = json.loads(out)
     names = {s["name"] for s in parsed.get("skills", [])}
     expected = {"init", "ingest", "lint", "compile-agent", "interview-activity",
-                "ai-exposure", "value-map", "reshuffle", "world-model", "new-playbook"}
-    assertion(f"skills_list exposes all 10 skills (got {len(names)})",
+                "ai-exposure", "value-map", "reshuffle", "world-model", "graph",
+                "new-playbook"}
+    assertion(f"skills_list exposes all 11 skills (got {len(names)})",
               expected.issubset(names),
               f"missing: {expected - names}")
 

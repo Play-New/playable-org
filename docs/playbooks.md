@@ -1,6 +1,6 @@
 # Playbooks reference
 
-Four base playbooks plus one meta-skill. Each answers one analytical question and produces a frozen artefact under `org/plays/data/`.
+Five base playbooks plus one meta-skill. Each answers one analytical question and produces a frozen artefact under `org/plays/data/`.
 
 ## ai-exposure
 
@@ -84,6 +84,25 @@ Four base playbooks plus one meta-skill. Each answers one analytical question an
 
 **Detail.** [`skills/playbooks/world-model/SKILL.md`](../skills/playbooks/world-model/SKILL.md).
 
+## graph
+
+**Question.** What does the whole organization look like as one connected graph? Which nodes are load-bearing? Where is the structure dense, and where has it not been written down yet?
+
+**Source theory.** None — this playbook is the only one without an external source. The structure is rendered as the structure declares itself, with no interpretive frame in between. It is the lightest of the playbooks and the one to run earliest, after the first ingest, before any of the framed reads.
+
+**What it does.**
+1. Walks every node in `org/`: identity, units, activities, people, stakeholders, commitments, financial summaries, sources.
+2. Collects typed edges from frontmatter id arrays (parent, unit, performer, parties_committing, parties_benefiting, stakeholders_touched), from body markdown links that resolve to other nodes, and from the citation pattern `(source-id)` in the body.
+3. Surfaces a topology summary: top-connected nodes by degree, isolates, edge counts by kind.
+4. The agent reads the graph in the viewer, then authors 3–5 leader-facing decisions naming load-bearing nodes, sparse regions, and where the structure has not been written down.
+5. Renders an interactive force-directed visualization (vanilla JS, no D3 dependency) with click-to-inspect popovers.
+
+**Output.**
+- `org/plays/data/graph-<scope>-<date>.json`
+- `org/plays/data/graph-<scope>-<date>.html`
+
+**Detail.** [`skills/playbooks/graph/SKILL.md`](../skills/playbooks/graph/SKILL.md).
+
 ## new-playbook (meta-skill)
 
 **Question.** What's a new analytical question we want to ask repeatedly about this organization, and what's the smallest scaffold that lets us answer it?
@@ -108,6 +127,7 @@ In Claude Desktop, after install:
 > What's the world-model of this organization?
 > Which activities does AI affect most?
 > Reshuffle the customer-onboarding pipeline.
+> Show me the whole org as one graph.
 > Create a new playbook that maps fragility in our commitments.
 
 The agent reads the relevant `SKILL.md` via `org_skill_read`, walks the structure, calls `org_play_run` to execute the playbook scripts, and opens the resulting HTML in your browser.
@@ -116,5 +136,5 @@ The agent reads the relevant `SKILL.md` via `org_skill_read`, walks the structur
 
 - [`docs/architecture.md`](architecture.md) — why the system is built this way.
 - [`docs/extending.md`](extending.md) — how to add a new playbook from scratch.
-- [`skills/ROADMAP.md`](../skills/ROADMAP.md) — the order in which the four base playbooks compose.
+- [`skills/ROADMAP.md`](../skills/ROADMAP.md) — the order in which the five base playbooks compose.
 - [`skills/CAPABILITIES.md`](../skills/CAPABILITIES.md) — the methodology behind world-model.

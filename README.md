@@ -2,7 +2,7 @@
 
 A graph of cited claims about an organization, maintained by an agent, with read-models layered on top.
 
-The graph lives as markdown files. Each file has frontmatter (a typed shape) and a body (prose). Every claim cites the source it came from. The agent reads the org's actual documents — charter, role descriptions, meeting notes, contracts — and proposes diffs against the graph, which a human confirms. Once the graph is populated, **read-models** (we call them *playbooks*) compose specific lenses on top of it: where AI presses on each activity, how the value chain looks under evolution pressure, how AI changes the bundle structure, what the org looks like as a platform of capabilities. Each read-model is a frozen artefact (HTML + JSON), reproducible from the graph at any later time by re-running the playbook.
+The graph lives as markdown files. Each file has frontmatter (a typed shape) and a body (prose). Every claim cites the source it came from. The agent reads the org's actual documents — charter, role descriptions, meeting notes, contracts — and proposes diffs against the graph, which a human confirms. Once the graph is populated, **read-models** (we call them *playbooks*) compose specific lenses on top of it: the whole org as one connected force-directed picture, where AI presses on each activity, how the value chain looks under evolution pressure, how AI changes the bundle structure, what the org looks like as a platform of capabilities. Each read-model is a frozen artefact (HTML + JSON), reproducible from the graph at any later time by re-running the playbook.
 
 The artefact is not a wiki, not an RDF knowledge graph, not a BPM tool, not a Notion replacement. See *Where it sits* below.
 
@@ -60,18 +60,19 @@ Where Cicero (*[Through The Boundary, May 2026](https://through-the-boundary.sim
 
 The thing the artefact aims to be is a **substrate**: enough cited structure for an agent to act on, minus the bureaucracy of formal ontologies, plus the editorial discipline that keeps the prose readable.
 
-## The four read-models (playbooks)
+## The five read-models (playbooks)
 
-Each playbook produces an HTML + JSON pair under `org/plays/data/`. Same chrome across all four (one container width, popover on click, "How to read this map" decisions section). Different lenses on the same `org/`.
+Each playbook produces an HTML + JSON pair under `org/plays/data/`. Same chrome across all five (one container width, popover on click, "How to read this map" decisions section). Different lenses on the same `org/`.
 
 | Playbook | Question it answers | Source theory |
 |---|---|---|
+| **graph** | What does the whole organization look like as one connected graph? Which nodes are load-bearing? Where has the structure not been written down yet? | None — mechanical render of the corpus as the structure declares itself. |
 | **ai-exposure** | For each activity, how is AI used today on the closest matched task in a public sample? Which org activities are most exposed, and how? | Anthropic Economic Index (March 2026) — observed-usage signal across O\*NET tasks |
 | **value-map** | Where does each piece of the work sit on evolution × visibility, where is AI pushing it, and what new pieces are emerging that don't exist yet? | Simon Wardley — value-mapping with evolution stages |
 | **reshuffle** | For a process slice, what holds each activity in place (rare resource / cost-of-being-wrong / cost-of-keeping-aligned)? Which AI uses change structure (engine) vs just speed (tool)? Which rebundle moves does the analysis suggest? | Sangeet Paul Choudary, *Reshuffle* (2024) |
 | **world-model** | The org as platform: capabilities + world model + intelligence layer + interfaces. What's differentiated vs standard? What pieces of the chain don't exist yet that the demand already implies? | Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026) |
 
-The playbooks compose: ai-exposure first (broadest survey), then value-map (each activity placed on the curve), then reshuffle (constraint analysis on a slice), then world-model (capability-level overlay). The composition is documented in `skills/ROADMAP.md`.
+The playbooks compose: graph first (the lightest, after the first ingest, no AEI dependency, no interpretive frame), then ai-exposure (broadest analytical survey), then value-map (each activity placed on the curve), then reshuffle (constraint analysis on a slice), then world-model (capability-level overlay). The composition is documented in `skills/ROADMAP.md`.
 
 Each playbook ships its own audit gate (anti-hallucination, deterministic) plus an autoresearch gate (five dimensions: recognizability, plain-language, decision-anchoring, audit-grounded, plus an opt-in LLM judge). The judge can run in **subscription mode** (the agent in the user's session applies the rubric in-context, no API key) or **API mode** (`autoresearch.py --llm`, calls Claude Sonnet 4.6 via SDK, for CI). The rubric is in `skills/playbooks/AUTORESEARCH-JUDGE-RUBRIC.md`.
 
@@ -96,8 +97,8 @@ Each is a non-default decision; each has a rationale.
 ## What ships in the public template
 
 - **mcp-server**: 13 tools, TypeScript stdio, 84/84 e2e tests, ~30KB compiled.
-- **skills**: 10 skills total. Three operational (`init`, `ingest`, `lint`); four playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`); two deployment skills (`compile-agent` for scope-limited agents, `interview-activity` for filling the activity density layer); one meta-skill (`new-playbook`).
-- **sample-org**: a fully populated test fixture under `mcp-server/test-fixtures/sample-org/`. The Outline & Co. fake studio: 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources, plus the four canonical playbook artefacts (HTML + JSON + judge verdicts) and two activities with the density layer filled (brand-positioning, kickoff-workshop). Open `plays/data/*.html` to see exactly what each playbook produces.
+- **skills**: 11 skills total. Three operational (`init`, `ingest`, `lint`); five playbooks (`graph`, `ai-exposure`, `value-map`, `reshuffle`, `world-model`); two deployment skills (`compile-agent` for scope-limited agents, `interview-activity` for filling the activity density layer); one meta-skill (`new-playbook`).
+- **sample-org**: a fully populated test fixture under `mcp-server/test-fixtures/sample-org/`. The Outline & Co. fake studio: 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources, plus the five canonical playbook artefacts (HTML + JSON + judge verdicts where applicable) and two activities with the density layer filled (brand-positioning, kickoff-workshop). Open `plays/data/*.html` to see exactly what each playbook produces.
 - **install.command / install.bat**: clickable installers (no admin required). Build the mcp server, register it in Claude Desktop's config.
 - **design system**: `skills/design.py` — single source of truth for the visual language (Inter Variable + opacity-layered grayscale + small pastel data-viz palette). Forks override the brand font by replacing `_assets/fonts/inter-variable.woff2`.
 
@@ -107,8 +108,8 @@ The public template's `org/` is empty (3 identity stubs marked `# REPLACE ME`). 
 
 Built and shipped:
 
-- The four playbooks with the unified chrome (1240px container, 820px editorial column, popover on click, "How to read this map" decisions section, conditional-voice rule on emerging items).
-- The five-dimension autoresearch loop, with subscription-mode (agent-as-judge in-context) as the default and API-mode as the CI fallback. Verdicts produced for all four canonical sample-org plays.
+- The five playbooks with the unified chrome (1240px container, 820px editorial column for editorial bookends; the graph viewer extends its canvas to 1160px because the topology genuinely needs the width). Popover on click, "How to read this map" decisions section, conditional-voice rule on emerging items.
+- The five-dimension autoresearch loop, with subscription-mode (agent-as-judge in-context) as the default and API-mode as the CI fallback. Verdicts produced for all four interpretive sample-org plays (ai-exposure, value-map, reshuffle, world-model); graph runs the four deterministic dimensions (the LLM-judge dimension is opt-in there too).
 - `compile-agent` skill — given a scope (`org` / `unit:<id>` / `person:<id>` / `commitment:<id>`), emit a `CLAUDE.md` that turns a Claude Code session into an agent that knows that scope. Currently a recipe-an-agent-follows-by-hand via the existing read tools; the mechanised compiler is the next iteration.
 - `interview-activity` skill — the eight-question Q&A flow that fills the density layer for one activity (interviewing the performer, saving the transcript verbatim as a source, structure-extracting the six fields). Demonstrated on two sample-org activities.
 
@@ -134,7 +135,7 @@ Detailed: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/ar
 
 The pattern — an LLM-maintained markdown corpus governed by an `AGENTS.md` contract, with `index.md` as catalog and `log.md` as audit — is from Andrej Karpathy, [*Building an LLM Wiki*](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) (gist, May 2026). We keep the pattern and call our artefact `org/`, not a wiki. The term **structure** for the cited-graph layer comes from Simone Cicero, *[What is an organization today?](https://through-the-boundary.simonecicero.com/p/ttb-1-what-is-an-organization-today)* (Through The Boundary, April 2026), which contrasts the *structure* of an organization (topology, taxonomy, shared context, promise chains) — what AI makes more necessary — with the *superstructure* (hierarchical management, bureaucracy) — what AI eliminates.
 
-The four playbooks are explicit compositions of established frames: Anthropic Economic Index (`ai-exposure`), Wardley (`value-map`), Choudary (`reshuffle`), Dorsey + Botha (`world-model`).
+Of the five playbooks, four are explicit compositions of established frames: Anthropic Economic Index (`ai-exposure`), Wardley (`value-map`), Choudary (`reshuffle`), Dorsey + Botha (`world-model`). The fifth (`graph`) has no external source — it is the structure rendered as the structure declares itself.
 
 Author surnames appear in this README and in `skills/` documentation for credibility and reproducibility. They never appear inside `org/` artefacts (structure or plays) — those are written for the leader of the org being mapped, not for someone tracing the playbook's intellectual ancestry.
 

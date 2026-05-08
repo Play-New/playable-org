@@ -27,7 +27,7 @@ const inputSchema = {
   properties: {
     playbook: {
       type: 'string',
-      enum: ['ai-exposure', 'value-map', 'reshuffle', 'world-model'],
+      enum: ['ai-exposure', 'value-map', 'reshuffle', 'world-model', 'graph'],
       description: 'Which playbook to run.',
     },
     mode: {
@@ -67,7 +67,7 @@ const inputSchema = {
 
 const ArgsSchema = z
   .object({
-    playbook: z.enum(['ai-exposure', 'value-map', 'reshuffle', 'world-model']),
+    playbook: z.enum(['ai-exposure', 'value-map', 'reshuffle', 'world-model', 'graph']),
     mode: z.enum(['build', 'render']),
     anchor: z.string().optional(),
     kind: z.enum(['commitment', 'unit']).optional(),
@@ -189,6 +189,11 @@ export const orgPlayRunTool: ToolDefinition = {
       } else if (args.playbook === 'world-model') {
         if (args.scope) cliArgs.push('--scope', args.scope);
         cliArgs.push('--ai-exposure-matches', resolve(dataDir, 'all-org-matches-2026-05-03.json'));
+      } else if (args.playbook === 'graph') {
+        // Graph build needs no AEI input; it walks the structure
+        // mechanically and emits nodes + edges. --scope is reserved
+        // for future per-unit slicing.
+        if (args.scope) cliArgs.push('--scope', args.scope);
       }
       cliArgs.push('--org-dir', ctx.dataDir, '--out', jsonPath);
 

@@ -1,0 +1,1337 @@
+{
+  "_scope": "whole-org",
+  "_topology": {
+    "nodes_total": 41,
+    "edges_total": 165,
+    "by_node_kind": {
+      "identity": 3,
+      "unit": 5,
+      "activity": 14,
+      "person": 5,
+      "stakeholder": 4,
+      "commitment": 4,
+      "financial-summary": 1,
+      "source": 5
+    },
+    "by_edge_kind": {
+      "cite": 56,
+      "link": 34,
+      "unit": 19,
+      "performer": 14,
+      "touches": 25,
+      "party_committing": 14,
+      "party_benefiting": 3
+    },
+    "top_connected": [
+      {
+        "id": "outline-roles-2025",
+        "degree": 24
+      },
+      {
+        "id": "outline-charter-2024",
+        "degree": 21
+      },
+      {
+        "id": "design",
+        "degree": 16
+      },
+      {
+        "id": "strategy",
+        "degree": 16
+      },
+      {
+        "id": "digital-product",
+        "degree": 15
+      },
+      {
+        "id": "enterprise-clients",
+        "degree": 15
+      },
+      {
+        "id": "mid-market-clients",
+        "degree": 15
+      },
+      {
+        "id": "client-services",
+        "degree": 14
+      }
+    ],
+    "isolated": []
+  },
+  "nodes": [
+    {
+      "id": "limits",
+      "kind": "identity",
+      "label": "Limits",
+      "description": "",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "identity/limits.md"
+    },
+    {
+      "id": "mission",
+      "kind": "identity",
+      "label": "Mission",
+      "description": "",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "identity/mission.md"
+    },
+    {
+      "id": "rules",
+      "kind": "identity",
+      "label": "Rules",
+      "description": "",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "identity/rules.md"
+    },
+    {
+      "id": "client-services",
+      "kind": "unit",
+      "label": "Client services",
+      "description": "Client services area. Kickoff workshops, weekly check-ins, asset handovers, scoping for new pitches.",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "nodes/units/client-services.md"
+    },
+    {
+      "id": "design",
+      "kind": "unit",
+      "label": "Design",
+      "description": "Brand identity area. Identity systems, visual languages, brand books, motion systems.",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "nodes/units/design.md"
+    },
+    {
+      "id": "digital-product",
+      "kind": "unit",
+      "label": "Digital product",
+      "description": "Digital product area. UI design for B2B web and apps; design systems for client product teams; embedded UX research.",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "nodes/units/digital-product.md"
+    },
+    {
+      "id": "operations",
+      "kind": "unit",
+      "label": "Operations",
+      "description": "Operations area. Studio finance, hiring, light HR, vendor management. Does not produce client work.",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "nodes/units/operations.md"
+    },
+    {
+      "id": "strategy",
+      "kind": "unit",
+      "label": "Strategy",
+      "description": "Brand strategy area. Positioning, audience research, naming, narrative workshops, competitive audits.",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "nodes/units/strategy.md"
+    },
+    {
+      "id": "asset-handover",
+      "kind": "activity",
+      "label": "Asset handover",
+      "description": "Run the asset-handover ritual at the end of each engagement: delivery of all artefacts, sign-off, archival.",
+      "state": "",
+      "unit": "client-services",
+      "performer": "tomas-reis",
+      "_path": "nodes/activities/asset-handover.md"
+    },
+    {
+      "id": "audience-research",
+      "kind": "activity",
+      "label": "Audience research",
+      "description": "Interview the client's customers and stakeholders, transcribe and synthesise into an insights document feeding positioning.",
+      "state": "",
+      "unit": "strategy",
+      "performer": "marco-bellini",
+      "_path": "nodes/activities/audience-research.md"
+    },
+    {
+      "id": "brand-book",
+      "kind": "activity",
+      "label": "Brand book",
+      "description": "Author the brand book — the studio's signature artefact. Built personally by the design lead on every engagement.",
+      "state": "",
+      "unit": "design",
+      "performer": "lena-thorvaldsen",
+      "_path": "nodes/activities/brand-book.md"
+    },
+    {
+      "id": "brand-positioning",
+      "kind": "activity",
+      "label": "Density layer — filled by interviewing Marco on 2026-05-07.",
+      "description": "Author the positioning document for an engagement: how the client should be understood, against whom, with what proof points.",
+      "state": "",
+      "unit": "strategy",
+      "performer": "marco-bellini",
+      "_path": "nodes/activities/brand-positioning.md"
+    },
+    {
+      "id": "competitive-audit",
+      "kind": "activity",
+      "label": "Competitive audit",
+      "description": "Map a client's competitive landscape: who else exists in the category, what they sound like, where the white space is.",
+      "state": "",
+      "unit": "strategy",
+      "performer": "marco-bellini",
+      "_path": "nodes/activities/competitive-audit.md"
+    },
+    {
+      "id": "design-system-build",
+      "kind": "activity",
+      "label": "Design system build",
+      "description": "Build a design system for clients who maintain their own product engineering. Documented system, ready for client handoff.",
+      "state": "",
+      "unit": "digital-product",
+      "performer": "dev-patel",
+      "_path": "nodes/activities/design-system-build.md"
+    },
+    {
+      "id": "identity-system-build",
+      "kind": "activity",
+      "label": "Identity system build",
+      "description": "Build the full identity system for an engagement: typography, colour, grid, motion, illustration direction, photo direction.",
+      "state": "",
+      "unit": "design",
+      "performer": "lena-thorvaldsen",
+      "_path": "nodes/activities/identity-system-build.md"
+    },
+    {
+      "id": "kickoff-workshop",
+      "kind": "activity",
+      "label": "Density layer — filled by interviewing Tomás on 2026-05-07.",
+      "description": "Run the kickoff workshop for every engagement: scope agreement, calendar, weekly cadence, single point of contact on client side.",
+      "state": "",
+      "unit": "client-services",
+      "performer": "tomas-reis",
+      "_path": "nodes/activities/kickoff-workshop.md"
+    },
+    {
+      "id": "quarterly-finance-review",
+      "kind": "activity",
+      "label": "Quarterly finance review",
+      "description": "Founder-led quarterly review of studio finances: P&L, vendor spend, engagement margin, runway.",
+      "state": "",
+      "unit": "operations",
+      "performer": "iris-wynn",
+      "_path": "nodes/activities/quarterly-finance-review.md"
+    },
+    {
+      "id": "ui-design",
+      "kind": "activity",
+      "label": "UI design",
+      "description": "UI design for B2B web and apps: screens, components, interactions, accessibility, paired with client front-end engineers.",
+      "state": "",
+      "unit": "digital-product",
+      "performer": "dev-patel",
+      "_path": "nodes/activities/ui-design.md"
+    },
+    {
+      "id": "ux-research",
+      "kind": "activity",
+      "label": "UX research",
+      "description": "Embedded UX research with the client product team: usability testing, observation, synthesis.",
+      "state": "",
+      "unit": "digital-product",
+      "performer": "dev-patel",
+      "_path": "nodes/activities/ux-research.md"
+    },
+    {
+      "id": "vendor-invoicing",
+      "kind": "activity",
+      "label": "Vendor invoicing",
+      "description": "Process vendor partner invoices on a 14-day cycle so the studio can honour its 30-day-payment commitment to the network.",
+      "state": "",
+      "unit": "operations",
+      "performer": "iris-wynn",
+      "_path": "nodes/activities/vendor-invoicing.md"
+    },
+    {
+      "id": "visual-language",
+      "kind": "activity",
+      "label": "Visual language",
+      "description": "Define the visual language for an engagement: typography, colour, imagery direction, motion logic, on top of the positioning brief.",
+      "state": "",
+      "unit": "design",
+      "performer": "lena-thorvaldsen",
+      "_path": "nodes/activities/visual-language.md"
+    },
+    {
+      "id": "weekly-check-in",
+      "kind": "activity",
+      "label": "Weekly check-in",
+      "description": "Run the weekly check-in call on each active engagement: progress, blockers, next-week scope confirmation.",
+      "state": "",
+      "unit": "client-services",
+      "performer": "tomas-reis",
+      "_path": "nodes/activities/weekly-check-in.md"
+    },
+    {
+      "id": "dev-patel",
+      "kind": "person",
+      "label": "Dev Patel",
+      "description": "Digital product lead. Runs UI design, UX research, and design-system construction across product engagements.",
+      "state": "active",
+      "unit": "digital-product",
+      "performer": "",
+      "_path": "nodes/people/dev-patel.md"
+    },
+    {
+      "id": "iris-wynn",
+      "kind": "person",
+      "label": "Iris Wynn",
+      "description": "Founder and creative director of Outline & Co.",
+      "state": "active",
+      "unit": "operations",
+      "performer": "",
+      "_path": "nodes/people/iris-wynn.md"
+    },
+    {
+      "id": "lena-thorvaldsen",
+      "kind": "person",
+      "label": "Lena Thorvaldsen",
+      "description": "Design lead. Runs every brand-identity engagement; builds the brand book personally on every engagement.",
+      "state": "active",
+      "unit": "design",
+      "performer": "",
+      "_path": "nodes/people/lena-thorvaldsen.md"
+    },
+    {
+      "id": "marco-bellini",
+      "kind": "person",
+      "label": "Marco Bellini",
+      "description": "Strategy lead. Runs every brand-strategy engagement end-to-end.",
+      "state": "active",
+      "unit": "strategy",
+      "performer": "",
+      "_path": "nodes/people/marco-bellini.md"
+    },
+    {
+      "id": "tomas-reis",
+      "kind": "person",
+      "label": "Tomás Reis",
+      "description": "Client services lead. Runs every kickoff workshop and every pitch scoping.",
+      "state": "active",
+      "unit": "client-services",
+      "performer": "",
+      "_path": "nodes/people/tomas-reis.md"
+    },
+    {
+      "id": "enterprise-clients",
+      "kind": "stakeholder",
+      "label": "Enterprise clients",
+      "description": "Larger clients running 6-9 month engagements with embedded studio presence; one or two such relationships per year by design.",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "nodes/stakeholders/enterprise-clients.md"
+    },
+    {
+      "id": "mid-market-clients",
+      "kind": "stakeholder",
+      "label": "Mid-market clients",
+      "description": "Mid-market companies that engage the studio for the strategy → identity → digital product flow on fixed-price 12-16 week scopes.",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "nodes/stakeholders/mid-market-clients.md"
+    },
+    {
+      "id": "strategic-partners",
+      "kind": "stakeholder",
+      "label": "Strategic partners",
+      "description": "Other studios and research firms in the network the studio refers to when client need exceeds capacity or scope.",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "nodes/stakeholders/strategic-partners.md"
+    },
+    {
+      "id": "studio-vendors",
+      "kind": "stakeholder",
+      "label": "Studio vendors",
+      "description": "Production-only vendor partners: web developers, illustrators, photographers, type foundries, printers.",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "nodes/stakeholders/studio-vendors.md"
+    },
+    {
+      "id": "studio-employees-development",
+      "kind": "commitment",
+      "label": "Studio ↔ employees — junior development arc",
+      "description": "",
+      "state": "active",
+      "unit": "",
+      "performer": "",
+      "_path": "commitments/studio-employees-development.md"
+    },
+    {
+      "id": "studio-enterprise-baseline",
+      "kind": "commitment",
+      "label": "Studio ↔ enterprise clients — baseline engagement",
+      "description": "",
+      "state": "active",
+      "unit": "",
+      "performer": "",
+      "_path": "commitments/studio-enterprise-baseline.md"
+    },
+    {
+      "id": "studio-mid-market-baseline",
+      "kind": "commitment",
+      "label": "The mid-market engagement",
+      "description": "",
+      "state": "active",
+      "unit": "",
+      "performer": "",
+      "_path": "commitments/studio-mid-market-baseline.md"
+    },
+    {
+      "id": "studio-vendors-payments",
+      "kind": "commitment",
+      "label": "Studio ↔ vendor partners — 30-day payment",
+      "description": "",
+      "state": "active",
+      "unit": "",
+      "performer": "",
+      "_path": "commitments/studio-vendors-payments.md"
+    },
+    {
+      "id": "annual-2025",
+      "kind": "financial-summary",
+      "label": "Annual finance summary, 2025",
+      "description": "End-of-year studio finance snapshot for 2025: revenue, costs by area, vendor spend, headcount.",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "financials/annual-2025.md"
+    },
+    {
+      "id": "marco-interview-2026-05-07",
+      "kind": "source",
+      "label": "Interview with Marco Bellini · brand-positioning activity",
+      "description": "",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "sources/marco-interview-2026-05-07.md"
+    },
+    {
+      "id": "outline-annual-review-2025",
+      "kind": "source",
+      "label": "Outline & Co. — Annual review, 2025",
+      "description": "",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "sources/outline-annual-review-2025.md"
+    },
+    {
+      "id": "outline-charter-2024",
+      "kind": "source",
+      "label": "Outline & Co. — Studio charter",
+      "description": "",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "sources/outline-charter-2024.md"
+    },
+    {
+      "id": "outline-roles-2025",
+      "kind": "source",
+      "label": "Outline & Co. — Role descriptions, 2025 edition",
+      "description": "",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "sources/outline-roles-2025.md"
+    },
+    {
+      "id": "tomas-interview-2026-05-07",
+      "kind": "source",
+      "label": "Interview with Tomás Reis · kickoff-workshop activity",
+      "description": "",
+      "state": "",
+      "unit": "",
+      "performer": "",
+      "_path": "sources/tomas-interview-2026-05-07.md"
+    }
+  ],
+  "edges": [
+    {
+      "from": "limits",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "mission",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "rules",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "client-services",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "client-services",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "client-services",
+      "to": "strategy",
+      "kind": "link"
+    },
+    {
+      "from": "client-services",
+      "to": "design",
+      "kind": "link"
+    },
+    {
+      "from": "client-services",
+      "to": "digital-product",
+      "kind": "link"
+    },
+    {
+      "from": "design",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "design",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "design",
+      "to": "strategy",
+      "kind": "link"
+    },
+    {
+      "from": "digital-product",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "digital-product",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "digital-product",
+      "to": "strategy",
+      "kind": "link"
+    },
+    {
+      "from": "digital-product",
+      "to": "design",
+      "kind": "link"
+    },
+    {
+      "from": "operations",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "operations",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "strategy",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "strategy",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "strategy",
+      "to": "design",
+      "kind": "link"
+    },
+    {
+      "from": "strategy",
+      "to": "digital-product",
+      "kind": "link"
+    },
+    {
+      "from": "asset-handover",
+      "to": "client-services",
+      "kind": "unit"
+    },
+    {
+      "from": "asset-handover",
+      "to": "tomas-reis",
+      "kind": "performer"
+    },
+    {
+      "from": "asset-handover",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "asset-handover",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "asset-handover",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "audience-research",
+      "to": "strategy",
+      "kind": "unit"
+    },
+    {
+      "from": "audience-research",
+      "to": "marco-bellini",
+      "kind": "performer"
+    },
+    {
+      "from": "audience-research",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "audience-research",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "audience-research",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "audience-research",
+      "to": "brand-positioning",
+      "kind": "link"
+    },
+    {
+      "from": "brand-book",
+      "to": "design",
+      "kind": "unit"
+    },
+    {
+      "from": "brand-book",
+      "to": "lena-thorvaldsen",
+      "kind": "performer"
+    },
+    {
+      "from": "brand-book",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "brand-book",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "brand-book",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "brand-positioning",
+      "to": "strategy",
+      "kind": "unit"
+    },
+    {
+      "from": "brand-positioning",
+      "to": "marco-bellini",
+      "kind": "performer"
+    },
+    {
+      "from": "brand-positioning",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "brand-positioning",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "brand-positioning",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "brand-positioning",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "brand-positioning",
+      "to": "marco-interview-2026-05-07",
+      "kind": "cite"
+    },
+    {
+      "from": "brand-positioning",
+      "to": "audience-research",
+      "kind": "link"
+    },
+    {
+      "from": "brand-positioning",
+      "to": "competitive-audit",
+      "kind": "link"
+    },
+    {
+      "from": "brand-positioning",
+      "to": "lena-thorvaldsen",
+      "kind": "link"
+    },
+    {
+      "from": "brand-positioning",
+      "to": "marco-bellini",
+      "kind": "link"
+    },
+    {
+      "from": "competitive-audit",
+      "to": "strategy",
+      "kind": "unit"
+    },
+    {
+      "from": "competitive-audit",
+      "to": "marco-bellini",
+      "kind": "performer"
+    },
+    {
+      "from": "competitive-audit",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "competitive-audit",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "competitive-audit",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "design-system-build",
+      "to": "digital-product",
+      "kind": "unit"
+    },
+    {
+      "from": "design-system-build",
+      "to": "dev-patel",
+      "kind": "performer"
+    },
+    {
+      "from": "design-system-build",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "design-system-build",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "design-system-build",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "design-system-build",
+      "to": "asset-handover",
+      "kind": "link"
+    },
+    {
+      "from": "identity-system-build",
+      "to": "design",
+      "kind": "unit"
+    },
+    {
+      "from": "identity-system-build",
+      "to": "lena-thorvaldsen",
+      "kind": "performer"
+    },
+    {
+      "from": "identity-system-build",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "identity-system-build",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "identity-system-build",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "kickoff-workshop",
+      "to": "client-services",
+      "kind": "unit"
+    },
+    {
+      "from": "kickoff-workshop",
+      "to": "tomas-reis",
+      "kind": "performer"
+    },
+    {
+      "from": "kickoff-workshop",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "kickoff-workshop",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "kickoff-workshop",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "kickoff-workshop",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "kickoff-workshop",
+      "to": "tomas-interview-2026-05-07",
+      "kind": "cite"
+    },
+    {
+      "from": "kickoff-workshop",
+      "to": "tomas-reis",
+      "kind": "link"
+    },
+    {
+      "from": "quarterly-finance-review",
+      "to": "operations",
+      "kind": "unit"
+    },
+    {
+      "from": "quarterly-finance-review",
+      "to": "iris-wynn",
+      "kind": "performer"
+    },
+    {
+      "from": "quarterly-finance-review",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "ui-design",
+      "to": "digital-product",
+      "kind": "unit"
+    },
+    {
+      "from": "ui-design",
+      "to": "dev-patel",
+      "kind": "performer"
+    },
+    {
+      "from": "ui-design",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "ui-design",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "ui-design",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "ux-research",
+      "to": "digital-product",
+      "kind": "unit"
+    },
+    {
+      "from": "ux-research",
+      "to": "dev-patel",
+      "kind": "performer"
+    },
+    {
+      "from": "ux-research",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "ux-research",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "ux-research",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "ux-research",
+      "to": "ui-design",
+      "kind": "link"
+    },
+    {
+      "from": "ux-research",
+      "to": "brand-positioning",
+      "kind": "link"
+    },
+    {
+      "from": "vendor-invoicing",
+      "to": "operations",
+      "kind": "unit"
+    },
+    {
+      "from": "vendor-invoicing",
+      "to": "iris-wynn",
+      "kind": "performer"
+    },
+    {
+      "from": "vendor-invoicing",
+      "to": "studio-vendors",
+      "kind": "touches"
+    },
+    {
+      "from": "vendor-invoicing",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "vendor-invoicing",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "vendor-invoicing",
+      "to": "outline-annual-review-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "visual-language",
+      "to": "design",
+      "kind": "unit"
+    },
+    {
+      "from": "visual-language",
+      "to": "lena-thorvaldsen",
+      "kind": "performer"
+    },
+    {
+      "from": "visual-language",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "visual-language",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "visual-language",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "visual-language",
+      "to": "identity-system-build",
+      "kind": "link"
+    },
+    {
+      "from": "weekly-check-in",
+      "to": "client-services",
+      "kind": "unit"
+    },
+    {
+      "from": "weekly-check-in",
+      "to": "tomas-reis",
+      "kind": "performer"
+    },
+    {
+      "from": "weekly-check-in",
+      "to": "mid-market-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "weekly-check-in",
+      "to": "enterprise-clients",
+      "kind": "touches"
+    },
+    {
+      "from": "weekly-check-in",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "weekly-check-in",
+      "to": "tomas-reis",
+      "kind": "link"
+    },
+    {
+      "from": "dev-patel",
+      "to": "digital-product",
+      "kind": "unit"
+    },
+    {
+      "from": "dev-patel",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "dev-patel",
+      "to": "lena-thorvaldsen",
+      "kind": "link"
+    },
+    {
+      "from": "iris-wynn",
+      "to": "operations",
+      "kind": "unit"
+    },
+    {
+      "from": "iris-wynn",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "iris-wynn",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "lena-thorvaldsen",
+      "to": "design",
+      "kind": "unit"
+    },
+    {
+      "from": "lena-thorvaldsen",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "lena-thorvaldsen",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "lena-thorvaldsen",
+      "to": "marco-bellini",
+      "kind": "link"
+    },
+    {
+      "from": "marco-bellini",
+      "to": "strategy",
+      "kind": "unit"
+    },
+    {
+      "from": "marco-bellini",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "marco-bellini",
+      "to": "client-services",
+      "kind": "link"
+    },
+    {
+      "from": "marco-bellini",
+      "to": "design",
+      "kind": "link"
+    },
+    {
+      "from": "tomas-reis",
+      "to": "client-services",
+      "kind": "unit"
+    },
+    {
+      "from": "tomas-reis",
+      "to": "outline-roles-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "enterprise-clients",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "enterprise-clients",
+      "to": "outline-annual-review-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "mid-market-clients",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "mid-market-clients",
+      "to": "outline-annual-review-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "strategic-partners",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "studio-vendors",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "studio-vendors",
+      "to": "outline-annual-review-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "studio-employees-development",
+      "to": "operations",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-employees-development",
+      "to": "design",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-employees-development",
+      "to": "strategy",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-employees-development",
+      "to": "digital-product",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-employees-development",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "studio-employees-development",
+      "to": "outline-annual-review-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "studio-enterprise-baseline",
+      "to": "strategy",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-enterprise-baseline",
+      "to": "design",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-enterprise-baseline",
+      "to": "digital-product",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-enterprise-baseline",
+      "to": "client-services",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-enterprise-baseline",
+      "to": "operations",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-enterprise-baseline",
+      "to": "enterprise-clients",
+      "kind": "party_benefiting"
+    },
+    {
+      "from": "studio-enterprise-baseline",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "studio-enterprise-baseline",
+      "to": "outline-annual-review-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "studio-mid-market-baseline",
+      "to": "strategy",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-mid-market-baseline",
+      "to": "design",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-mid-market-baseline",
+      "to": "digital-product",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-mid-market-baseline",
+      "to": "client-services",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-mid-market-baseline",
+      "to": "mid-market-clients",
+      "kind": "party_benefiting"
+    },
+    {
+      "from": "studio-mid-market-baseline",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "studio-mid-market-baseline",
+      "to": "outline-annual-review-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "studio-mid-market-baseline",
+      "to": "strategy",
+      "kind": "link"
+    },
+    {
+      "from": "studio-mid-market-baseline",
+      "to": "design",
+      "kind": "link"
+    },
+    {
+      "from": "studio-mid-market-baseline",
+      "to": "digital-product",
+      "kind": "link"
+    },
+    {
+      "from": "studio-mid-market-baseline",
+      "to": "client-services",
+      "kind": "link"
+    },
+    {
+      "from": "studio-vendors-payments",
+      "to": "operations",
+      "kind": "party_committing"
+    },
+    {
+      "from": "studio-vendors-payments",
+      "to": "studio-vendors",
+      "kind": "party_benefiting"
+    },
+    {
+      "from": "studio-vendors-payments",
+      "to": "outline-charter-2024",
+      "kind": "cite"
+    },
+    {
+      "from": "studio-vendors-payments",
+      "to": "outline-annual-review-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "studio-vendors-payments",
+      "to": "operations",
+      "kind": "link"
+    },
+    {
+      "from": "annual-2025",
+      "to": "outline-annual-review-2025",
+      "kind": "cite"
+    },
+    {
+      "from": "annual-2025",
+      "to": "strategy",
+      "kind": "link"
+    },
+    {
+      "from": "annual-2025",
+      "to": "design",
+      "kind": "link"
+    },
+    {
+      "from": "annual-2025",
+      "to": "digital-product",
+      "kind": "link"
+    },
+    {
+      "from": "annual-2025",
+      "to": "client-services",
+      "kind": "link"
+    },
+    {
+      "from": "annual-2025",
+      "to": "operations",
+      "kind": "link"
+    },
+    {
+      "from": "annual-2025",
+      "to": "studio-vendors-payments",
+      "kind": "link"
+    }
+  ],
+  "decisions": [
+    {
+      "question": "Which documents is the structure most reliant on?",
+      "answer": "Two source documents carry the structure: outline-charter-2024 (degree 21) and outline-roles-2025 (degree 24). Between them they anchor every unit, every person, and every activity in the studio. Every other source — the annual review, the two interviews — is referenced from a small handful of nodes; the charter and the roles document are referenced from almost everywhere.\n\nFor the leader: a change to either document is a change to the entire structure's footing. The charter formalises the studio's positioning, scope-fixing rule, and dispute path; the roles document formalises who does what at every grade. If the studio rewrites either, the audit gate on every other playbook (lint, value-map, world-model) will surface broken citations until the structure catches up. The practical move: treat charter + roles edits as structural events with their own change log, not as routine document updates.",
+      "source": "outline-charter-2024, outline-roles-2025",
+      "node_ids": [
+        "outline-charter-2024",
+        "outline-roles-2025"
+      ]
+    },
+    {
+      "question": "What does the topology say about the studio's seam between client-facing and not?",
+      "answer": "Four units sit at almost identical weight in the graph: design (16), strategy (16), digital-product (15), client-services (14). Operations sits visibly below them at 10. The four client-facing units are bound together by the single mid-market commitment (studio-mid-market-baseline, the densest commitment node at degree 11) which lists all four as parties_committing — the topology mirrors the studio's claim that it works as 'a single team across three disciplines held together by client services'.\n\nFor the leader: the seam between client-work and back-office is the most legible thing in the graph. Operations is intentionally thin — it doesn't run engagements — and its shape on the page reflects that. If a future shift moves vendor management or hiring discipline into client-facing accountability, the operations node should grow; today's gap is a deliberate choice and it shows.",
+      "source": "studio-mid-market-baseline, nodes/units/operations.md",
+      "node_ids": [
+        "studio-mid-market-baseline",
+        "design",
+        "strategy",
+        "digital-product",
+        "client-services",
+        "operations"
+      ]
+    },
+    {
+      "question": "Where is the structure written most thinly?",
+      "answer": "Three regions stand out as sparse. First, strategic-partners (degree 1) is the thinnest stakeholder — only one commitment names it, no activities currently touch it. Second, the two interview sources (marco-interview-2026-05-07, tomas-interview-2026-05-07) sit at degree 1 each — they were used as input for one round of writing and have not been cross-referenced since. Third, the three identity nodes (mission, limits, rules) all sit at degree 1 — they cite the charter but nothing cites them back into the structure.\n\nThe conditional reading: the structure has not been written down here yet. The studio either does work with strategic partners that has not been documented, or the partner relationship is genuinely thin and the single commitment is the whole story — the graph cannot tell the leader which. The interview sources reading as one-shot is the more pressing one: if interviews are meant to feed standing structure, somebody has to cross-reference them; if they are meant as point-in-time inputs that live and die at ingest, they should be marked as such.",
+      "source": "nodes/stakeholders/strategic-partners.md, sources/marco-interview-2026-05-07.md, identity/mission.md",
+      "node_ids": [
+        "strategic-partners",
+        "marco-interview-2026-05-07",
+        "tomas-interview-2026-05-07",
+        "mission",
+        "limits",
+        "rules"
+      ]
+    }
+  ]
+}

@@ -1,24 +1,27 @@
 # skills/ — roadmap
 
-Four base playbooks plus one meta-skill. This file outlines what each does, what it consumes, what it produces, and the order they compose in.
+Five base playbooks plus one meta-skill. This file outlines what each does, what it consumes, what it produces, and the order they compose in.
 
 Author names appear here because `skills/` is the productizable layer. They never appear inside `org/` artifacts (structure or plays).
 
 ## Status
 
-| # | Playbook       | Kind                       | Source theory                       | Status  |
-|---|----------------|----------------------------|-------------------------------------|---------|
-| 1 | ai-exposure    | analysis                       | Anthropic Economic Index (v1, 2026)         | done    |
-| 2 | value-map      | process mapping & redesign     | Simon Wardley                               | done    |
-| 3 | reshuffle      | design                         | Sangeet Choudary                            | done    |
-| 4 | world-model    | operating-model design         | Jack Dorsey + Roelof Botha (Block, 2026)    | done    |
-| 5 | new-playbook       | meta — author your own skill   | (no source — composition of the other four) | done    |
+| # | Playbook       | Kind                                 | Source theory                                 | Status  |
+|---|----------------|--------------------------------------|-----------------------------------------------|---------|
+| 1 | ai-exposure    | analysis                             | Anthropic Economic Index (v1, 2026)           | done    |
+| 2 | value-map      | process mapping & redesign           | Simon Wardley                                 | done    |
+| 3 | reshuffle      | design                               | Sangeet Choudary                              | done    |
+| 4 | world-model    | operating-model design               | Jack Dorsey + Roelof Botha (Block, 2026)      | done    |
+| 5 | graph          | topology — read structure as itself  | (no source — mechanical render of the corpus) | done    |
+| 6 | new-playbook   | meta — author your own skill         | (no source — composition of the other five)   | done    |
 
-The four together form a sequence: observe where AI presses (1) → map where each component sits in evolution (2) → propose new bundles around the constraints that remain (3) → recompose around capabilities and co-creators (4).
+The first four form a sequence: observe where AI presses (1) → map where each component sits in evolution (2) → propose new bundles around the constraints that remain (3) → recompose around capabilities and co-creators (4). The fifth (graph) reads the structure as itself, with no interpretive frame in between — it's the picture you can run earliest, after the first ingest, to see the shape of the corpus.
 
 ## Order of composition
 
-**ai-exposure first.** It's the broadest survey: every activity scored against the Anthropic AEI dataset. Tells you which activities are AI-amenable in observed terms, before any normative interpretation.
+**graph first (lightest).** Run after the first ingest. Walks every node and every relation declared in the structure and renders the whole org as one force-directed picture. No interpretive frame, no AEI dependency. The output answers "what does the corpus look like as a connected thing" before anything reads it through a frame.
+
+**ai-exposure next.** It's the broadest analytical survey: every activity scored against the Anthropic AEI dataset. Tells you which activities are AI-amenable in observed terms, before any normative interpretation.
 
 **Then value-map.** Natural successor to ai-exposure. ai-exposure tells you which activities are AI-amenable; value-map tells you where each of those activities sits on the evolution curve (genesis / custom-built / product / commodity) and which climatic patterns will move them. Without that map, "redesign" lacks a structural footing.
 
@@ -119,13 +122,38 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 **Open question.**
 - Calibration of the four-part model to a non-profit foundation. Block's frame is built on transactional businesses where money is "the most honest signal in the world". For an organization, the equivalent honest signals are donation patterns, grant outcomes, testator pre-mortem behavior. The skill should adapt the customer-world-model section to whatever signals the structure actually has.
 
-## 5 — new-playbook
+## 5 — graph
 
-**What it does.** Meta-skill. Lets a person interacting via mcp author a new analytical playbook for their organization, scaffolded from the patterns of the existing four. The output is a new `skills/playbooks/<name>/` folder with a SKILL.md, a build skeleton, an audit gate, and a viewer template — all populated with the user's question, scope, and signal source.
+**What it does.** Walks the whole `org/` corpus and renders it as a single force-directed picture: every node (units, activities, people, stakeholders, commitments, sources, identity, financial summaries) and every typed relation declared in frontmatter or in body links. The lightest of the playbooks — no AEI dependency, no interpretive frame, just the structure as the structure is written.
+
+**Inputs.**
+- The whole `org/` directory.
+- (Optional, reserved for future) a `--scope <unit-id>` flag to slice to one Direzione's neighbourhood.
+
+**Outputs.**
+- `org/plays/data/graph-<scope>-<date>.json` — typed nodes + edges + topology summary (degree-sorted top connected, isolates, by-kind counts).
+- `org/plays/data/graph-<scope>-<date>.html` — interactive force-directed viewer with the same Play New chrome as the other four playbooks. Click a node → popover with outgoing + incoming relations and the structure file path.
+
+**Key concepts.**
+- Topology is not interpretation. The play surfaces what is connected; whether a region of the structure being thin is a problem or a deliberate choice is a question the leader answers — the play poses it.
+- Conditional voice on thin regions. "The structure has not been written down here yet", not "the org is missing X".
+- Mechanically built. Build does not invent nodes or edges. The audit refuses unresolved endpoints; the autoresearch gate refuses graph-theory jargon and other-playbook framework leakage.
+
+**Anti-hallucination discipline.**
+- Every edge endpoint must resolve to a real node (audit gate).
+- Decisions cite a node id or a relative path under `org/`; the autoresearch's `audit_grounded` check verifies any `node_ids` referenced.
+- Plain-language gate forbids `node degree`, `degree centrality`, `betweenness`, `clustering coefficient`, `hub`, `subgraph` in user-visible prose, plus the framework names of the other four playbooks (capability stack, world model, value chain, bundle, moat).
+
+**Open question.**
+- Per-unit scoping. The current build walks the whole org. A `--scope <unit-id>` mode that produces a subgraph centred on one Direzione (its activities, the stakeholders it touches, the sources its activities cite, the people in it) would be a useful narrower read. Reserved as a future flag — the topology of the whole graph is the more useful first pass.
+
+## 6 — new-playbook
+
+**What it does.** Meta-skill. Lets a person interacting via mcp author a new analytical playbook for their organization, scaffolded from the patterns of the existing five. The output is a new `skills/playbooks/<name>/` folder with a SKILL.md, a build skeleton, an audit gate, and a viewer template — all populated with the user's question, scope, and signal source.
 
 **Inputs.**
 - A question the user wants to ask repeatedly about their organization (e.g., "where are the fragility points in our commitments?", "which sub-team is overcommitted?", "what would a partner-of-the-month playbook show?").
-- The existing four skills as composable patterns (structure access, AEI overlay, audit gate structure, viewer template).
+- The existing five skills as composable patterns (structure access, AEI overlay, audit gate structure, viewer template, force-directed topology).
 - Optionally: a reference to source material the user wants the new skill grounded in.
 
 **Outputs.**
@@ -136,7 +164,7 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 **Key concepts.**
 - Composition over template. The skill does not produce a fixed playbook; it composes one from the user's question and the existing primitives.
 - Plays are the verb the user becomes capable of. Skills are the playbooks they accumulate.
-- The structure, the mcp server, and the four base skills are the primitives the meta-skill composes.
+- The structure, the mcp server, and the five base skills are the primitives the meta-skill composes.
 
 **Anti-hallucination discipline.**
 - Generated SKILL.md must be structure-grounded: every audit rule it proposes must trace to a structure constraint.
@@ -148,11 +176,12 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 
 ## What "done" looks like for each
 
-| Playbook  | Test play (proposed) | Audit gate                                                      |
-|-----------|----------------------|-----------------------------------------------------------------|
-| value-map | example-pipeline | every component cites a signal; predictions tagged           |
-| reshuffle | example-pipeline           | every constraint claim cites; engine/tool tag per AI use case |
-| dorsey    | full org capability map   | every capability reachable from ≥3 activities                 |
+| Playbook    | Test play (proposed)              | Audit gate                                                              |
+|-------------|-----------------------------------|-------------------------------------------------------------------------|
+| value-map   | example-pipeline                  | every component cites a signal; predictions tagged                      |
+| reshuffle   | example-pipeline                  | every constraint claim cites; engine/tool tag per AI use case           |
+| world-model | full org capability map           | every capability reachable from ≥3 activities                           |
+| graph       | whole-org topology                | every edge endpoint resolves; ≥1 node of each required kind; ≥3 cited decisions |
 
 ## Constraints that apply to all three
 
@@ -165,13 +194,13 @@ The four together form a sequence: observe where AI presses (1) → map where ea
 
 ## What this roadmap is not
 
-It is not a commitment to build all four playbooks for every organization. The order proposed here works because each playbook builds on the priors of the previous one, but pragmatic deployments often pick two or three depending on the question the organization wants to answer first.
+It is not a commitment to build all five playbooks for every organization. The order proposed here works because each playbook builds on the priors of the previous one, but pragmatic deployments often pick two or three depending on the question the organization wants to answer first.
 
 ## Recent additions (May 2026)
 
 Tracked here so a fork merging upstream sees what changed:
 
-- **Visual chrome unified across all four playbooks.** One container width (1240px), 820px centered editorial column on every block, full-bordered cards (no left-rule), popover replacing the previous full-screen modal, eyebrow + h1 + lead header pattern, decisions section as the load-bearing interpretive surface. Frozen in each playbook's SKILL.md §Visualize so future iterations have a clear contract.
+- **Visual chrome unified across all five playbooks.** One container width (1240px), 820px centered editorial column on every block (graph extends the canvas to 1160px because the topology genuinely needs the width, with editorial bookends still at 820px), full-bordered cards (no left-rule), popover replacing the previous full-screen modal, eyebrow + h1 + lead header pattern, decisions section as the load-bearing interpretive surface. Frozen in each playbook's SKILL.md §Visualize so future iterations have a clear contract.
 - **Conditional voice rule for emerging items.** Anything `is_new` (component / stakeholder / piece-to-build / candidate role) is written with `if / would / could / depends on`, never `when / will / makes`. Lives in `STYLE.md` with examples.
 - **Plain-language jargon avoid-list.** Framework primitive names are fine as labels; paraphrased into prose they become jargon. Avoid-list grows in `STYLE.md`: moat, commodity (in body), commoditize, judgment density, capability stack, coordination tax, failure-signal, thin (metaphor), see-saw, flywheel, engine candidate, rebundle, production-tier, rich subset, O\*NET, AEI, embedding, cosine similarity, top-K, p25/p75, JSON field-name leaks (evolution_target, ai_effect, ai_autonomy_mean).
 - **Autoresearch as a 5-dimension gate**, four deterministic + one LLM judge. Per-playbook `autoresearch.py` with shared `skills/autoresearch_lib.py`. Each playbook tunes its own jargon blacklist + judge rubric. Promoted to a wiki feature via `org_autoresearch_run` mcp tool — agent can score a play right after rendering it without shelling out.
@@ -179,6 +208,7 @@ Tracked here so a fork merging upstream sees what changed:
 - **`org_autoresearch_run` mcp tool.** 13 tools total now (was 12). Same surface as `org_lint_run`.
 - **DRI as a distinct role** in `CAPABILITIES.md`. Three roles, not interchangeable: DRI (single accountable person, throat-to-choke), IC (executes), player-coach (hybrid, on capabilities large enough to need both building and people development).
 - **Activity density layer** documented in `org/AGENTS.md`. Optional fields (trigger, quality_gates, decision_criteria, output_format, fallback, handoff) that turn an activity into something a Claude skill can be compiled from. Filled by interviewing the performer; the transcript becomes a source citation.
+- **`graph` playbook (May 2026).** Reads the structure as itself: every node and every typed relation declared in frontmatter or in body links, rendered as one force-directed picture. The lightest of the playbooks — no AEI dependency, no interpretive frame, run after the first ingest. Five playbooks total now (was four). Vanilla-JS force simulation, no D3 dependency.
 
 ## Future (deferred)
 
