@@ -8,21 +8,24 @@ Convention: viewers compose primitives, never write inline CSS. This module
 is the only place where typography, spacing, color, and layout decisions
 live. Update once, every viewer follows.
 
-Visual version: 3
+Visual version: 4
 - v1: Inter Variable + monochrome-with-state-accents (#1a1a1a / #e5e5e5).
 - v2: Mirage variable + Play New pure monochrome. Rolled back —
   Klim Type Foundry's standard Mirage license does not permit public
   redistribution; the public template ships with the open-licensed
   Inter Variable instead, and forks can swap in their own brand font
   by replacing `_assets/fonts/inter-variable.woff2`.
-- v3 (current): Inter Variable as the single font family + Play New
-  token system (opacity-layered grayscale, full type scale, --pn-hero
-  / --pn-eyebrow / --pn-num typography classes, motion + radii +
-  spacing tokens) + a small pastel data-viz palette (--ds-sage /
-  --ds-lilac / --ds-slate / --ds-sand / --ds-coral) for heatmaps,
-  stage bands, category swatches, and any viewer surface that needs
-  category differentiation. Brand surfaces stay monochrome; pastels
-  live only in viewer-specific data viz.
+- v3: Inter Variable + Play New monochrome + a small pastel data-viz
+  palette (--ds-sage / --ds-lilac / --ds-slate / --ds-sand / --ds-coral)
+  for heatmaps, stage bands, category swatches, category differentiation.
+- v4 (current): editorial direction taken from Giorgia Lupi / Accurat /
+  Federica Fragapane / Density Design — Italianate masthead pattern,
+  numbered-section register, disclosed grid, marginalia, custom
+  geometric marks per data kind, 5-stop colour scales per hue with
+  glow variants, surface tokens (paper / inset-dark / raised), motion
+  tokens for cascading entry, and a colophon footer pattern. See
+  `docs/design-direction.md` for the brief and references.
+  All v3 tokens remain; v4 is additive.
 
 License note: `_assets/fonts/inter-variable.woff2` is Inter Variable
 by Rasmus Andersson, SIL Open Font License v1.1, freely
@@ -163,6 +166,91 @@ def _base_css() -> str:
   --ds-sand-bg:       #f7f3ea;
   --ds-coral:         #c47558;     /* warn · moat · brand accent */
   --ds-coral-bg:      #fbf2eb;
+
+  /* ------------------------------------------------------------------
+     v4 — Five-stop colour scales per hue (50 / 200 / 400 / 600 / 900)
+     plus a `-glow` token for drop-shadow / focus halos. The 400 stop
+     equals the original flat token (--ds-sage etc.) for backward
+     compatibility. Use cases:
+       50  — background tint
+       200 — secondary fill
+       400 — primary fill (today's flat token)
+       600 — strong accent
+       900 — text on light bg, ornaments
+       glow — focus halo (rgba with alpha for filter)
+     ------------------------------------------------------------------ */
+  --ds-sage-50:       #f3f7f1;
+  --ds-sage-200:      #c9d8c5;
+  --ds-sage-400:      #88a884;
+  --ds-sage-600:      #5b8055;
+  --ds-sage-900:      #2c4628;
+  --ds-sage-glow:     rgba(136, 168, 132, 0.55);
+
+  --ds-lilac-50:      #f6f5fa;
+  --ds-lilac-200:     #d6d4e6;
+  --ds-lilac-400:     #a5a3c8;
+  --ds-lilac-600:     #756fa3;
+  --ds-lilac-900:     #3b365e;
+  --ds-lilac-glow:    rgba(165, 163, 200, 0.55);
+
+  --ds-slate-50:      #f3f6fa;
+  --ds-slate-200:     #cad7e8;
+  --ds-slate-400:     #99b3d4;
+  --ds-slate-600:     #5d80b0;
+  --ds-slate-900:     #28456b;
+  --ds-slate-glow:    rgba(153, 179, 212, 0.55);
+
+  --ds-sand-50:       #fbf8f1;
+  --ds-sand-200:      #ece4cc;
+  --ds-sand-400:      #d8cfb6;
+  --ds-sand-600:      #9c8d68;
+  --ds-sand-900:      #4d4225;
+  --ds-sand-glow:     rgba(216, 207, 182, 0.55);
+
+  --ds-coral-50:      #fbf2ec;
+  --ds-coral-200:     #ecc6b1;
+  --ds-coral-400:     #c47558;
+  --ds-coral-600:     #8c4a30;
+  --ds-coral-900:     #4a2412;
+  --ds-coral-glow:    rgba(196, 117, 88, 0.6);
+
+  /* ------------------------------------------------------------------
+     v4 — Surface tokens. "Paper" is the default editorial white
+     surface with a faint warm tint and subtle ruling. "Paper-grain"
+     adds a noise overlay via background-image (for hero blocks).
+     "Inset-dark" is the deep slate the graph viewer uses. "Raised"
+     is for hovered cards.
+     ------------------------------------------------------------------ */
+  --surf-paper:       #FFFFFF;
+  --surf-paper-tint:  #FCFCFA;          /* hairline-warm white */
+  --surf-paper-rule:  rgba(0,0,0,0.04); /* faint horizontal ruling */
+  --surf-inset-dark:  #14171c;          /* graph canvas */
+  --surf-inset-side:  #1a1d24;          /* panel attached to inset */
+  --surf-raised-shadow: 0 4px 32px rgba(0,0,0,0.10);
+  --surf-paper-shadow:  0 2px 18px rgba(0,0,0,0.06);
+
+  /* ------------------------------------------------------------------
+     v4 — Editorial typography registers (additive over v3 type scale).
+     The display sizes are big — for hero / masthead use only.
+     ------------------------------------------------------------------ */
+  --t-display-1:      clamp(3.4rem, 8vw, 6rem);     /* hero */
+  --t-display-2:      clamp(2.4rem, 5vw, 3.6rem);   /* viewer h1 */
+  --t-kicker:         0.74rem;                      /* italic small caps eyebrow */
+  --t-dateline:       0.78rem;                      /* italic dateline below display */
+  --t-body-lede:      1.125rem;                     /* lede paragraph */
+  --t-marginalia:     0.78rem;                      /* annotation aside */
+  --t-section-num:    0.84rem;                      /* "0.1" numbered section */
+  --t-colophon:       0.74rem;                      /* footer */
+
+  --w-light:          200;
+  --w-extrabold:      800;
+
+  /* ------------------------------------------------------------------
+     v4 — Motion tokens for cascading entry + restrained hover.
+     ------------------------------------------------------------------ */
+  --anim-entry:       0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --anim-hover:       0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --anim-stagger:     50ms;
 
   /* ------------------------------------------------------------------
      State semantic — re-points to the data-viz palette so brand and
@@ -324,6 +412,163 @@ button:hover {{ background: var(--bg-alt); }}
 @keyframes pn-fade {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
 @keyframes pn-pop  {{ from {{ opacity: 0; transform: translateY(8px); }}
                        to   {{ opacity: 1; transform: translateY(0);   }} }}
+@keyframes ed-rise {{ from {{ opacity: 0; transform: translateY(14px); }}
+                       to   {{ opacity: 1; transform: translateY(0);    }} }}
+
+/* ==================================================================
+   v4 — EDITORIAL register (Italianate masthead, numbered sections,
+   marginalia, colophon). Drop these classes anywhere — they assume
+   the surrounding container provides width.
+   ================================================================== */
+
+.ed-masthead {{
+  margin: 0 auto var(--s-9);
+  max-width: 820px;
+  padding-top: var(--s-7);
+  position: relative;
+}}
+.ed-masthead::before {{
+  /* Italianate column-rule — a thin vertical line on the left, seen
+     from old print-page anatomy. Disappears on narrow viewports. */
+  content: "";
+  position: absolute;
+  left: -22px; top: var(--s-7); bottom: 8px;
+  width: 1px;
+  background: var(--fg-hairline);
+}}
+@media (max-width: 920px) {{
+  .ed-masthead::before {{ display: none; }}
+}}
+
+.ed-kicker {{
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: var(--w-medium);
+  font-size: var(--t-kicker);
+  text-transform: lowercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  margin: 0 0 var(--s-4) 0;
+  display: flex; gap: 14px; align-items: baseline;
+}}
+.ed-kicker .sep {{ font-style: normal; color: var(--fg-light); }}
+.ed-kicker .num {{ font-weight: var(--w-bold); font-style: normal; color: var(--fg); font-variant-numeric: tabular-nums; }}
+
+.ed-display {{
+  font-family: var(--font-display);
+  font-weight: var(--w-extrabold);
+  font-size: var(--t-display-2);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  color: var(--fg);
+  margin: 0 0 var(--s-5) 0;
+}}
+.ed-display em {{ font-style: italic; font-weight: var(--w-light); letter-spacing: -0.02em; color: var(--fg); }}
+
+.ed-lede {{
+  font-family: var(--font-body);
+  font-size: var(--t-body-lede);
+  line-height: 1.55;
+  color: var(--fg);
+  margin: 0 0 var(--s-5) 0;
+  max-width: 660px;
+}}
+
+.ed-dateline {{
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--t-dateline);
+  color: var(--fg-light);
+  margin: var(--s-3) 0 0 0;
+  display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap;
+}}
+.ed-dateline .tag {{
+  font-style: normal;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  background: var(--bg-alt);
+  color: var(--fg-muted);
+  padding: 2px 8px;
+  border-radius: 999px;
+}}
+
+.ed-section-head {{
+  display: flex; align-items: baseline; gap: 14px;
+  margin: var(--s-9) 0 var(--s-6) 0;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}}
+.ed-section-head .num {{
+  font-weight: var(--w-light);
+  font-style: italic;
+  color: var(--fg-light);
+  font-size: var(--t-section-num);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}}
+.ed-section-head .rule {{
+  flex: 0 0 24px;
+  height: 1px;
+  background: var(--fg-hairline);
+  align-self: center;
+  margin-top: 4px;
+}}
+.ed-section-head .title {{
+  font-weight: var(--w-medium);
+  font-size: 1.4rem;
+  color: var(--fg);
+}}
+
+.ed-marginalia {{
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--t-marginalia);
+  color: var(--fg-muted);
+  line-height: 1.55;
+  border-left: 1px solid var(--fg-hairline);
+  padding-left: 12px;
+  margin: var(--s-3) 0;
+  max-width: 280px;
+}}
+
+.ed-colophon {{
+  margin: var(--s-11) auto 0;
+  max-width: 820px;
+  padding: var(--s-6) 0 var(--s-3);
+  border-top: 1px solid var(--fg-hairline);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--t-colophon);
+  color: var(--fg-light);
+  line-height: 1.65;
+  text-align: right;
+}}
+.ed-colophon .line {{ display: block; margin-bottom: 4px; }}
+.ed-colophon code {{ font-style: normal; font-size: 0.72rem; background: transparent; padding: 0; color: var(--fg-muted); }}
+
+/* Disclosed grid — faint vertical column guides shown on hero blocks. */
+.ed-disclosed-grid {{
+  position: relative;
+}}
+.ed-disclosed-grid::after {{
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(to right, var(--fg-hairline) 1px, transparent 1px);
+  background-size: 20% 100%;
+  background-position: 0 0;
+  opacity: 0.35;
+  pointer-events: none;
+}}
+
+/* Cascading entry: any direct child gets a small staggered fade-in */
+.ed-cascade > * {{ animation: ed-rise var(--anim-entry) both; }}
+.ed-cascade > *:nth-child(2) {{ animation-delay: calc(var(--anim-stagger) * 1); }}
+.ed-cascade > *:nth-child(3) {{ animation-delay: calc(var(--anim-stagger) * 2); }}
+.ed-cascade > *:nth-child(4) {{ animation-delay: calc(var(--anim-stagger) * 3); }}
+.ed-cascade > *:nth-child(5) {{ animation-delay: calc(var(--anim-stagger) * 4); }}
+.ed-cascade > *:nth-child(6) {{ animation-delay: calc(var(--anim-stagger) * 5); }}
 
 /* ==================================================================
    SEMANTIC TYPE classes — drop onto any element for one-line styling.
@@ -787,6 +1032,117 @@ def footer(left: str = "", right: str = "") -> str:
   <span>{escape(left)}</span>
   <span>{escape(right)}</span>
 </footer>"""
+
+
+# ----------------------------------------------------------------------
+# v4 — editorial primitives (Italianate masthead, colophon, sections)
+# ----------------------------------------------------------------------
+
+def masthead(
+    *,
+    kicker_left: str = "",
+    kicker_num: str = "",
+    kicker_right: str = "",
+    title: str,
+    lede: str = "",
+    dateline: str = "",
+    tags: Iterable[str] = (),
+) -> str:
+    """Italianate masthead, à la Accurat / La Lettura.
+
+    Drop in at the very top of a viewer body. Provides the kicker
+    (italic small caps with optional issue-number ornament), the
+    display title, the lede paragraph, and a dateline with tag chips.
+
+    `title` may contain HTML — pass `<em>...</em>` for italic accent
+    on a word in the display.
+
+    Visual reference: docs/design-direction.md (Accurat masthead rule).
+    """
+    tags_html = "".join(
+        f'<span class="tag">{escape(t)}</span>' for t in tags
+    )
+    kicker_parts = []
+    if kicker_left:
+        kicker_parts.append(f'<span>{escape(kicker_left)}</span>')
+    if kicker_num:
+        kicker_parts.append(f'<span class="num">{escape(kicker_num)}</span>')
+    if kicker_right:
+        kicker_parts.append(f'<span class="sep">·</span>')
+        kicker_parts.append(f'<span>{escape(kicker_right)}</span>')
+    kicker_html = (
+        f'<div class="ed-kicker">{"".join(kicker_parts)}</div>'
+        if kicker_parts else ""
+    )
+    lede_html = f'<p class="ed-lede">{lede}</p>' if lede else ""
+    dl_inner = ""
+    if dateline:
+        dl_inner += f'<span>{escape(dateline)}</span>'
+    if tags_html:
+        dl_inner += tags_html
+    dateline_html = f'<div class="ed-dateline">{dl_inner}</div>' if dl_inner else ""
+    return f"""<header class="ed-masthead ed-cascade">
+  {kicker_html}
+  <h1 class="ed-display">{title}</h1>
+  {lede_html}
+  {dateline_html}
+</header>"""
+
+
+def section_head(num: str, title: str) -> str:
+    """Numbered editorial section header: "0.1 ── Title"."""
+    return (
+        f'<div class="ed-section-head">'
+        f'<span class="num">{escape(num)}</span>'
+        f'<span class="rule"></span>'
+        f'<span class="title">{escape(title)}</span>'
+        f'</div>'
+    )
+
+
+def marginalia(text: str) -> str:
+    """A small italic aside set in the margin of a hero block."""
+    return f'<aside class="ed-marginalia">{escape(text)}</aside>'
+
+
+def colophon(
+    *,
+    citations: int | None = None,
+    sources: int | None = None,
+    generator: str = "",
+    generated_on: str = "",
+    audit: str = "pass",
+    autoresearch: str = "",
+    extra_lines: Iterable[str] = (),
+) -> str:
+    """Magazine-grade footer at the bottom of a viewer.
+
+    All fields optional — passing none renders an empty colophon.
+    `audit` and `autoresearch` are status strings ("pass", "skipped").
+    `generator` is e.g. "skills/playbooks/graph/build.py".
+    """
+    lines = []
+    if citations is not None and sources is not None:
+        lines.append(
+            f'<span class="line">Built from <code>{citations}</code> citations '
+            f'across <code>{sources}</code> source documents.</span>'
+        )
+    if generator:
+        gen = f'<code>{escape(generator)}</code>'
+        when = f' on <code>{escape(generated_on)}</code>' if generated_on else ''
+        lines.append(f'<span class="line">Generated by {gen}{when}.</span>')
+    status_bits = []
+    if audit:
+        status_bits.append(f'audit <code>{escape(audit)}</code>')
+    if autoresearch:
+        status_bits.append(f'autoresearch <code>{escape(autoresearch)}</code>')
+    if status_bits:
+        lines.append(f'<span class="line">' + ' · '.join(status_bits) + '.</span>')
+    for ln in extra_lines:
+        lines.append(f'<span class="line">{ln}</span>')
+    if not lines:
+        return ""
+    return f'<footer class="ed-colophon">{"".join(lines)}</footer>'
 
 
 def section(num: str = "", title: str = "", hint: str = "") -> str:
