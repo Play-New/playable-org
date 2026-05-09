@@ -75,9 +75,9 @@ python3 skills/playbooks/graph/build.py \
 
 Build walks `org/` and emits:
 
-- **Nodes**: every file under `nodes/units`, `nodes/activities`, `nodes/people`, `nodes/stakeholders`, `commitments`, `sources`, `identity`, `financials` becomes a node with id, kind, label, description, state, and relative path.
-- **Edges** (typed): `parent` (unit → unit), `unit` (person/activity → unit), `performer` (activity → person), `party_committing` / `party_benefiting` (commitment → unit/stakeholder/person), `touches` (activity → stakeholder), `cite` (any → source), `link` (any → any node, when a body markdown link resolves to another node file).
-- **`_topology` summary**: nodes_total, edges_total, by_node_kind, by_edge_kind, top_connected (eight nodes by degree), isolated.
+- **Nodes**: every file under `nodes/units`, `nodes/activities`, `nodes/people`, `nodes/roles`, `nodes/stakeholders`, `commitments`, `sources`, `identity`, `language`, `financials` becomes a node with id, kind, label, description, state, and relative path. Ten kinds total, mirroring the schema in `org/AGENTS.md`.
+- **Edges** (typed): `parent` (unit → unit), `unit` (person/activity/role → unit), `performer` (activity → person), `head_role` (unit → role), `holds_role` (person → role), `covers` (role → activity), `party_committing` / `party_benefiting` (commitment → unit/stakeholder/person), `touches` (activity → stakeholder), `cite` (any → source), `link` (any → any node, when a body markdown link resolves to another node file).
+- **`_topology` summary**: nodes_total, edges_total, by_node_kind, by_edge_kind, top_connected (eight nodes by degree on the full graph), isolated.
 
 Build does not interpret. Decisions are not written here.
 
@@ -102,24 +102,45 @@ The HTML is the **primary consumer artefact**. **This shape is frozen**; the can
 
 - **Shape = circle for every node**. Graphs read shape unreliably; the differentiator is colour and size.
 - **Colour = node kind**. Pulled from the project's data-viz palette (`--ds-sage / --ds-lilac / --ds-slate / --ds-sand / --ds-coral`) so the graph viewer and the other four viewers stay coherent.
-- **Size = log of degree**. Highly-connected nodes appear larger so the cardinal nodes (cited charters, busiest units, stakeholders served by many activities) read as cardinal at a glance.
-- **Edges hairline (0.6px, opacity ~0.4)**. Citation edges dashed, link edges lighter, parent edges solid and dark. The graph reads as topology, not as a wiring diagram.
-- **Labels appear only for nodes with degree ≥ 6** so the canvas doesn't clutter at typical org sizes (30–100 nodes).
+- **Size = log of degree** computed against the *currently visible* subgraph (not the full graph). Toggling kinds on/off recomputes degrees so the "what's load-bearing right now" reading stays accurate.
+- **Edges hairline (0.5–1.2px, opacity 0.6 in focus / 0.06 out of focus)**. Parent edges solid+dark; structural edges medium; bibliographic edges thin and dashed. The graph reads as topology, not as a wiring diagram.
+- **Labels appear only for nodes with degree ≥ 4** in the current visible subgraph, plus the focused node and its first-degree neighbours. Avoids canvas clutter at AIRC scale (hundreds of nodes).
 
-**Click on any node** opens a small floating popover (never a modal). The popover opens **below** the clicked circle, **centered horizontally on it**, and flips above when there isn't room below. The popover contains:
+**Default visibility (frozen)**:
 
-- Eyebrow with the kind (`unit`, `activity`, `person`, `stakeholder`, `commitment`, `source`, `identity`, `financial-summary`).
+- **Visible by default**: `unit`, `activity`, `person`, `stakeholder`, `commitment`. The five operational kinds — what shows where the org's weight insists.
+- **Hidden by default**: `identity`, `language-term`, `role`, `financial-summary`, `source`. Declarative / taxonomic / corpus metadata that either distorts the spatial picture (cited-source hubs) or duplicates what the operational kinds already say.
+- **Visible edges by default**: the structural relations (`parent`, `unit`, `performer`, `head_role`, `holds_role`, `covers`, `party_committing`, `party_benefiting`, `touches`).
+- **Hidden edges by default**: `cite`, `link` (bibliographic).
+
+The legend is the live filter. Toggling a kind removes those nodes (or those edges) from the simulation entirely so the rest of the graph repacks the freed space — not a dim, an actual filter. The simulation reheats on every toggle and settles to a new layout.
+
+**Click-to-focus (frozen)**. Clicking a circle:
+1. Opens a popover below it (centred horizontally, flipping above when there's no room — same pattern as the other four playbooks).
+2. **Dims everything that isn't the clicked node or its first-degree neighbours.** This is the affordance that makes the graph navigable at AIRC scale.
+3. Highlights the focused node's circle with a heavier stroke.
+
+Click empty space (or Esc) clears focus.
+
+**Popover contents**:
+
+- Eyebrow with the kind (`unit`, `activity`, `person`, `role`, `stakeholder`, `commitment`, `financial-summary`, `identity`, `language-term`, `source`).
 - The full label as h3.
 - Description paragraph (from the node's frontmatter `description`).
-- Outgoing relations list (relation label + target name; first 8, "+ N more" beyond).
+- Outgoing relations list (relation label + target name; first 10, "+ N more" beyond). Filter-aware — only relations through currently-visible edge kinds appear.
 - Incoming relations list (same shape, with reversed relation labels: `cited by`, `hosts`, `performs`, etc.).
 - Footer citation: the relative path of the node's source markdown file.
 
-Esc / click outside / close button dismisses.
+**Viewport interactions (frozen)**:
 
-**Plain-language discipline (frozen)**. The relation labels are written in plain English: `is part of`, `sits in`, `performed by`, `commits`, `benefits`, `touches`, `cites`, `mentions` — never `parties_committing`, never `degree`, never `edge`. Inside the prose and the decisions, no graph-theory vocabulary leaks. Words to never use in user-visible strings:
+- Wheel zoom (0.3× to 4×, anchored on the cursor).
+- Drag to pan.
+- "reset view" button restores the default 1× translate(0,0).
+- "re-shake" button nudges every visible node by a small random vector and reheats the simulation, useful when the layout settles into a local minimum.
 
-- `node degree` → "how many things mention it"
+**Plain-language discipline (frozen)**. The relation labels are written in plain English: `is part of`, `sits in`, `performed by`, `led by`, `holds role`, `covers`, `commits`, `benefits`, `touches`, `cites`, `mentions` — never `parties_committing`, never `degree`, never `edge`. Inside the prose and the decisions, no graph-theory vocabulary leaks. Words to never use in user-visible strings:
+
+- `node degree` → "how many things connect to it" / "how connected"
 - `degree centrality`, `betweenness`, `clustering coefficient` → never
 - `hub`, `subgraph` → "load-bearing node", "region of the structure"
 - `sparse / dense` is acceptable when used about regions of the structure; not as graph-theory shorthand.
@@ -204,7 +225,7 @@ It can be run alongside any of the other four playbooks; the graph view of the s
 
 The canonical artefact for this skill is the Outline & Co. sample-org play:
 
-- `mcp-server/test-fixtures/sample-org/plays/data/graph-outline-2026-05-08.json` — the source JSON with the full graph + decisions
-- `mcp-server/test-fixtures/sample-org/plays/data/graph-outline-2026-05-08.html` — the rendered viewer
+- `mcp-server/test-fixtures/sample-org/plays/data/graph-outline-2026-05-09.json` — the source JSON with the full graph (41 nodes, 165 typed relations) + 3 decisions
+- `mcp-server/test-fixtures/sample-org/plays/data/graph-outline-2026-05-09.html` — the rendered viewer
 
-Open the HTML in a browser to see exactly what this skill produces. The graph covers the studio's whole structure: 41 nodes (3 identity, 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 1 financial summary, 5 sources), 165 typed relations, no isolates. Three leader-facing decisions name the studio's load-bearing documents (`outline-charter-2024`, `outline-roles-2025`), the four client-facing units, and the regions where the structure has not been written down yet.
+Open the HTML in a browser to see exactly what this skill produces. The default view shows 32 nodes and 75 edges — the operational core: 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments. The two stakeholder types (enterprise-clients, mid-market-clients) come out as the most-connected nodes (degree 13 each); the four client-facing units cluster at near-equal weight (6–7); operations sits visibly below at 6. The three decisions name the operational quadrant (where the org's weight insists), the load-bearing commitment, and the regions written most thinly (strategic-partners, studio-vendors, quarterly-finance-review). Toggle `source` and `cite` from the legend to see the full bibliographic picture.

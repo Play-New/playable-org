@@ -98,9 +98,11 @@ def strip_frontmatter(text: str) -> str:
 
 NODE_KINDS = [
     ("identity",          "identity",          "*.md"),
+    ("language-term",     "language",          "*.md"),
     ("unit",              "nodes/units",       "*.md"),
     ("activity",          "nodes/activities",  "*.md"),
     ("person",            "nodes/people",      "*.md"),
+    ("role",              "nodes/roles",       "*.md"),
     ("stakeholder",       "nodes/stakeholders","*.md"),
     ("commitment",        "commitments",       "*.md"),
     ("financial-summary", "financials",        "*.md"),
@@ -204,8 +206,23 @@ def collect_edges(
                 parent = fm.get("parent")
                 if isinstance(parent, str) and parent and parent != "null":
                     add(node_id, parent, "parent")
+                head = fm.get("head_role")
+                if isinstance(head, str) and head and head != "null":
+                    add(node_id, head, "head_role")
 
             elif kind == "person":
+                u = fm.get("unit")
+                if isinstance(u, str) and u and u != "null":
+                    add(node_id, u, "unit")
+                r = fm.get("role")
+                if isinstance(r, str) and r and r != "null":
+                    add(node_id, r, "holds_role")
+
+            elif kind == "role":
+                # Roles can list the activities they cover (per AGENTS.md).
+                for a in (fm.get("activities") or []):
+                    if isinstance(a, str) and a:
+                        add(node_id, a, "covers")
                 u = fm.get("unit")
                 if isinstance(u, str) and u and u != "null":
                     add(node_id, u, "unit")

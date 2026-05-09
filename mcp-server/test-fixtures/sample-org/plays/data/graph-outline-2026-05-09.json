@@ -1299,20 +1299,12 @@
   ],
   "decisions": [
     {
-      "question": "Which documents is the structure most reliant on?",
-      "answer": "Two source documents carry the structure: outline-charter-2024 (degree 21) and outline-roles-2025 (degree 24). Between them they anchor every unit, every person, and every activity in the studio. Every other source — the annual review, the two interviews — is referenced from a small handful of nodes; the charter and the roles document are referenced from almost everywhere.\n\nFor the leader: a change to either document is a change to the entire structure's footing. The charter formalises the studio's positioning, scope-fixing rule, and dispute path; the roles document formalises who does what at every grade. If the studio rewrites either, the audit gate on every other playbook (lint, value-map, world-model) will surface broken citations until the structure catches up. The practical move: treat charter + roles edits as structural events with their own change log, not as routine document updates.",
-      "source": "outline-charter-2024, outline-roles-2025",
+      "question": "Where does the org's weight insist?",
+      "answer": "In the default view (units + activities + people + stakeholders + commitments) the highest-degree nodes are the two stakeholder types — enterprise-clients (13 connections) and mid-market-clients (13). Every activity that produces deliverables for clients lands on at least one of them, and every commitment names them as the benefiting party. The four client-facing units (design, strategy, digital-product, client-services) sit at almost identical weight (6–7 each); operations sits visibly below at 6 because it does not run engagements.\n\nFor the leader: the topology mirrors the studio's positioning — a single team across three disciplines, held together by client services, all of it pointing at the same two stakeholder types. If the studio rebalanced toward a third stakeholder type (say strategic partners, currently at degree 1), the picture would look different; today every activity reaches the same two endpoints.",
+      "source": "nodes/stakeholders/enterprise-clients.md, nodes/stakeholders/mid-market-clients.md, commitments/studio-mid-market-baseline.md",
       "node_ids": [
-        "outline-charter-2024",
-        "outline-roles-2025"
-      ]
-    },
-    {
-      "question": "What does the topology say about the studio's seam between client-facing and not?",
-      "answer": "Four units sit at almost identical weight in the graph: design (16), strategy (16), digital-product (15), client-services (14). Operations sits visibly below them at 10. The four client-facing units are bound together by the single mid-market commitment (studio-mid-market-baseline, the densest commitment node at degree 11) which lists all four as parties_committing — the topology mirrors the studio's claim that it works as 'a single team across three disciplines held together by client services'.\n\nFor the leader: the seam between client-work and back-office is the most legible thing in the graph. Operations is intentionally thin — it doesn't run engagements — and its shape on the page reflects that. If a future shift moves vendor management or hiring discipline into client-facing accountability, the operations node should grow; today's gap is a deliberate choice and it shows.",
-      "source": "studio-mid-market-baseline, nodes/units/operations.md",
-      "node_ids": [
-        "studio-mid-market-baseline",
+        "enterprise-clients",
+        "mid-market-clients",
         "design",
         "strategy",
         "digital-product",
@@ -1321,16 +1313,29 @@
       ]
     },
     {
+      "question": "Which commitment carries the most structural weight?",
+      "answer": "studio-mid-market-baseline binds the four client-facing units (strategy, design, digital-product, client-services) to the mid-market stakeholder type — five edges in one node, more than any other commitment. studio-enterprise-baseline carries the same shape on the enterprise side at slightly lower density because it adds embedded-team work the other commitments don't. The two vendor / employee commitments (studio-vendors-payments, studio-employees-development) sit on their own with much smaller blast radius — they are real but local.\n\nFor the leader: the mid-market and enterprise commitments are the load-bearing promises of the studio; if either fails the picture loses its centre. The vendor-payments and employee-development commitments are structurally sound but they don't bind the same number of parties, so a change there has narrower consequences. Worth treating the two big commitments as covenant artefacts — formally reviewed, formally renewed — and the others as policy artefacts maintained at lower frequency.",
+      "source": "commitments/studio-mid-market-baseline.md, commitments/studio-enterprise-baseline.md, commitments/studio-vendors-payments.md, commitments/studio-employees-development.md",
+      "node_ids": [
+        "studio-mid-market-baseline",
+        "studio-enterprise-baseline",
+        "studio-vendors-payments",
+        "studio-employees-development",
+        "strategy",
+        "design",
+        "digital-product",
+        "client-services"
+      ]
+    },
+    {
       "question": "Where is the structure written most thinly?",
-      "answer": "Three regions stand out as sparse. First, strategic-partners (degree 1) is the thinnest stakeholder — only one commitment names it, no activities currently touch it. Second, the two interview sources (marco-interview-2026-05-07, tomas-interview-2026-05-07) sit at degree 1 each — they were used as input for one round of writing and have not been cross-referenced since. Third, the three identity nodes (mission, limits, rules) all sit at degree 1 — they cite the charter but nothing cites them back into the structure.\n\nThe conditional reading: the structure has not been written down here yet. The studio either does work with strategic partners that has not been documented, or the partner relationship is genuinely thin and the single commitment is the whole story — the graph cannot tell the leader which. The interview sources reading as one-shot is the more pressing one: if interviews are meant to feed standing structure, somebody has to cross-reference them; if they are meant as point-in-time inputs that live and die at ingest, they should be marked as such.",
-      "source": "nodes/stakeholders/strategic-partners.md, sources/marco-interview-2026-05-07.md, identity/mission.md",
+      "answer": "Three places stand out in the default view. First, strategic-partners sits at degree 1 — one commitment names it, no activity touches it. Either the studio does work with strategic partners that has not been written down, or the relationship really is one-line and the single commitment is the whole story; the graph cannot tell the leader which. Second, studio-vendors connects to vendor-invoicing and the vendor-payments commitment but to almost nothing else — vendor relationships exist as a financial fact more than as an operational presence. Third, the activity quarterly-finance-review is the lowest-degree activity in the graph (3 connections, half the median); it is real and necessary but it touches nothing client-side.\n\nThe conditional reading: thin doesn't mean missing. It means the structure has not been written down here yet, or the part that exists is genuinely narrow. The two big-shape commitments are where the studio insists; the thin nodes are where it does not.",
+      "source": "nodes/stakeholders/strategic-partners.md, nodes/stakeholders/studio-vendors.md, nodes/activities/quarterly-finance-review.md",
       "node_ids": [
         "strategic-partners",
-        "marco-interview-2026-05-07",
-        "tomas-interview-2026-05-07",
-        "mission",
-        "limits",
-        "rules"
+        "studio-vendors",
+        "quarterly-finance-review",
+        "vendor-invoicing"
       ]
     }
   ]
