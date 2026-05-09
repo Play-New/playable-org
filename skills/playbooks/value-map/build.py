@@ -26,6 +26,7 @@ import argparse
 import json
 import re
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -367,6 +368,7 @@ def main() -> int:
             "description": anchor_fm.get("description", ""),
             "terms": anchor_fm.get("terms", ""),
         },
+        "_dated": date.today().isoformat(),
         "_scope_units": scope_units,
         "end_user": "",  # agent fills
         "new_end_users": [],

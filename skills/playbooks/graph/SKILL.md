@@ -138,7 +138,7 @@ Click empty space (or Esc) clears focus.
 - "reset view" button restores the default 1× translate(0,0).
 - "re-shake" button nudges every visible node by a small random vector and reheats the simulation, useful when the layout settles into a local minimum.
 
-**Plain-language discipline (frozen)**. The relation labels are written in plain English: `is part of`, `sits in`, `performed by`, `led by`, `holds role`, `covers`, `commits`, `benefits`, `touches`, `cites`, `mentions` — never `parties_committing`, never `degree`, never `edge`. Inside the prose and the decisions, no graph-theory vocabulary leaks. Words to never use in user-visible strings:
+**Plain-language discipline (frozen)**. The relation labels are written in plain English: `is part of` / `contains`, `in` / `hosts`, `performed by` / `performs`, `led by` / `leads`, `as` / `filled by`, `responsible for` / `owned by`, `binds` / `bound by`, `for` / `for`, `involves` / `involved in`, `cites` / `cited by`, `mentions` / `mentioned by` — never `parties_committing`, never `head_role`, never `degree`, never `edge`. Inside the prose and the decisions, no graph-theory vocabulary leaks. Words to never use in user-visible strings:
 
 - `node degree` → "how many things connect to it" / "how connected"
 - `degree centrality`, `betweenness`, `clustering coefficient` → never

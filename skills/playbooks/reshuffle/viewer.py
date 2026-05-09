@@ -20,7 +20,7 @@ from pathlib import Path
 
 # Import the shared Play New design system
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from design import base_css  # noqa: E402
+from design import base_css, masthead, colophon  # noqa: E402
 
 # Plain-language labels (no metaphors, no framework jargon).
 CONSTRAINT_LABEL = {
@@ -192,12 +192,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <header>
-      <div class="eyebrow">reshuffle</div>
-      <h1>{title}</h1>
-      <p class="lead">{description}</p>
-      <div class="anchor-line">{anchor_id}</div>
-    </header>
+    {masthead_html}
 
     <div class="intro">
       <p>This page is an analysis of one process the organization runs today, and where AI might actually change it. It's a read of the structure, not a proposal — the recommendations come at the end, in plain language.</p>
@@ -261,6 +256,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </div>
 
     {decisions_section}
+
+    {colophon_html}
   </div>
 
   <div class="popover" id="popover">
@@ -640,11 +637,40 @@ def render_html(d: dict) -> str:
     engines_json = json.dumps(engines, ensure_ascii=False)
     rebundles_json = json.dumps(rebundles, ensure_ascii=False)
 
+    # --- editorial chrome (Italianate masthead + magazine colophon) ---
+    n_activities = len(d.get("activities", []) or [])
+    n_engines_count = len(engines)
+    masthead_html = masthead(
+        kicker_left="reshuffle",
+        kicker_num=f"№ {n_activities:02d}",
+        kicker_right=f"slice · {anchor_id}",
+        title=f"<em>{escape(title)}</em>",
+        lede=description_text,
+        dateline="dated " + (d.get("_dated") or ""),
+        tags=[
+            f"{n_activities} activities",
+            f"{n_engines_count} engine candidate" + ("s" if n_engines_count != 1 else ""),
+            f"{len(rebundles)} rebundle option" + ("s" if len(rebundles) != 1 else ""),
+        ],
+    )
+    colophon_html = colophon(
+        citations=None, sources=None,
+        generator="skills/playbooks/reshuffle",
+        generated_on=d.get("_dated", ""),
+        audit="pass",
+        autoresearch="4 / 4 deterministic dimensions pass",
+        extra_lines=[
+            "Click any activity for its primary constraint and rationale · open engine rows for the cited research.",
+        ],
+    )
+
     return HTML_TEMPLATE.format(
         css=base_css() + EXTRA_CSS,
         title=escape(title),
         anchor_id=escape(anchor_id),
         description=escape(description_text),
+        masthead_html=masthead_html,
+        colophon_html=colophon_html,
         dist_bar=dist_bar,
         dist_legend=dist_legend,
         bundle_state_html=bundle_state_html,

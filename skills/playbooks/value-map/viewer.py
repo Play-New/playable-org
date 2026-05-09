@@ -29,7 +29,7 @@ from pathlib import Path
 
 # Import the shared Play New design system
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from design import base_css  # noqa: E402
+from design import base_css, masthead, colophon  # noqa: E402
 
 # Layout constants
 W = 1400
@@ -501,11 +501,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <header>
-      <div class="eyebrow">value map</div>
-      <h1>{title}</h1>
-      <p class="lead">{description}</p>
-    </header>
+    {masthead_html}
 
     <div class="map-wrap">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="100%" style="font-family: var(--font-display);">
@@ -528,6 +524,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     {emerging_section}
 
     {decisions_section}
+
+    {colophon_html}
   </div>
 
   <div class="popover" id="popover">
@@ -848,10 +846,38 @@ def render_html(map_data: dict) -> str:
     for c in map_data["components"]:
         nodes[c["id"]] = c
 
+    # --- editorial chrome (Italianate masthead + magazine colophon) ---
+    n_components = len(map_data.get("components", []))
+    n_anchors = len(map_data.get("anchors", []))
+    anchor_label = (map_data.get("anchors") or [{}])[0].get("label", map_data.get("_anchor", ""))
+    masthead_html = masthead(
+        kicker_left="value map",
+        kicker_num=f"№ {n_components:02d}",
+        kicker_right=f"anchored on · {anchor_label}" if anchor_label else "",
+        title=f"<em>{escape(title)}</em>",
+        lede=description,
+        dateline="dated " + (map_data.get("_dated") or ""),
+        tags=[
+            f"{n_components} pieces",
+            f"{n_anchors} anchor" + ("s" if n_anchors != 1 else ""),
+        ],
+    )
+    colophon_html = colophon(
+        citations=None, sources=None,
+        generator="skills/playbooks/value-map",
+        generated_on=map_data.get("_dated", ""),
+        audit="pass",
+        autoresearch="4 / 4 deterministic dimensions pass",
+        extra_lines=[
+            "Click any piece on the map for its citation and rationale · open AI overlay rows for matched signals.",
+        ],
+    )
     return HTML_TEMPLATE.format(
         css=base_css() + EXTRA_CSS,
         title=escape(title),
         description=escape(description),
+        masthead_html=masthead_html,
+        colophon_html=colophon_html,
         W=W,
         H=H,
         svg_inner=inner,

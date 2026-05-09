@@ -21,6 +21,7 @@ import json
 import re
 import sys
 from collections import defaultdict
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -177,6 +178,7 @@ def main() -> int:
 
     skeleton = {
         "_scope": args.scope or "whole-org",
+        "_dated": date.today().isoformat(),
         "_structure_summary": {
             "units_total": len(structure["units"]),
             "activities_total": len(structure["activities"]),

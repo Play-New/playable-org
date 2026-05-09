@@ -1300,7 +1300,7 @@
   "decisions": [
     {
       "question": "Where does the org's weight insist?",
-      "answer": "In the default view (units + activities + people + stakeholders + commitments) the highest-degree nodes are the two stakeholder types — enterprise-clients (13 connections) and mid-market-clients (13). Every activity that produces deliverables for clients lands on at least one of them, and every commitment names them as the benefiting party. The four client-facing units (design, strategy, digital-product, client-services) sit at almost identical weight (6–7 each); operations sits visibly below at 6 because it does not run engagements.\n\nFor the leader: the topology mirrors the studio's positioning — a single team across three disciplines, held together by client services, all of it pointing at the same two stakeholder types. If the studio rebalanced toward a third stakeholder type (say strategic partners, currently at degree 1), the picture would look different; today every activity reaches the same two endpoints.",
+      "answer": "In the default view (units, activities, people, stakeholders, commitments) the heaviest nodes are the two stakeholder types — enterprise-clients and mid-market-clients, each connected to 13 other things. Every client-facing activity is involved with at least one of them, and the two cardinal commitments are for them. The three discipline units (design, strategy, digital-product) cluster at degree 7 each; client-services and operations sit just below at 6 — the first because it coordinates engagements rather than running them, the second because it does not produce client work at all.\n\nFor the leader: the topology mirrors the studio's positioning — three production disciplines, a coordination function, and a back-office, all of it pointing at the same two stakeholder types. If the studio rebalanced toward a third stakeholder type — strategic-partners, which today is a floating node with no incoming relations — the picture would look different; right now every activity reaches the same two endpoints.",
       "source": "nodes/stakeholders/enterprise-clients.md, nodes/stakeholders/mid-market-clients.md, commitments/studio-mid-market-baseline.md",
       "node_ids": [
         "enterprise-clients",
@@ -1309,34 +1309,38 @@
         "strategy",
         "digital-product",
         "client-services",
-        "operations"
+        "operations",
+        "strategic-partners"
       ]
     },
     {
       "question": "Which commitment carries the most structural weight?",
-      "answer": "studio-mid-market-baseline binds the four client-facing units (strategy, design, digital-product, client-services) to the mid-market stakeholder type — five edges in one node, more than any other commitment. studio-enterprise-baseline carries the same shape on the enterprise side at slightly lower density because it adds embedded-team work the other commitments don't. The two vendor / employee commitments (studio-vendors-payments, studio-employees-development) sit on their own with much smaller blast radius — they are real but local.\n\nFor the leader: the mid-market and enterprise commitments are the load-bearing promises of the studio; if either fails the picture loses its centre. The vendor-payments and employee-development commitments are structurally sound but they don't bind the same number of parties, so a change there has narrower consequences. Worth treating the two big commitments as covenant artefacts — formally reviewed, formally renewed — and the others as policy artefacts maintained at lower frequency.",
-      "source": "commitments/studio-mid-market-baseline.md, commitments/studio-enterprise-baseline.md, commitments/studio-vendors-payments.md, commitments/studio-employees-development.md",
+      "answer": "studio-enterprise-baseline binds five units (strategy, design, digital-product, client-services, operations) and is for enterprise-clients — six relations in one node, more than any other commitment. studio-mid-market-baseline carries the same shape on the mid-market side at slightly lower density: it binds the four client-facing units but does not pull operations in, because mid-market engagements are simpler and don't require the embedded-team coordination that operations provides for enterprise work. The two internal commitments — studio-employees-development binds four units to a development practice, studio-vendors-payments binds operations to vendors only — sit on their own with a much smaller blast radius. They are real but local.\n\nFor the leader: the enterprise and mid-market commitments are the load-bearing promises of the studio. If either one fails the picture loses its centre. The vendor-payments and employee-development commitments are structurally sound but they bind fewer parties, so a change there has narrower consequences. Worth treating the two big commitments as covenant artefacts — formally reviewed, formally renewed — and the other two as policy artefacts maintained at lower frequency.",
+      "source": "commitments/studio-enterprise-baseline.md, commitments/studio-mid-market-baseline.md, commitments/studio-vendors-payments.md, commitments/studio-employees-development.md",
       "node_ids": [
-        "studio-mid-market-baseline",
         "studio-enterprise-baseline",
-        "studio-vendors-payments",
+        "studio-mid-market-baseline",
         "studio-employees-development",
+        "studio-vendors-payments",
         "strategy",
         "design",
         "digital-product",
-        "client-services"
+        "client-services",
+        "operations"
       ]
     },
     {
       "question": "Where is the structure written most thinly?",
-      "answer": "Three places stand out in the default view. First, strategic-partners sits at degree 1 — one commitment names it, no activity touches it. Either the studio does work with strategic partners that has not been written down, or the relationship really is one-line and the single commitment is the whole story; the graph cannot tell the leader which. Second, studio-vendors connects to vendor-invoicing and the vendor-payments commitment but to almost nothing else — vendor relationships exist as a financial fact more than as an operational presence. Third, the activity quarterly-finance-review is the lowest-degree activity in the graph (3 connections, half the median); it is real and necessary but it touches nothing client-side.\n\nThe conditional reading: thin doesn't mean missing. It means the structure has not been written down here yet, or the part that exists is genuinely narrow. The two big-shape commitments are where the studio insists; the thin nodes are where it does not.",
+      "answer": "Three places stand out in the default view. First, strategic-partners is a floating node with no incoming relations — no commitment names it as a party, no activity involves it. The label exists in the structure but the relationship has not been written down: either the studio does work with strategic partners that has not been documented yet, or the term is aspirational and the floating node is the honest signal. Second, studio-vendors has only two default-view connections — vendor-invoicing involves it, studio-vendors-payments is for it — and nothing else: vendor relationships exist as a financial fact more than as an operational presence. Third, quarterly-finance-review is the lowest-degree activity in the graph (2 connections, half the median for activities); it is real and necessary but it involves nothing client-side.\n\nThe conditional reading: thin does not mean missing. It means the structure has not been written down here yet, or the part that exists is genuinely narrow. The two big-shape commitments are where the studio insists; the thin nodes are where it does not.",
       "source": "nodes/stakeholders/strategic-partners.md, nodes/stakeholders/studio-vendors.md, nodes/activities/quarterly-finance-review.md",
       "node_ids": [
         "strategic-partners",
         "studio-vendors",
         "quarterly-finance-review",
-        "vendor-invoicing"
+        "vendor-invoicing",
+        "studio-vendors-payments"
       ]
     }
-  ]
+  ],
+  "_dated": "2026-05-09"
 }

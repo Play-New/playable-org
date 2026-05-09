@@ -78,6 +78,91 @@
   --ds-coral-bg:      #fbf2eb;
 
   /* ------------------------------------------------------------------
+     v4 — Five-stop colour scales per hue (50 / 200 / 400 / 600 / 900)
+     plus a `-glow` token for drop-shadow / focus halos. The 400 stop
+     equals the original flat token (--ds-sage etc.) for backward
+     compatibility. Use cases:
+       50  — background tint
+       200 — secondary fill
+       400 — primary fill (today's flat token)
+       600 — strong accent
+       900 — text on light bg, ornaments
+       glow — focus halo (rgba with alpha for filter)
+     ------------------------------------------------------------------ */
+  --ds-sage-50:       #f3f7f1;
+  --ds-sage-200:      #c9d8c5;
+  --ds-sage-400:      #88a884;
+  --ds-sage-600:      #5b8055;
+  --ds-sage-900:      #2c4628;
+  --ds-sage-glow:     rgba(136, 168, 132, 0.55);
+
+  --ds-lilac-50:      #f6f5fa;
+  --ds-lilac-200:     #d6d4e6;
+  --ds-lilac-400:     #a5a3c8;
+  --ds-lilac-600:     #756fa3;
+  --ds-lilac-900:     #3b365e;
+  --ds-lilac-glow:    rgba(165, 163, 200, 0.55);
+
+  --ds-slate-50:      #f3f6fa;
+  --ds-slate-200:     #cad7e8;
+  --ds-slate-400:     #99b3d4;
+  --ds-slate-600:     #5d80b0;
+  --ds-slate-900:     #28456b;
+  --ds-slate-glow:    rgba(153, 179, 212, 0.55);
+
+  --ds-sand-50:       #fbf8f1;
+  --ds-sand-200:      #ece4cc;
+  --ds-sand-400:      #d8cfb6;
+  --ds-sand-600:      #9c8d68;
+  --ds-sand-900:      #4d4225;
+  --ds-sand-glow:     rgba(216, 207, 182, 0.55);
+
+  --ds-coral-50:      #fbf2ec;
+  --ds-coral-200:     #ecc6b1;
+  --ds-coral-400:     #c47558;
+  --ds-coral-600:     #8c4a30;
+  --ds-coral-900:     #4a2412;
+  --ds-coral-glow:    rgba(196, 117, 88, 0.6);
+
+  /* ------------------------------------------------------------------
+     v4 — Surface tokens. "Paper" is the default editorial white
+     surface with a faint warm tint and subtle ruling. "Paper-grain"
+     adds a noise overlay via background-image (for hero blocks).
+     "Inset-dark" is the deep slate the graph viewer uses. "Raised"
+     is for hovered cards.
+     ------------------------------------------------------------------ */
+  --surf-paper:       #FFFFFF;
+  --surf-paper-tint:  #FCFCFA;          /* hairline-warm white */
+  --surf-paper-rule:  rgba(0,0,0,0.04); /* faint horizontal ruling */
+  --surf-inset-dark:  #14171c;          /* graph canvas */
+  --surf-inset-side:  #1a1d24;          /* panel attached to inset */
+  --surf-raised-shadow: 0 4px 32px rgba(0,0,0,0.10);
+  --surf-paper-shadow:  0 2px 18px rgba(0,0,0,0.06);
+
+  /* ------------------------------------------------------------------
+     v4 — Editorial typography registers (additive over v3 type scale).
+     The display sizes are big — for hero / masthead use only.
+     ------------------------------------------------------------------ */
+  --t-display-1:      clamp(3.4rem, 8vw, 6rem);     /* hero */
+  --t-display-2:      clamp(2.4rem, 5vw, 3.6rem);   /* viewer h1 */
+  --t-kicker:         0.74rem;                      /* italic small caps eyebrow */
+  --t-dateline:       0.78rem;                      /* italic dateline below display */
+  --t-body-lede:      1.125rem;                     /* lede paragraph */
+  --t-marginalia:     0.78rem;                      /* annotation aside */
+  --t-section-num:    0.84rem;                      /* "0.1" numbered section */
+  --t-colophon:       0.74rem;                      /* footer */
+
+  --w-light:          200;
+  --w-extrabold:      800;
+
+  /* ------------------------------------------------------------------
+     v4 — Motion tokens for cascading entry + restrained hover.
+     ------------------------------------------------------------------ */
+  --anim-entry:       0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --anim-hover:       0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --anim-stagger:     50ms;
+
+  /* ------------------------------------------------------------------
      State semantic — re-points to the data-viz palette so brand and
      viz stay in sync. --error stays a deeper red: true emphasis
      (broken commitment, audit fail), not a category.
@@ -237,6 +322,163 @@ button:hover { background: var(--bg-alt); }
 @keyframes pn-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pn-pop  { from { opacity: 0; transform: translateY(8px); }
                        to   { opacity: 1; transform: translateY(0);   } }
+@keyframes ed-rise { from { opacity: 0; transform: translateY(14px); }
+                       to   { opacity: 1; transform: translateY(0);    } }
+
+/* ==================================================================
+   v4 — EDITORIAL register (Italianate masthead, numbered sections,
+   marginalia, colophon). Drop these classes anywhere — they assume
+   the surrounding container provides width.
+   ================================================================== */
+
+.ed-masthead {
+  margin: 0 auto var(--s-9);
+  max-width: 820px;
+  padding-top: var(--s-7);
+  position: relative;
+}
+.ed-masthead::before {
+  /* Italianate column-rule — a thin vertical line on the left, seen
+     from old print-page anatomy. Disappears on narrow viewports. */
+  content: "";
+  position: absolute;
+  left: -22px; top: var(--s-7); bottom: 8px;
+  width: 1px;
+  background: var(--fg-hairline);
+}
+@media (max-width: 920px) {
+  .ed-masthead::before { display: none; }
+}
+
+.ed-kicker {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: var(--w-medium);
+  font-size: var(--t-kicker);
+  text-transform: lowercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  margin: 0 0 var(--s-4) 0;
+  display: flex; gap: 14px; align-items: baseline;
+}
+.ed-kicker .sep { font-style: normal; color: var(--fg-light); }
+.ed-kicker .num { font-weight: var(--w-bold); font-style: normal; color: var(--fg); font-variant-numeric: tabular-nums; }
+
+.ed-display {
+  font-family: var(--font-display);
+  font-weight: var(--w-extrabold);
+  font-size: var(--t-display-2);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  color: var(--fg);
+  margin: 0 0 var(--s-5) 0;
+}
+.ed-display em { font-style: italic; font-weight: var(--w-light); letter-spacing: -0.02em; color: var(--fg); }
+
+.ed-lede {
+  font-family: var(--font-body);
+  font-size: var(--t-body-lede);
+  line-height: 1.55;
+  color: var(--fg);
+  margin: 0 0 var(--s-5) 0;
+  max-width: 660px;
+}
+
+.ed-dateline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--t-dateline);
+  color: var(--fg-light);
+  margin: var(--s-3) 0 0 0;
+  display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap;
+}
+.ed-dateline .tag {
+  font-style: normal;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  background: var(--bg-alt);
+  color: var(--fg-muted);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.ed-section-head {
+  display: flex; align-items: baseline; gap: 14px;
+  margin: var(--s-9) 0 var(--s-6) 0;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+.ed-section-head .num {
+  font-weight: var(--w-light);
+  font-style: italic;
+  color: var(--fg-light);
+  font-size: var(--t-section-num);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ed-section-head .rule {
+  flex: 0 0 24px;
+  height: 1px;
+  background: var(--fg-hairline);
+  align-self: center;
+  margin-top: 4px;
+}
+.ed-section-head .title {
+  font-weight: var(--w-medium);
+  font-size: 1.4rem;
+  color: var(--fg);
+}
+
+.ed-marginalia {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--t-marginalia);
+  color: var(--fg-muted);
+  line-height: 1.55;
+  border-left: 1px solid var(--fg-hairline);
+  padding-left: 12px;
+  margin: var(--s-3) 0;
+  max-width: 280px;
+}
+
+.ed-colophon {
+  margin: var(--s-11) auto 0;
+  max-width: 820px;
+  padding: var(--s-6) 0 var(--s-3);
+  border-top: 1px solid var(--fg-hairline);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--t-colophon);
+  color: var(--fg-light);
+  line-height: 1.65;
+  text-align: right;
+}
+.ed-colophon .line { display: block; margin-bottom: 4px; }
+.ed-colophon code { font-style: normal; font-size: 0.72rem; background: transparent; padding: 0; color: var(--fg-muted); }
+
+/* Disclosed grid — faint vertical column guides shown on hero blocks. */
+.ed-disclosed-grid {
+  position: relative;
+}
+.ed-disclosed-grid::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(to right, var(--fg-hairline) 1px, transparent 1px);
+  background-size: 20% 100%;
+  background-position: 0 0;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Cascading entry: any direct child gets a small staggered fade-in */
+.ed-cascade > * { animation: ed-rise var(--anim-entry) both; }
+.ed-cascade > *:nth-child(2) { animation-delay: calc(var(--anim-stagger) * 1); }
+.ed-cascade > *:nth-child(3) { animation-delay: calc(var(--anim-stagger) * 2); }
+.ed-cascade > *:nth-child(4) { animation-delay: calc(var(--anim-stagger) * 3); }
+.ed-cascade > *:nth-child(5) { animation-delay: calc(var(--anim-stagger) * 4); }
+.ed-cascade > *:nth-child(6) { animation-delay: calc(var(--anim-stagger) * 5); }
 
 /* ==================================================================
    SEMANTIC TYPE classes — drop onto any element for one-line styling.
@@ -779,12 +1021,12 @@ header .anchor-line { font-family: ui-monospace, SF Mono, Menlo, monospace; font
 </head>
 <body>
   <div class="container">
-    <header>
-      <div class="eyebrow">reshuffle</div>
-      <h1>The mid-market engagement</h1>
-      <p class="lead">Outline &amp; Co. delivers the strategy → identity → digital product flow for mid-market companies on fixed-price engagement scopes agreed at pitch. Standard engagement: 12-16 weeks. Standard deliverables: positioning document, identity system, digital product artefact (website, app, or design system).</p>
-      <div class="anchor-line">studio-mid-market-baseline</div>
-    </header>
+    <header class="ed-masthead ed-cascade">
+  <div class="ed-kicker"><span>reshuffle</span><span class="num">№ 00</span><span class="sep">·</span><span>slice · studio-mid-market-baseline</span></div>
+  <h1 class="ed-display"><em>The mid-market engagement</em></h1>
+  <p class="ed-lede">Outline & Co. delivers the strategy → identity → digital product flow for mid-market companies on fixed-price engagement scopes agreed at pitch. Standard engagement: 12-16 weeks. Standard deliverables: positioning document, identity system, digital product artefact (website, app, or design system).</p>
+  <div class="ed-dateline"><span>dated 2026-05-07</span><span class="tag">0 activities</span><span class="tag">3 engine candidates</span><span class="tag">2 rebundle options</span></div>
+</header>
 
     <div class="intro">
       <p>This page is an analysis of one process the organization runs today, and where AI might actually change it. It's a read of the structure, not a proposal — the recommendations come at the end, in plain language.</p>
@@ -852,6 +1094,8 @@ header .anchor-line { font-family: ui-monospace, SF Mono, Menlo, monospace; font
     </div>
 
     <div class="section" id="decisions"><h2>How to read this map</h2><p class="lead">The leader-facing reading: which place to deploy AI as infrastructure (not just accelerator), which constraint to dissolve, which direction option to take and why.</p><div class="decision"><div class="question">What&#x27;s actually expensive about delivering a mid-market engagement at this studio?</div><p class="answer">Eight of the twelve activities in scope are coordination-bound: the work itself isn&#x27;t hard, the cost is moving information and decisions between four discipline leads (Marco, Lena, the product lead, Tomás) and across four units (strategy, design, digital-product, client-services). Today this coordination runs through Tomás&#x27;s weekly check-in notes, which Marco reviews for every active engagement; in 2025 this surfaced three scope-renegotiation conversations weeks after the early signals appeared.</p><p class="answer">The other four activities are scarcity-bound — Marco&#x27;s positioning craft, Lena&#x27;s visual language and brand book, audience research synthesis. These are differentiated; the studio sells them by name. AI doesn&#x27;t dissolve them.</p><div class="source">outline-roles-2025; outline-annual-review-2025</div></div><div class="decision"><div class="question">Where would AI as shared-knowledge infrastructure actually change the structure of how the studio works?</div><p class="answer">Three places: kickoff workshops (where four leads align on scope), asset handover (where four units coordinate to close an engagement), and competitive audits (where market knowledge today gets re-derived from scratch on every engagement). Deployed as infrastructure on these three, AI changes a structural cost: the four leads stop being the bottleneck on alignment, and the studio&#x27;s accumulated context starts compounding across engagements.</p><p class="answer">If instead the studio ships AI on UI design and design-system documentation — the production layer — it gets accelerator-effect only. The production teams move faster while the discipline leads are still the alignment bottleneck. The asymmetry makes scope drift surface later, not sooner.</p><div class="source">outline-charter-2024 §4, §12; outline-roles-2025</div></div><div class="decision"><div class="question">Of the two direction options, which fits this studio next year?</div><p class="answer">The &#x27;compounding context&#x27; option is the conservative move and the right first step: hire a context lead, ship the use-case (returning-client kickoff loaded with prior context), let the system grow from one use-case to the others. Risk is mostly internal; it doesn&#x27;t change pricing or what the studio sells.</p><p class="answer">The &#x27;production handed off, judgement kept in&#x27; option is the radical move and depends on the first one landing: only after the studio has compounded context across multiple engagements does it have the evidence base to reframe pricing around positioning + visual language and bundle the production layer as included. Doing it before would land as a price hike where the studio means a re-anchor.</p><p class="answer">Sequence: hire the context lead in Q3 2026; ship the returning-client kickoff use-case by Q4; revisit the pricing reframe in 2027 with twelve months of compounded context behind it.</p><div class="source">outline-charter-2024 §15, §20; outline-roles-2025</div></div></div>
+
+    <footer class="ed-colophon"><span class="line">Generated by <code>skills/playbooks/reshuffle</code> on <code>2026-05-07</code>.</span><span class="line">audit <code>pass</code> · autoresearch <code>4 / 4 deterministic dimensions pass</code>.</span><span class="line">Click any activity for its primary constraint and rationale · open engine rows for the cited research.</span></footer>
   </div>
 
   <div class="popover" id="popover">

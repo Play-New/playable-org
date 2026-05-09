@@ -7,22 +7,25 @@ The other four playbooks read the structure through a specific frame
 reads the structure as itself: every node, every relation declared in
 the frontmatter or the body, no interpretive layer in between.
 
-Node kinds (collected verbatim from the structure):
-  identity, unit, activity, person, stakeholder, commitment,
-  financial-summary, source.
+Node kinds (collected verbatim from the structure, mirroring the
+folder layout in `org/AGENTS.md`):
+  identity, language-term, unit, activity, person, role,
+  stakeholder, commitment, financial-summary, source.
 
-Edge kinds (typed by the relation that carries them):
-  parent           — unit  → unit   (unit.parent)
-  unit             — person → unit, activity → unit
-  performer        — activity → person
-  party_committing — commitment → unit / stakeholder / person
-  party_benefiting — commitment → unit / stakeholder / person
-  input            — activity → activity (when output ids align) [skipped]
-  touches          — activity → stakeholder
-  cite             — any → source     (frontmatter `sources:` and body
-                                       `(source-id)` patterns)
-  link             — any → any        (markdown body links resolving to
-                                       another structure node)
+Edge kinds (typed by the relation that carries them). The labels in
+parentheses are how the graph viewer renders each kind — keep them
+plain-English; never let YAML field names leak through:
+  parent           — unit → unit                 ("is part of"     / "contains")
+  unit             — person/activity/role → unit ("in"             / "hosts")
+  performer        — activity → person           ("performed by"   / "performs")
+  head_role        — unit → role                 ("led by"         / "leads")
+  holds_role       — person → role               ("as"             / "filled by")
+  covers           — role → activity             ("responsible for"/ "owned by")
+  party_committing — commitment → unit/stakeholder/person  ("binds"   / "bound by")
+  party_benefiting — commitment → unit/stakeholder/person  ("for"     / "for")
+  touches          — activity → stakeholder      ("involves"       / "involved in")
+  cite             — any → source                ("cites"          / "cited by")
+  link             — any → any                   ("mentions"       / "mentioned by")
 
 The agent fills the top-level `decisions[]` after build, reading the
 graph in the viewer (clusters, isolates, bridge nodes). Build does not
@@ -38,6 +41,7 @@ import argparse
 import json
 import re
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -322,6 +326,7 @@ def main() -> int:
 
     skeleton = {
         "_scope": args.scope or "whole-org",
+        "_dated": date.today().isoformat(),
         "_topology": summary,
         "nodes": nodes,
         "edges": edges,

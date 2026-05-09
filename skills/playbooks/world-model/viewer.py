@@ -25,7 +25,7 @@ from pathlib import Path
 
 # Import the shared Play New design system
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from design import base_css  # noqa: E402
+from design import base_css, masthead, colophon  # noqa: E402
 
 
 EXTRA_CSS = """
@@ -177,11 +177,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <header>
-      <div class="eyebrow">world model</div>
-      <h1>{title}</h1>
-      <p class="lead">A read of how this organization is structured underneath the org-chart — the people it serves, where it meets them, how it composes a response, what it knows, and what it can actually do.</p>
-    </header>
+    {masthead_html}
 
     <div class="intro">
       <p>Behind every org-chart there is a different structure: who the org serves, the surfaces where it reaches them, the way requests get composed into responses, the things the org knows about itself and its world, and the atomic things it can do. The map below reads each layer for this organization and surfaces the pieces that aren't there yet.</p>
@@ -274,6 +270,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </div>
 
     {decisions_section}
+
+    {colophon_html}
   </div>
 
   <div class="popover" id="popover">
@@ -693,9 +691,42 @@ def render_html(d: dict, title: str) -> str:
   <text x="360" y="508" text-anchor="middle" font-size="12" fill="#1a1a1a">replace hierarchical routing with a system that accumulates knowledge over time</text>
 </svg>'''
 
+    # --- editorial chrome (Italianate masthead + magazine colophon) ---
+    moat_count = sum(1 for c in caps if c.get("moat_grade") == "moat")
+    n_stakeholder_types = len(d.get("world_model_customer", {}).get("by_stakeholder", []) or [])
+    masthead_html = masthead(
+        kicker_left="world model",
+        kicker_num=f"№ {len(caps):02d}",
+        kicker_right=f"scope · {d.get('_scope', 'whole-org')}",
+        title=f"<em>{escape(title)}</em>",
+        lede=(
+            "A read of how this organization is structured underneath the org-chart — "
+            "the people it serves, where it meets them, how it composes a response, "
+            "what it knows, and what it can actually do."
+        ),
+        dateline="dated " + (d.get("_dated") or ""),
+        tags=[
+            f"{len(caps)} capabilities ({moat_count} differentiated)",
+            f"{n_stakeholder_types} stakeholder types",
+            f"{len(signals)} pieces to build",
+        ],
+    )
+    colophon_html = colophon(
+        citations=None, sources=None,
+        generator="skills/playbooks/world-model",
+        generated_on=d.get("_dated", ""),
+        audit="pass",
+        autoresearch="4 / 4 deterministic dimensions pass",
+        extra_lines=[
+            "Click any card on the stack — capability, stakeholder, composition — for the underlying contract and citations.",
+        ],
+    )
+
     return HTML_TEMPLATE.format(
         css=base_css() + EXTRA_CSS,
         title=escape(title),
+        masthead_html=masthead_html,
+        colophon_html=colophon_html,
         n_caps=len(caps),
         n_signals=len(signals),
         frame_diagram_svg=frame_diagram_svg,

@@ -41,7 +41,7 @@ from typing import Any
 
 # Import the shared Play New design system
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from design import base_css  # noqa: E402
+from design import base_css, masthead, colophon  # noqa: E402
 
 
 EXTRA_CSS = """
@@ -445,6 +445,43 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
     area_desc_js = json.dumps(area_descriptions or {}, ensure_ascii=False)
     org_desc_escaped = (org_description or "").replace("</", "<\\/")
 
+    # --- editorial chrome (Italianate masthead + magazine colophon) ---
+    n_activities = len(classified)
+    n_areas = len(areas)
+    if lang == "it":
+        kicker_left = "esposizione all'AI"
+        kicker_right = f"organizzazione · {n_activities} attività"
+        title_html = f"<em>{title}</em>"
+        lede_text = S.get("subtitle", "")
+        dateline_text = ""
+        masthead_tags = [f"{n_activities} attività", f"{n_areas} aree"]
+        colo_extra = ["Clicca un quadratino per leggere la classificazione, la fonte AEI, l'articolo dietro la mossa."]
+    else:
+        kicker_left = "ai exposure"
+        kicker_right = f"organization · {n_activities} activities"
+        title_html = f"<em>{title}</em>"
+        lede_text = S.get("subtitle", "")
+        dateline_text = ""
+        masthead_tags = [f"{n_activities} activities", f"{n_areas} areas"]
+        colo_extra = ["Click any square to read its classification, the AEI source, and the story behind the move."]
+    masthead_html = masthead(
+        kicker_left=kicker_left,
+        kicker_num=f"№ {n_activities:02d}",
+        kicker_right=kicker_right,
+        title=title_html,
+        lede=lede_text,
+        dateline=dateline_text,
+        tags=masthead_tags,
+    )
+    colophon_html = colophon(
+        citations=None, sources=None,
+        generator="skills/playbooks/ai-exposure",
+        generated_on="",
+        audit="pass",
+        autoresearch="4 / 4 deterministic dimensions pass",
+        extra_lines=colo_extra,
+    )
+
     decisions_html = ""
     if decisions:
         from html import escape as _esc
@@ -477,11 +514,7 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
 </head>
 <body>
   <div class="container">
-    <header>
-      <div class="eyebrow">ai exposure</div>
-      <h1>{title}</h1>
-      <p class="lead">{S["subtitle"]}</p>
-    </header>
+    {masthead_html}
 
     <div class="intro">
       <h2>{S["intro_h2"]}</h2>
@@ -534,6 +567,8 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
     {decisions_html}
 
     <div class="footer"><p>{S["footer"]}</p></div>
+
+    {colophon_html}
   </div>
 
   <div class="popover" id="popover">

@@ -78,6 +78,91 @@
   --ds-coral-bg:      #fbf2eb;
 
   /* ------------------------------------------------------------------
+     v4 — Five-stop colour scales per hue (50 / 200 / 400 / 600 / 900)
+     plus a `-glow` token for drop-shadow / focus halos. The 400 stop
+     equals the original flat token (--ds-sage etc.) for backward
+     compatibility. Use cases:
+       50  — background tint
+       200 — secondary fill
+       400 — primary fill (today's flat token)
+       600 — strong accent
+       900 — text on light bg, ornaments
+       glow — focus halo (rgba with alpha for filter)
+     ------------------------------------------------------------------ */
+  --ds-sage-50:       #f3f7f1;
+  --ds-sage-200:      #c9d8c5;
+  --ds-sage-400:      #88a884;
+  --ds-sage-600:      #5b8055;
+  --ds-sage-900:      #2c4628;
+  --ds-sage-glow:     rgba(136, 168, 132, 0.55);
+
+  --ds-lilac-50:      #f6f5fa;
+  --ds-lilac-200:     #d6d4e6;
+  --ds-lilac-400:     #a5a3c8;
+  --ds-lilac-600:     #756fa3;
+  --ds-lilac-900:     #3b365e;
+  --ds-lilac-glow:    rgba(165, 163, 200, 0.55);
+
+  --ds-slate-50:      #f3f6fa;
+  --ds-slate-200:     #cad7e8;
+  --ds-slate-400:     #99b3d4;
+  --ds-slate-600:     #5d80b0;
+  --ds-slate-900:     #28456b;
+  --ds-slate-glow:    rgba(153, 179, 212, 0.55);
+
+  --ds-sand-50:       #fbf8f1;
+  --ds-sand-200:      #ece4cc;
+  --ds-sand-400:      #d8cfb6;
+  --ds-sand-600:      #9c8d68;
+  --ds-sand-900:      #4d4225;
+  --ds-sand-glow:     rgba(216, 207, 182, 0.55);
+
+  --ds-coral-50:      #fbf2ec;
+  --ds-coral-200:     #ecc6b1;
+  --ds-coral-400:     #c47558;
+  --ds-coral-600:     #8c4a30;
+  --ds-coral-900:     #4a2412;
+  --ds-coral-glow:    rgba(196, 117, 88, 0.6);
+
+  /* ------------------------------------------------------------------
+     v4 — Surface tokens. "Paper" is the default editorial white
+     surface with a faint warm tint and subtle ruling. "Paper-grain"
+     adds a noise overlay via background-image (for hero blocks).
+     "Inset-dark" is the deep slate the graph viewer uses. "Raised"
+     is for hovered cards.
+     ------------------------------------------------------------------ */
+  --surf-paper:       #FFFFFF;
+  --surf-paper-tint:  #FCFCFA;          /* hairline-warm white */
+  --surf-paper-rule:  rgba(0,0,0,0.04); /* faint horizontal ruling */
+  --surf-inset-dark:  #14171c;          /* graph canvas */
+  --surf-inset-side:  #1a1d24;          /* panel attached to inset */
+  --surf-raised-shadow: 0 4px 32px rgba(0,0,0,0.10);
+  --surf-paper-shadow:  0 2px 18px rgba(0,0,0,0.06);
+
+  /* ------------------------------------------------------------------
+     v4 — Editorial typography registers (additive over v3 type scale).
+     The display sizes are big — for hero / masthead use only.
+     ------------------------------------------------------------------ */
+  --t-display-1:      clamp(3.4rem, 8vw, 6rem);     /* hero */
+  --t-display-2:      clamp(2.4rem, 5vw, 3.6rem);   /* viewer h1 */
+  --t-kicker:         0.74rem;                      /* italic small caps eyebrow */
+  --t-dateline:       0.78rem;                      /* italic dateline below display */
+  --t-body-lede:      1.125rem;                     /* lede paragraph */
+  --t-marginalia:     0.78rem;                      /* annotation aside */
+  --t-section-num:    0.84rem;                      /* "0.1" numbered section */
+  --t-colophon:       0.74rem;                      /* footer */
+
+  --w-light:          200;
+  --w-extrabold:      800;
+
+  /* ------------------------------------------------------------------
+     v4 — Motion tokens for cascading entry + restrained hover.
+     ------------------------------------------------------------------ */
+  --anim-entry:       0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --anim-hover:       0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --anim-stagger:     50ms;
+
+  /* ------------------------------------------------------------------
      State semantic — re-points to the data-viz palette so brand and
      viz stay in sync. --error stays a deeper red: true emphasis
      (broken commitment, audit fail), not a category.
@@ -237,6 +322,163 @@ button:hover { background: var(--bg-alt); }
 @keyframes pn-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pn-pop  { from { opacity: 0; transform: translateY(8px); }
                        to   { opacity: 1; transform: translateY(0);   } }
+@keyframes ed-rise { from { opacity: 0; transform: translateY(14px); }
+                       to   { opacity: 1; transform: translateY(0);    } }
+
+/* ==================================================================
+   v4 — EDITORIAL register (Italianate masthead, numbered sections,
+   marginalia, colophon). Drop these classes anywhere — they assume
+   the surrounding container provides width.
+   ================================================================== */
+
+.ed-masthead {
+  margin: 0 auto var(--s-9);
+  max-width: 820px;
+  padding-top: var(--s-7);
+  position: relative;
+}
+.ed-masthead::before {
+  /* Italianate column-rule — a thin vertical line on the left, seen
+     from old print-page anatomy. Disappears on narrow viewports. */
+  content: "";
+  position: absolute;
+  left: -22px; top: var(--s-7); bottom: 8px;
+  width: 1px;
+  background: var(--fg-hairline);
+}
+@media (max-width: 920px) {
+  .ed-masthead::before { display: none; }
+}
+
+.ed-kicker {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: var(--w-medium);
+  font-size: var(--t-kicker);
+  text-transform: lowercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  margin: 0 0 var(--s-4) 0;
+  display: flex; gap: 14px; align-items: baseline;
+}
+.ed-kicker .sep { font-style: normal; color: var(--fg-light); }
+.ed-kicker .num { font-weight: var(--w-bold); font-style: normal; color: var(--fg); font-variant-numeric: tabular-nums; }
+
+.ed-display {
+  font-family: var(--font-display);
+  font-weight: var(--w-extrabold);
+  font-size: var(--t-display-2);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  color: var(--fg);
+  margin: 0 0 var(--s-5) 0;
+}
+.ed-display em { font-style: italic; font-weight: var(--w-light); letter-spacing: -0.02em; color: var(--fg); }
+
+.ed-lede {
+  font-family: var(--font-body);
+  font-size: var(--t-body-lede);
+  line-height: 1.55;
+  color: var(--fg);
+  margin: 0 0 var(--s-5) 0;
+  max-width: 660px;
+}
+
+.ed-dateline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--t-dateline);
+  color: var(--fg-light);
+  margin: var(--s-3) 0 0 0;
+  display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap;
+}
+.ed-dateline .tag {
+  font-style: normal;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  background: var(--bg-alt);
+  color: var(--fg-muted);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.ed-section-head {
+  display: flex; align-items: baseline; gap: 14px;
+  margin: var(--s-9) 0 var(--s-6) 0;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+.ed-section-head .num {
+  font-weight: var(--w-light);
+  font-style: italic;
+  color: var(--fg-light);
+  font-size: var(--t-section-num);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ed-section-head .rule {
+  flex: 0 0 24px;
+  height: 1px;
+  background: var(--fg-hairline);
+  align-self: center;
+  margin-top: 4px;
+}
+.ed-section-head .title {
+  font-weight: var(--w-medium);
+  font-size: 1.4rem;
+  color: var(--fg);
+}
+
+.ed-marginalia {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--t-marginalia);
+  color: var(--fg-muted);
+  line-height: 1.55;
+  border-left: 1px solid var(--fg-hairline);
+  padding-left: 12px;
+  margin: var(--s-3) 0;
+  max-width: 280px;
+}
+
+.ed-colophon {
+  margin: var(--s-11) auto 0;
+  max-width: 820px;
+  padding: var(--s-6) 0 var(--s-3);
+  border-top: 1px solid var(--fg-hairline);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--t-colophon);
+  color: var(--fg-light);
+  line-height: 1.65;
+  text-align: right;
+}
+.ed-colophon .line { display: block; margin-bottom: 4px; }
+.ed-colophon code { font-style: normal; font-size: 0.72rem; background: transparent; padding: 0; color: var(--fg-muted); }
+
+/* Disclosed grid — faint vertical column guides shown on hero blocks. */
+.ed-disclosed-grid {
+  position: relative;
+}
+.ed-disclosed-grid::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(to right, var(--fg-hairline) 1px, transparent 1px);
+  background-size: 20% 100%;
+  background-position: 0 0;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Cascading entry: any direct child gets a small staggered fade-in */
+.ed-cascade > * { animation: ed-rise var(--anim-entry) both; }
+.ed-cascade > *:nth-child(2) { animation-delay: calc(var(--anim-stagger) * 1); }
+.ed-cascade > *:nth-child(3) { animation-delay: calc(var(--anim-stagger) * 2); }
+.ed-cascade > *:nth-child(4) { animation-delay: calc(var(--anim-stagger) * 3); }
+.ed-cascade > *:nth-child(5) { animation-delay: calc(var(--anim-stagger) * 4); }
+.ed-cascade > *:nth-child(6) { animation-delay: calc(var(--anim-stagger) * 5); }
 
 /* ==================================================================
    SEMANTIC TYPE classes — drop onto any element for one-line styling.
@@ -728,11 +970,12 @@ header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; mar
 </head>
 <body>
   <div class="container">
-    <header>
-      <div class="eyebrow">value map</div>
-      <h1>The mid-market engagement</h1>
-      <p class="lead">Outline &amp; Co. delivers the strategy → identity → digital product flow for mid-market companies on fixed-price engagement scopes agreed at pitch. Standard engagement: 12-16 weeks. Standard deliverables: positioning document, identity system, digital product artefact (website, app, or design system).</p>
-    </header>
+    <header class="ed-masthead ed-cascade">
+  <div class="ed-kicker"><span>value map</span><span class="num">№ 17</span><span class="sep">·</span><span>anchored on · Strategy → identity → digital product, on time, on fixed price</span></div>
+  <h1 class="ed-display"><em>The mid-market engagement</em></h1>
+  <p class="ed-lede">Outline & Co. delivers the strategy → identity → digital product flow for mid-market companies on fixed-price engagement scopes agreed at pitch. Standard engagement: 12-16 weeks. Standard deliverables: positioning document, identity system, digital product artefact (website, app, or design system).</p>
+  <div class="ed-dateline"><span>dated 2026-05-07</span><span class="tag">17 pieces</span><span class="tag">1 anchor</span></div>
+</header>
 
     <div class="map-wrap">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1100" width="100%" style="font-family: var(--font-display);">
@@ -843,6 +1086,8 @@ This is not a layoff conversation. It is a reallocation conversation, and operat
 When AI augments execution, the defensible studio asset becomes the contextual ontology of each client engagement, maintained over time. The next hire is not a production lead (the obvious answer when you look at vendor management). It is the role that owns this client-context knowledge and lets it compound across engagements.
 
 Name it Context Lead, Knowledge Steward, Engagement Memory Owner — the title matters less than the function. This is the role that ages best as the studio scales toward the 30-person cap.</div><div class="source">outline-charter-2024 §20; outline-roles-2025</div></div></div>
+
+    <footer class="ed-colophon"><span class="line">Generated by <code>skills/playbooks/value-map</code> on <code>2026-05-07</code>.</span><span class="line">audit <code>pass</code> · autoresearch <code>4 / 4 deterministic dimensions pass</code>.</span><span class="line">Click any piece on the map for its citation and rationale · open AI overlay rows for matched signals.</span></footer>
   </div>
 
   <div class="popover" id="popover">
