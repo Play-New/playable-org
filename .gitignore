@@ -35,3 +35,6 @@ test-output/
 # Claude Code working state
 .claude/
 playable-org-*.zip
+
+# Generated screenshots (regenerable from rendered HTMLs)
+docs/screenshots/

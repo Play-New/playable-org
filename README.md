@@ -2,8 +2,6 @@
 
 > An organization, represented as a graph of cited claims, maintained by an agent — and a small library of analytical playbooks that read on top of it.
 
-![The graph view — every unit, activity, person, stakeholder, and commitment, force-laid-out, click any to focus](docs/screenshots/graph.png)
-
 ## Why this exists
 
 If you've ever tried to ask an honest question about an organization — *who's actually working on what?*, *which commitments are load-bearing?*, *where is AI starting to change how the work gets done?* — you know that the answer is scattered across a dozen places. The charter says one thing, the role descriptions say another, the meeting notes contradict both, the contracts add a fourth voice. Whoever asks the question rebuilds the picture in their head from fragments. The picture exists for ten minutes, then dissolves. Next time someone asks, the rebuild starts over.
@@ -68,15 +66,11 @@ Each playbook produces an interactive HTML + the JSON that backed it, frozen und
 
 > *What does the whole organization look like as one connected drawing? Which nodes carry the structure's weight? Where is the writing thin?*
 
-![graph viewer hero — dark canvas, force-directed, glow on focus](docs/screenshots/graph.png)
-
 The lightest of the playbooks. No interpretive frame, no AEI dependency, no source theory beyond *"render the structure as the structure declares itself"*. Walks every node and every typed relation declared in the frontmatter (or in body markdown links and `(source-id)` citations) and lays it out as a force-directed picture. Click a node, the side panel fills with its incoming and outgoing relations. Toggle node-kinds and edge-kinds from the legend; the layout repacks. The dark inset console is intentional — it reads as exploration surface, distinct from the editorial chrome around it.
 
 ### ai-exposure — where AI is showing up in this org
 
 > *For each activity in this org, how was AI used today on the closest matched task in a public sample? Which activities are most exposed?*
-
-![ai-exposure viewer — heatmap of activities by closest AEI matches](docs/screenshots/ai-exposure.png)
 
 Source: [Anthropic's Economic Index](https://www.anthropic.com/economic-index) (March 2026 release, ~18,500 task-level descriptions of how Claude was used across a sample of public conversations). For every activity the org actually does, the playbook embeds the description, finds the five nearest task-descriptions in the AEI sample by sentence similarity, and shows how Claude was used in those samples — automated, augmented, assistive, or outside the observed sample. The colour describes what was observed in the AEI sample, not what the activity *is* in this organization. Read it as: *if Claude tried this activity, here's how it would look like work Claude was already doing.*
 
@@ -84,23 +78,17 @@ Source: [Anthropic's Economic Index](https://www.anthropic.com/economic-index) (
 
 > *For an anchor (a commitment, a unit, a stakeholder), where does each piece of the chain sit on the evolution × visibility plane, and where is AI pushing it?*
 
-![value-map viewer — Wardley grid with components placed by stage](docs/screenshots/value-map.png)
-
 Source: Simon Wardley, value-mapping. Anchors on a commitment or unit, walks the structure to find the components reachable from the anchor, asks the agent to position each one on the *genesis → custom → product → commodity* axis with citations, and overlays AI pressure per component when an `ai-exposure` play exists in the same slice. Marks emerging components (`is_new`) in conditional voice — *if X became standard, the chain would gain a new piece here* — never *X will happen by Q3*. The map shows where the work sits today and points at where it would move under specific pressures.
 
 ### reshuffle — what holds each activity in place, and what AI changes
 
 > *For a process slice, what holds each activity in the current bundle — rare skill, cost-of-being-wrong, or cost-of-keeping-aligned? Which AI uses change the structure (engine), and which just speed it up (tool)?*
 
-![reshuffle viewer — bundle bands, constraint colouring, engine vs tool](docs/screenshots/reshuffle.png)
-
 Source: Sangeet Paul Choudary, *Reshuffle* (2024). The big idea is that AI does two very different things and they should not be confused: it can accelerate work inside an existing bundle (a tool) or dissolve a constraint that held the bundle together and force a new bundle (an engine). Only engines reconfigure organizations. The playbook asks the agent to identify the constraint type for each activity in the slice (with citations) and to classify each AI use as tool or engine. The output names the rebundle moves the analysis suggests — they are options, not recommendations.
 
 ### world-model — the org as a stack
 
 > *What are the organization's capabilities? Which are differentiated, which are standard? What does the org know about itself and the people it serves? What pieces of the chain don't exist yet that the demand already implies?*
-
-![world-model viewer — five-layer stack with capabilities at the bottom](docs/screenshots/world-model.png)
 
 Source: Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026). Reads the organization as a stack — capabilities at the bottom (atomic invocable functions with a contract), a world model in the middle (what the org knows about itself and its stakeholders), an intelligence layer that composes capabilities into responses to stakeholder signals, interfaces that deliver. The "what to build next" section names compositions the layer would attempt today and where the response would fall short because one needed piece of the chain isn't there yet. Each missing piece is a candidate to build, in plain language.
 
@@ -144,7 +132,7 @@ Each is a non-default decision; each has a rationale.
 
 - **Plain-language jargon discipline in user-facing prose.** Framework primitive names are fine as labels (Stakeholders, Capabilities, Genesis/Custom/Product/Commodity); paraphrased into running prose they become jargon and the leader stops on them. Avoid-list (lives in `STYLE.md`): *moat*, *commodity* in body, *commoditize*, *judgment density*, *capability stack*, *coordination tax*, *failure-signal*, *thin* (metaphor), *see-saw*, *flywheel*, *engine candidate*, *rebundle*, *production-tier*, *rich subset*, *O\*NET*, *AEI*, *embedding*, *cosine similarity*, *top-K*, *p25*/*p75*, JSON field names. The autoresearch jargon dimension catches deterministic violations; the editorial pass catches paraphrased ones.
 
-- **Editorial chrome at the playbook level.** Every viewer opens with an Italianate masthead (kicker · display title · lede · dateline · tags) and closes with a magazine-grade colophon (provenance, audit status, autoresearch summary). Reference designers: Giorgia Lupi, Accurat, Federica Fragapane, Density Design. The brief lives in `docs/design-direction.md`.
+- **Editorial chrome at the playbook level.** Every viewer opens with a kicker / title / lede masthead and closes with a magazine-grade colophon (provenance, audit status, autoresearch summary). Same chrome across all five so the artefacts read as parts of the same long-form essay.
 
 - **Activity density layer is opt-in per activity.** A first-install activity has the structural floor (description, performer, unit, inputs/outputs, frequency, sources). The density ceiling — `trigger` / `quality_gates` / `decision_criteria` / `output_format` / `fallback` / `handoff` — gets filled only when the org wants to compile that activity into a Claude skill. Cost: two registers in the same schema. Gain: the floor stays low (every activity has structural facts); the ceiling opens for the activities that need to become agent-runnable. Documented in `org/AGENTS.md`.
 
@@ -156,7 +144,7 @@ Each is a non-default decision; each has a rationale.
 4. **Either** drop founding documents (charter, role descriptions, contracts) into `org/sources/` (Path A — documents-first), **or** open Claude Desktop and ask it to *initialize the structure* with no documents (Path B — interview-first; the ten-question interview transcript becomes the founding source).
 5. After 30–60 minutes you have a populated `org/`. From there: ask questions, ingest new documents as they arrive, run playbooks (*"run the value-map on the customer-facing unit"* / *"run ai-exposure across the whole org"* / *"show me the whole org as one graph"*), open the rendered HTML in your browser.
 
-Detailed: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/architecture.md). Playbook reference: [`docs/playbooks.md`](docs/playbooks.md). Extension: [`docs/extending.md`](docs/extending.md). Visual direction: [`docs/design-direction.md`](docs/design-direction.md).
+Detailed: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/architecture.md). Playbook reference: [`docs/playbooks.md`](docs/playbooks.md). Extension: [`docs/extending.md`](docs/extending.md).
 
 ## What ships in the public template
 
@@ -206,15 +194,13 @@ The five playbooks compose established frames:
 - **world-model** — Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026).
 - **graph** — no external source; the structure rendered as the structure declares itself.
 
-The visual direction draws from data-viz designers — Giorgia Lupi, Accurat, Federica Fragapane, Stefanie Posavec, Nadieh Bremer, Density Design Lab (Politecnico di Milano), and the NYT Graphics Desk. References and concrete moves are documented in [`docs/design-direction.md`](docs/design-direction.md).
-
 Author surnames appear in this README and in `skills/` documentation for credibility and reproducibility. They never appear inside `org/` artefacts (structure or plays) — those are written for the leader of the org being mapped, not for someone tracing the playbook's intellectual ancestry.
 
 ## Contributing
 
 PRs welcome. The contribution guide is in [`CONTRIBUTING.md`](CONTRIBUTING.md). The unobvious bits:
 
-- Adding a new playbook means: `skills/playbooks/<name>/{SKILL.md, build.py, audit.py, viewer.py, autoresearch.py}` plus a row in `skills/ROADMAP.md`, a section in `docs/playbooks.md`, a build-mode test in `mcp-server/test-e2e.py`, and a screenshot generated by `tools/screenshot-viewers.py`. The viewer must use `design.py` primitives — no bespoke `<style>` blocks beyond a slim playbook-specific extension that uses design tokens.
+- Adding a new playbook means: `skills/playbooks/<name>/{SKILL.md, build.py, audit.py, viewer.py, autoresearch.py}` plus a row in `skills/ROADMAP.md`, a section in `docs/playbooks.md`, and a build-mode test in `mcp-server/test-e2e.py`. The viewer must use `design.py` primitives — no bespoke `<style>` blocks beyond a slim playbook-specific extension that uses design tokens.
 - Adding a new mcp tool means: `mcp-server/src/tools/<name>.ts`, register in `mcp-server/src/server.ts`, e2e test, doc update in `docs/architecture.md` if the surface area changes.
 - Adding to the schema (a new node kind, a new YAML field, a new edge type in the graph) is a heavier change because it cascades through `org/AGENTS.md`, `lint.py`, the relevant `build.py` files, and the graph's edge label set. Open an issue first so we can think it through together.
 
