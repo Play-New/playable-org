@@ -161,23 +161,6 @@ Detailed: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/ar
 - **docs/** — public-facing architecture, playbook reference, extension guide, design direction.
 - **The empty public org/** — three identity stubs marked `# REPLACE ME`. Forks populate it from real org documents.
 
-## Frontier
-
-Built and shipped:
-
-- The five playbooks (`graph`, `ai-exposure`, `value-map`, `reshuffle`, `world-model`), each producing a frozen HTML + JSON pair under `org/plays/data/`.
-- The five-dimension autoresearch loop, with subscription mode (agent-as-judge in-context, no API key) as the default and API mode (`autoresearch.py --llm` against Claude Sonnet 4.6) as the CI fallback. Verdicts produced for every interpretive sample-org play.
-- `compile-agent` skill — given a scope (`org` / `unit:<id>` / `person:<id>` / `commitment:<id>`), emit a `CLAUDE.md` that turns a Claude Code session into an agent that knows that scope. Today a recipe-an-agent-follows-by-hand via the existing read tools; the mechanised compiler is the next iteration.
-- `interview-activity` skill — the eight-question Q&A flow that fills the density layer for one activity (interviewing the performer, saving the transcript verbatim as a source, structure-extracting the six fields). Demonstrated on two sample-org activities.
-
-On the roadmap, with explicit composition with adjacent work:
-
-- **`compile-agent --with-skills`** — once an activity has the density layer filled, export it as a Claude slash-command skill. Bridge from Level 1 (scoped `CLAUDE.md`) to Level 2 (invocable skills). The mechanism is sketched in `skills/compile-agent/SKILL.md`; the implementation lands when 3–5 activities have been density-filled in a real fork.
-
-- **`context-bundle` playbook** — formal export of the structure as Cicero's three-layer context bundle: data model (RDF triples derived from the YAML frontmatter), business logic (capability×role matrix + Gherkin scenarios derived from the activity density layer), UX (User Postures derived from the stakeholder side of `world-model`). Composes with [Cicero's context-bundling thread](https://through-the-boundary.simonecicero.com/) directly.
-
-- **`autoresearch` as a property of the structure itself** — the `org_autoresearch_run` mcp tool ships today; the next iteration makes autoresearch a *property* of every play (and, eventually, every node), not an external command.
-
 ## Honest limits
 
 - Forks of this template need a real organization with documents to populate. The empty public template is a kit, not a tool. Path B (interview-first) helps when documents are scarce, but the agent is only as honest as the human in the loop.
