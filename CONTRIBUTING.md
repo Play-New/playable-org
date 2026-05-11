@@ -88,7 +88,7 @@ If you populate this template for a real organization, fork the repo and keep yo
 The public template is updated occasionally with new mcp tools, new playbooks, fixes. To pull those into your fork:
 
 ```bash
-git remote add upstream https://github.com/...
+git remote add upstream https://github.com/Play-New/playable-org.git
 git fetch upstream
 git merge upstream/main   # or cherry-pick specific commits
 ```

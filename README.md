@@ -146,15 +146,17 @@ Each is a non-default decision; each has a rationale.
 
 - **Activity density layer is opt-in per activity.** A first-install activity has the structural floor (description, performer, unit, inputs/outputs, frequency, sources). The density ceiling — `trigger` / `quality_gates` / `decision_criteria` / `output_format` / `fallback` / `handoff` — gets filled only when the org wants to compile that activity into a Claude skill. Cost: two registers in the same schema. Gain: the floor stays low (every activity has structural facts); the ceiling opens for the activities that need to become agent-runnable. Documented in `org/AGENTS.md`.
 
-## Quick start
+## Use it with Claude
 
-1. Clone or download. Open the folder.
-2. Make sure Claude Desktop is installed and Node.js is on your `PATH`.
-3. Double-click `install.command` (macOS) or `install.bat` (Windows). Restart Claude Desktop.
-4. **Either** drop founding documents (charter, role descriptions, contracts) into `org/sources/` (Path A — documents-first), **or** open Claude Desktop and ask it to *initialize the structure* with no documents (Path B — interview-first; the ten-question interview transcript becomes the founding source).
-5. After 30–60 minutes you have a populated `org/`. From there: ask questions, ingest new documents as they arrive, run playbooks (*"run the value-map on the customer-facing unit"* / *"run ai-exposure across the whole org"* / *"show me the whole org as one graph"*), open the rendered HTML in your browser.
+The template runs as an MCP server inside **Claude Desktop**. Local MCP servers are a desktop-app feature today; the same flow doesn't yet work in claude.ai web. macOS and Windows are both supported; the installer takes care of the platform difference.
 
-Detailed: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/architecture.md). Playbook reference: [`docs/playbooks.md`](docs/playbooks.md). Extension: [`docs/extending.md`](docs/extending.md).
+1. **Get the folder.** Open [github.com/Play-New/playable-org](https://github.com/Play-New/playable-org), click the green **Code** button → **Download ZIP**, and extract it. Or, from the command line: `git clone https://github.com/Play-New/playable-org.git`. The downloaded folder is called `playable-org-main` — rename it to `playable-org` if you want, or leave the suffix.
+2. **Have Claude Desktop and Node.js installed.** [Claude Desktop](https://claude.ai/download). [Node.js LTS](https://nodejs.org) (the installer checks and tells you if it's missing).
+3. **Run the installer.** Double-click `install.command` (macOS) or `install.bat` (Windows). It builds the mcp server and registers it in Claude Desktop's config — no admin required. Restart Claude Desktop.
+4. **Populate the structure.** Either drop founding documents (charter, role descriptions, contracts) into `org/sources/` (Path A — documents-first), or open Claude Desktop and ask it to *initialize the structure* with no documents (Path B — interview-first; the ten-question interview transcript becomes the founding source).
+5. **You're in.** Ask questions in plain language, ingest new documents as they arrive, run playbooks (*"run the value-map on the customer-facing unit"* / *"run ai-exposure across the whole org"* / *"show me the whole org as one graph"*), open the rendered HTML in your browser.
+
+Detailed walkthrough with prerequisites and troubleshooting: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/architecture.md). Playbook reference: [`docs/playbooks.md`](docs/playbooks.md). Extension: [`docs/extending.md`](docs/extending.md).
 
 ## What ships in the public template
 

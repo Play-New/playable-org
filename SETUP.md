@@ -2,25 +2,34 @@
 
 Instructions to connect Playable Org to Claude Desktop. Works on **Windows** and **macOS**. After install, Claude can read your structure and answer questions citing the sources you've fed it.
 
+The template runs as an MCP server inside **Claude Desktop**. Local MCP servers are a desktop-app feature today; claude.ai web supports remote connectors but not the local stdio path this installer registers.
+
 ## Prerequisites
 
 - Windows 10/11 or recent macOS
 - Claude Desktop installed (https://claude.ai/download)
 - Node.js (the installer checks and tells you if it's missing)
-- The `playable-org` folder saved locally (zip received via email, or `git clone` if you have repo access)
+- The `playable-org` folder downloaded from GitHub — see step 1
 
 ## The 3 steps
 
-### 1. Extract the folder
+### 1. Get the folder
 
-If you received a zip (`playable-org-<date>.zip`):
+**From GitHub (recommended)**:
 
-- **Windows**: right-click the zip → _Extract All_ → confirm. You'll get a `playable-org` folder.
-- **macOS**: double-click the zip — the archive extracts automatically.
+1. Open [github.com/Play-New/playable-org](https://github.com/Play-New/playable-org) in your browser.
+2. Click the green **Code** button (top right of the file list), then **Download ZIP**.
+3. Extract the zip:
+   - **Windows**: right-click → _Extract All_ → confirm.
+   - **macOS**: double-click the zip; the archive extracts automatically.
+4. You'll get a folder named `playable-org-main`. The rest of these instructions refer to it simply as `playable-org` — rename it if you want, or leave the `-main` suffix.
+5. Save the folder wherever you prefer (Desktop, Documents). Remember the path.
 
-Save the `playable-org` folder wherever you prefer (Desktop, Documents, etc.). Remember the path.
+**From the command line** (if you have `git` installed):
 
-If you cloned from git: skip to step 2.
+```bash
+git clone https://github.com/Play-New/playable-org.git
+```
 
 ### 2. Run the installer
 
@@ -155,4 +164,4 @@ It opens in your default text editor (Notepad on Windows, TextEdit on macOS).
 
 ## Help
 
-Issues on GitHub: https://github.com/[user]/playable-org/issues
+Issues on GitHub: https://github.com/Play-New/playable-org/issues
