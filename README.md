@@ -148,7 +148,9 @@ Each is a non-default decision; each has a rationale.
 
 ## Use it with Claude
 
-The template runs as an MCP server inside **Claude Desktop**. Local MCP servers are a desktop-app feature today; the same flow doesn't yet work in claude.ai web. macOS and Windows are both supported; the installer takes care of the platform difference.
+The template runs as a local MCP server. Two clients are first-class: **Claude Desktop** (the desktop app, most common — chat UI, playbooks open as HTML in the browser) and **Claude Code** (the CLI, terminal-native, git-aware — for maintaining `org/` weekly and authoring playbooks). claude.ai web doesn't yet support local MCP servers, so the web app is not supported today. macOS and Windows are both supported on both clients.
+
+### With Claude Desktop
 
 1. **Get the folder.** Open [github.com/Play-New/playable-org](https://github.com/Play-New/playable-org), click the green **Code** button → **Download ZIP**, and extract it. Or, from the command line: `git clone https://github.com/Play-New/playable-org.git`. The downloaded folder is called `playable-org-main` — rename it to `playable-org` if you want, or leave the suffix.
 2. **Have Claude Desktop and Node.js installed.** [Claude Desktop](https://claude.ai/download). [Node.js LTS](https://nodejs.org) (the installer checks and tells you if it's missing).
@@ -156,7 +158,18 @@ The template runs as an MCP server inside **Claude Desktop**. Local MCP servers 
 4. **Populate the structure.** Either drop founding documents (charter, role descriptions, contracts) into `org/sources/` (Path A — documents-first), or open Claude Desktop and ask it to *initialize the structure* with no documents (Path B — interview-first; the ten-question interview transcript becomes the founding source).
 5. **You're in.** Ask questions in plain language, ingest new documents as they arrive, run playbooks (*"run the value-map on the customer-facing unit"* / *"run ai-exposure across the whole org"* / *"show me the whole org as one graph"*), open the rendered HTML in your browser.
 
-Detailed walkthrough with prerequisites and troubleshooting: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/architecture.md). Playbook reference: [`docs/playbooks.md`](docs/playbooks.md). Extension: [`docs/extending.md`](docs/extending.md).
+### With Claude Code
+
+```bash
+git clone https://github.com/Play-New/playable-org.git
+cd playable-org
+cd mcp-server && npm install && npm run build && cd ..
+claude   # approve the project-scoped server on first launch
+```
+
+The repo ships a `.mcp.json` at the root; Claude Code auto-detects it and asks for approval the first time. From there the `init` / `ingest` / playbook flow is identical to Claude Desktop — only the surface changes (terminal session with file writes and git diffs visible, instead of a chat window). Both clients read and write the same `org/` on disk.
+
+Detailed walkthrough with prerequisites and troubleshooting for both flows: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/architecture.md). Playbook reference: [`docs/playbooks.md`](docs/playbooks.md). Extension: [`docs/extending.md`](docs/extending.md).
 
 ## What ships in the public template
 

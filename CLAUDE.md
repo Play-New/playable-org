@@ -1,6 +1,6 @@
 # Playable Org
 
-Public template for representing an organization as a structured, agent-maintained graph. Markdown files with YAML frontmatter, plus analytical playbooks on top. The bundled mcp server connects the graph to Claude Desktop.
+Public template for representing an organization as a structured, agent-maintained graph. Markdown files with YAML frontmatter, plus analytical playbooks on top. The bundled mcp server connects the graph to **Claude Desktop** (via `install.command` / `install.bat`) or to **Claude Code** (via the committed `.mcp.json` at the repo root, auto-detected on `claude` launch). Both clients read and write the same `org/` on disk. claude.ai web is not a supported client today (no local stdio MCP).
 
 This `CLAUDE.md` is working memory for whoever maintains the template (me, future contributors). It is not shipped to end users — the customer-facing docs are `README.md`, `SETUP.md`, `CONTRIBUTING.md`, `docs/`.
 

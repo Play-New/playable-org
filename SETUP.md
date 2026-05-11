@@ -1,8 +1,13 @@
 # Setup
 
-Instructions to connect Playable Org to Claude Desktop. Works on **Windows** and **macOS**. After install, Claude can read your structure and answer questions citing the sources you've fed it.
+Instructions to connect Playable Org to Claude. Works on **Windows** and **macOS**. After install, Claude can read your structure and answer questions citing the sources you've fed it.
 
-The template runs as an MCP server inside **Claude Desktop**. Local MCP servers are a desktop-app feature today; claude.ai web supports remote connectors but not the local stdio path this installer registers.
+The template runs as a local MCP server. Two clients are first-class:
+
+- **Claude Desktop** (the desktop app). Most common case — leaders asking questions in a chat UI, playbooks rendered as HTML in the browser. The installer below registers the server in Claude Desktop's config. Steps 1-3 cover this flow.
+- **Claude Code** (the CLI). Parallel path for maintainers, playbook authors, anyone running `init` / `ingest` weekly and wanting git diffs visible while the agent writes. The repo ships a `.mcp.json` that Claude Code auto-detects when you launch `claude` from the repo root. See [Use it with Claude Code](#use-it-with-claude-code) at the bottom.
+
+claude.ai web supports remote connectors but not the local stdio path this template uses, so the web app is not a supported client today.
 
 ## Prerequisites
 
@@ -161,6 +166,47 @@ playable-org/org/open-questions.md
 ```
 
 It opens in your default text editor (Notepad on Windows, TextEdit on macOS).
+
+## Use it with Claude Code
+
+If you prefer **Claude Code** (the CLI) over Claude Desktop — typical when you maintain `org/` weekly, want git diffs visible while the agent writes, or are building your own playbook — the flow is shorter.
+
+### Prerequisites
+
+- Node.js (same as above)
+- Claude Code installed — see https://docs.claude.com/en/docs/claude-code/quickstart
+
+### Steps
+
+```bash
+# 1. Get the repo.
+git clone https://github.com/Play-New/playable-org.git
+cd playable-org
+
+# 2. Build the mcp server.
+cd mcp-server && npm install && npm run build && cd ..
+
+# 3. Launch Claude Code from the repo root.
+claude
+```
+
+The repo ships a `.mcp.json` at the root. The first time you launch `claude` in the folder, Claude Code asks you to approve the project-scoped server. Approve it; the `playable-org` server is active for any chat opened from this folder.
+
+To remove later: delete `.mcp.json` (project-scoped registration goes with it).
+
+### Populate the structure
+
+Same as the Claude Desktop flow: drop documents into `org/sources/` (Path A) or ask Claude to *initialize the structure* (Path B). In Claude Code the init experience runs in your terminal session — you see file writes, lint output, and git diffs as the agent works.
+
+### What changes vs Claude Desktop
+
+|                  | Claude Desktop                              | Claude Code                                 |
+| ---------------- | ------------------------------------------- | ------------------------------------------- |
+| Registration     | `install.command` writes the desktop config | `.mcp.json` auto-detected on `claude` launch |
+| Surface          | One persistent chat window                  | Terminal session, git-aware                  |
+| Best for         | Asking questions, opening rendered HTML     | Maintaining `org/`, authoring playbooks      |
+
+Both clients read and write the same `org/` on disk. You can use Claude Desktop for the leader-facing reading session and Claude Code for the maintenance loop on the same instance, in the same week, without conflicts.
 
 ## Help
 

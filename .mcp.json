@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "playable-org": {
+      "command": "node",
+      "args": ["mcp-server/dist/index.js", "--data-dir", "org"]
+    }
+  }
+}
