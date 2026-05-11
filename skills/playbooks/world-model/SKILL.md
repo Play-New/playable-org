@@ -1,6 +1,6 @@
 ---
 name: world-model
-description: "Read an organization through the four-part frame from Block (Dorsey + Botha, March 2026): capabilities, world model, intelligence layer, interfaces. Output: a frozen analysis describing how the three layers (interfaces, capabilities, world model) currently operate in the org and how each would change once the intelligence layer is in place. The roadmap surfaces from the loop: requests the org would already receive that no current composition can fulfil."
+description: "Read an organization through the four-part frame from Block (Dorsey + Botha, March 2026): capabilities, world model, intelligence layer, interfaces. Output: a frozen analysis describing how the three structural layers (interfaces, capabilities, world model) currently operate in the org, and what it would take to actually run the loop. Three structural moves: turn interfaces into signal collection, reorganize around invokable capabilities, build the memory that decides."
 ---
 
 # Playbook: world-model
@@ -29,7 +29,7 @@ If `org_play_run` errors, report verbatim and stop. Do not fall back to an in-ch
 
 ## Output style
 
-All consumer-facing text produced by this skill (play body, viewer copy, modals, interpretive narratives) must follow the project style charter in [skills/STYLE.md](../../STYLE.md). The methodology behind the analysis is in [skills/CAPABILITIES.md](../../CAPABILITIES.md), starting from the *"The move, in one paragraph"* section, which the SKILL.md and the agent both reference.
+All consumer-facing text produced by this skill (play body, viewer copy, modals, interpretive narratives) **must** follow the project style charter in [skills/STYLE.md](../../STYLE.md). The agent **must** run the self-check at the end of STYLE.md before saving any prose. The methodology behind the analysis is in [skills/CAPABILITIES.md](../../CAPABILITIES.md), starting from the *"The move"* section.
 
 The skill produces, for an organization in scope, a reading of where it sits along the move from hierarchy to intelligence. For each of the three layers, the play describes the today state and the after state. The gap between them is what the intelligence layer would close.
 
@@ -202,19 +202,19 @@ The roadmap (the list of missing capabilities the loop would surface today) is d
 
 **Visual code (frozen)**:
 
-- **Shape = kind**: cards (rounded-corner full-border) for everything that's content-rich (stakeholder, interface, composition, world-model entry, capability, piece to build). All clickable items use the same shape and the same hover signal (border darkens to `--fg`).
-- **Colour = state / role**: hairline border = standard / commodity; coral border (`--ds-coral`) = differentiated / moat (capabilities) or emerging (any future `is_new` item — value-map convention). The shape never changes when an item is differentiated or emerging — only the border colour does.
+- **Shape = kind**: full-border cards for every content-rich element on the page (interface, capability, world-model entry). All clickable items share the same shape and the same hover signal (border darkens to `--ink`).
+- **Colour = state**: hairline border = standard practice. Coral border (`--k-commitment`) = differentiated craft (capability) or emerging item (`is_new`). The shape never changes when an item is differentiated or emerging; only the border colour does.
 - **No left-rule cards**. Every card has a full hairline border.
 
-**Click on any card** opens a small floating popover (never a modal). The popover opens **below** the clicked card, **centered horizontally on it**, and flips above when there isn't room below. Always clamped inside the viewport. The popover contains:
+**Click on any clickable element** opens a small floating popover (never a modal). The popover opens below the clicked element, centered horizontally on it, and flips above when there isn't room. Always clamped inside the viewport. Z-index sits above the Analysis modal scrim so popovers triggered inside Analysis stay visible. The popover contains:
 
-- Eyebrow with the kind ("capability · differentiated" / "capability · standard" / "stakeholder" / "interface" / "a piece to build" / "held together by people today" / "could be held together by systems" / "what the org knows about itself").
-- The full label as h3.
+- Eyebrow with the kind in one word: "differentiated", "standard", "interface".
+- The full label as h3 (capability names sentence-cased: `define-positioning` → `Define positioning`).
 - A description paragraph.
-- Per-kind sections: for capabilities, the contract (`Takes` / `Returns` / `How called`), `Can be called by`, `Held today by`, and a "Why differentiated" or "Why standard" rationale. For stakeholders, what-they-get / what-they-give-back / honest-signal / fragmentation. For company-side world-model entries, where-this-knowledge-lives / how-mature-the-picture-is / what's-missing. For pieces-to-build, what's-missing + what-it-would-take-to-build.
-- Footer citation: the `_structure_id` if present.
+- Per-kind sections. For capabilities: the contract (`Takes` / `Returns` / `Reliability target` / `How called`), `Who's on the hook today`, `Who can ask for it`, `Used together with`, `How callable today` (the five wrapper criteria each rendered in plain English), and `Why differentiated` (moat-only). For stakeholders: what-they-get / what-they-give-back / honest-signal / fragmentation. For operational observations: where-it-lives-today / maturity / what's-still-missing.
+- Footer citation: the structure source path(s).
 
-Every card on the page is clickable — no card is a display-only block. The hover signal (border darkens to `--fg`) is consistent across all clickable cards. Esc / click outside / close button dismisses.
+Every clickable element on the page (capability card, interface card, world-model list item) opens a popover. Esc / click outside / close button dismisses.
 
 **Plain-language discipline (frozen)**. The framework's layer names (Stakeholders, Interfaces, Intelligence layer, World model, Capabilities) stay as the framework defines them — they are the primitives, not jargon. Below each layer name, the hint paragraph translates the primitive into plain English. **Inside the popover and the prose**, no framework vocabulary leaks. Words to never use in user-visible strings:
 
@@ -317,4 +317,4 @@ The play's primary interpretive surface is the top-level `decisions[]` array —
 - `mcp-server/test-fixtures/sample-org/plays/data/world-model-outline-2026-05-07.json` — the source JSON with capabilities, interfaces, intelligence-layer compositions, world-model observations, pieces to build, and `decisions[]`
 - `mcp-server/test-fixtures/sample-org/plays/data/world-model-outline-2026-05-07.html` — the rendered viewer
 
-Open the HTML in a browser to see exactly what this skill produces. The play covers the studio's whole-org structure: 7 capabilities (3 differentiated, 4 standard), 4 touchpoints, 3 currently-human-mediated compositions + 2 potentially automatic, knowledge observations on the org and on each stakeholder type, and 3 pieces to build that all converge on the same missing capability — a context-keeping practice the studio doesn't yet have anyone owning. Three leader-facing decisions name Marco, Lena, and Tomás by role and the studio's units by name.
+Open the HTML in a browser to see exactly what this skill produces. The play covers the studio's whole-org structure: 9 capabilities (3 differentiated craft owned by Marco / Lena, 6 standard practice the category shares), 4 interfaces (each with a today / after pair), 3 currently human-mediated compositions plus 2 the intelligence layer could automate, world-model entries for the organization side and for each stakeholder type, and 3 entries in `pieces_to_build[]` that all converge on the same missing capability — a context-keeping practice the studio doesn't yet have anyone owning. The page itself shows the three layers and the Analysis modal names the three structural moves; the pieces-to-build data stays in the JSON for the audit gate but is deliberately not rendered as a project list on the page (the framework's claim is that the roadmap emerges from running the loop, not from a list compiled today). Three leader-facing decisions name Marco, Lena, and Tomás by role and the studio's units by name.

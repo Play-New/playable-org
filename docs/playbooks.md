@@ -68,15 +68,15 @@ Five base playbooks plus one meta-skill. Each answers one analytical question an
 
 **Question.** Reading the organization as a platform: what are its capabilities? Which are uniquely hard to acquire (moat) vs commodity? Where does the organization fail to compose capabilities into solutions for stakeholders?
 
-**Source theory.** Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026). An organization has four layers. **Capabilities** are atomic invocable functions with a public contract (input, output, SLO, regulatory constraints). **World model** is the representation of operations and stakeholders. **Intelligence layer** composes capabilities into responses to stakeholder signals. **Interfaces** deliver. The roadmap emerges from pieces to build: composition attempts that fail because a capability is missing.
+**Source theory.** Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026). An organization has four layers. **Capabilities** are atomic invokable functions with a public contract (input, output, reliability target, regulatory constraints). **World model** is the representation of operations and stakeholders, in two halves. **Intelligence layer** is the runtime that composes capabilities into responses to stakeholder signals. **Interfaces** deliver. The roadmap surfaces from running the loop, not from a list compiled today.
 
 **What it does.**
-1. Inventories candidate capabilities by clustering activities.
-2. Filters via the five-property test (invocable, structured output, atomic, hard to acquire, composable). See [`skills/CAPABILITIES.md`](../skills/CAPABILITIES.md).
-3. The agent classifies each capability as `moat` or `commodity` with rationale.
-4. For each stakeholder type the agent fills bidirectional fields: what they get from the org, what they contribute back, the most honest signal recorded, current maturity, fragmentation across teams.
-5. The agent surfaces pieces to build (formerly "pieces to build"): stakeholder requests that fail today because one needed piece of the chain isn't there yet.
-6. Renders the layered stack with a floating popover on every clickable card.
+1. Inventories candidate capabilities by clustering activities and applying the five-property test (invocable, structured output, atomic, hard to acquire, composable). See [`skills/CAPABILITIES.md`](../skills/CAPABILITIES.md).
+2. For each capability, fills the full contract: input, output, reliability target, regulatory constraints, invocation modality, who runs it (DRI), the five-criterion wrapper status that describes how callable it is today.
+3. The agent classifies each capability as differentiated craft or standard practice with rationale.
+4. For each stakeholder type, fills bidirectional fields: what they get from the org, what they give back, the most honest signal recorded, current maturity, fragmentation across teams.
+5. For each interface, captures both states: what it delivers today, what signals it would collect once it becomes a signal-collection point.
+6. Renders the three structural layers (interfaces, capabilities, world model) on the page with floating popovers; the Analysis modal names the three moves the org would make to actually run the loop.
 
 **Output.**
 - `org/plays/data/world-model-<scope>-<date>.json`

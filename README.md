@@ -96,7 +96,7 @@ Source: Sangeet Paul Choudary, *Reshuffle* (2024). The big idea is that AI does 
 
 > *What are the organization's capabilities? Which are differentiated, which are standard? What does the org know about itself and the people it serves? What pieces of the chain don't exist yet that the demand already implies?*
 
-Source: Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026). Reads the organization as a stack — capabilities at the bottom (atomic invocable functions with a contract), a world model in the middle (what the org knows about itself and its stakeholders), an intelligence layer that composes capabilities into responses to stakeholder signals, interfaces that deliver. The "what to build next" section names compositions the layer would attempt today and where the response would fall short because one needed piece of the chain isn't there yet. Each missing piece is a candidate to build, in plain language.
+Source: Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026). Reads the organization as a stack: capabilities at the bottom (atomic invocable functions with a contract), a world model in the middle (what the org knows about itself and its stakeholders), an intelligence layer that composes capabilities into responses to stakeholder signals, interfaces that deliver. The Analysis modal names the three structural moves the org would make to actually run the loop: turn interfaces into signal collection, reorganize around the invokable functions, build the memory that decides.
 
 ![world-model viewer — Outline & Co. as a stack of nine invokable capabilities with full contracts, the Author brand book popover showing the five-criterion wrapper status and who can ask for it](docs/_assets/world-model-viewer.png)
 
@@ -116,13 +116,17 @@ The autoresearch loop is not optional polish. It's the difference between a play
 
 ## Where it sits
 
+The honest comparison is with other ways of representing an organization, not with tooling.
+
 | Compared to | Playable Org is | Playable Org is not |
 |---|---|---|
-| Hosted markdown docs (Confluence, Notion) | agent-maintained markdown under an `AGENTS.md` contract | not human-editable in a UI; the agent is the editor, with diffs confirmed by a human |
-| Knowledge graph (RDF / Neo4j) | typed YAML frontmatter on every node, structured cross-references | not triples; markdown is the storage, the agent + lint script are the query engine; humans read the graph as prose |
-| BPM tool (Camunda, BPMN) | activities have performers, inputs, outputs, frequency, and (optional) trigger / quality_gates / decision_criteria / output_format / fallback / handoff | not executable; the structure documents the work; the agent runs it via composed `skills/` |
-| LLM-wrapper / RAG over docs | the agent reads `org/` to answer | not raw RAG; the cited structure is what makes it defensible. Without `(source-id)` citations on every claim, agents hallucinate; with them, every answer points back to a real document |
-| Org chart | five node types (unit, person, role, activity, stakeholder) plus commitments | not a hierarchy; commitments are richer than reporting lines (level × direction × explicit × state × fallback) |
+| Org chart | a graph of six node kinds (unit, activity, person, role, stakeholder, commitment) with typed dependencies between them | not a hierarchy. Commitments are richer than reporting lines (level × direction × explicit × state × fallback) |
+| Capability map | a stack of invokable functions with contracts, a world model underneath, interfaces on top — produced by the `world-model` playbook on top of the structure | not a hand-curated catalog. The capabilities are read off the structure by the playbook each time it runs |
+| Value-chain map (Wardley, Porter) | the agent walks the structure from a chosen anchor, positions each component on the evolution × visibility plane, marks AI pressure per component — produced by the `value-map` playbook | not pre-drawn by a consultant. The map is computed each time from the org's actual structure |
+| Service blueprint | the layered read of how the org meets its stakeholders comes out of `world-model`: interfaces (where stakeholders arrive), capabilities (what gets invoked), world model (the supporting memory) | not a one-shot deliverable. The blueprint is a property of the structure, runnable on demand |
+| BPMN / process diagram | activities carry typed performers, inputs, outputs, frequency, and optional trigger / quality_gates / output_format / fallback / handoff | not executable. The structure documents the work; `skills/` runs the analyses |
+| Knowledge graph (RDF, Neo4j) | typed YAML frontmatter on every node, structured cross-references between markdown files | not triples. Markdown is the storage, the agent + lint script are the query engine; humans read the graph as prose |
+| Hosted wiki (Confluence, Notion) | markdown under an `AGENTS.md` contract, maintained by an agent that reads, writes, and lints; every claim cites a source under `sources/` | not human-edited in a UI. The agent is the editor, with diffs confirmed by a human |
 
 The thing the artefact aims to be is a **structure**: enough cited topology for an agent to act on, minus the bureaucracy of formal ontologies, plus the editorial discipline that keeps the prose readable. (The term comes from Simone Cicero, *[What is an organization today?](https://through-the-boundary.simonecicero.com/p/ttb-1-what-is-an-organization-today)*, April 2026 — the *structure* is what AI makes more necessary; the *superstructure* is what AI eliminates.)
 
@@ -154,7 +158,7 @@ Detailed: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/ar
 
 ## What ships in the public template
 
-- **mcp-server/** — TypeScript stdio mcp server. Thirteen tools, full e2e suite at `mcp-server/test-e2e.py` (116/116 pass — 88 pipeline + 28 graph-viewer design-regression checks), ~30KB compiled.
+- **mcp-server/** — TypeScript stdio mcp server. Thirteen tools, full e2e suite at `mcp-server/test-e2e.py` (229/229 pass, covering pipeline tests + design-regression checks for each viewer), ~30KB compiled.
 - **skills/** — eleven recipes. Three operational (`init`, `ingest`, `lint`); five playbooks (`graph`, `ai-exposure`, `value-map`, `reshuffle`, `world-model`); two deployment skills (`compile-agent` for scope-limited agents, `interview-activity` for filling the activity density layer); one meta-skill (`new-playbook`).
 - **mcp-server/test-fixtures/sample-org/** — a fully populated test fixture: Outline & Co., a fictional creative studio (5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources). Ships with the five canonical playbook artefacts (HTML + JSON + judge verdicts). Open `plays/data/*.html` in a browser to see exactly what each playbook produces.
 - **install.command** / **install.bat** — clickable installers (no admin required). Build the mcp server, register it in Claude Desktop's config.
