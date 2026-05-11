@@ -76,11 +76,15 @@ Walks every node under `org/` and emits a force-directed picture of the typed de
 
 Source: [Anthropic's Economic Index](https://www.anthropic.com/economic-index) (March 2026 release, ~18,500 task-level descriptions of how Claude was used across a sample of public conversations). For every activity the org actually does, the playbook embeds the description, finds the five nearest task-descriptions in the AEI sample by sentence similarity, and shows how Claude was used in those samples — automated, augmented, assistive, or outside the observed sample. The colour describes what was observed in the AEI sample, not what the activity *is* in this organization. Read it as: *if Claude tried this activity, here's how it would look like work Claude was already doing.*
 
+![ai-exposure viewer — Outline & Co. activities scored against the Anthropic Economic Index, filtered by unit, with the per-activity popover showing the top-five matched tasks and their autonomy band](docs/_assets/ai-exposure-viewer.png)
+
 ### value-map — where each piece sits on the evolution curve
 
 > *For an anchor (a commitment, a unit, a stakeholder), where does each piece of the chain sit on the evolution × visibility plane, and where is AI pushing it?*
 
 Source: Simon Wardley, value-mapping. Anchors on a commitment or unit, walks the structure to find the components reachable from the anchor, asks the agent to position each one on the *genesis → custom → product → commodity* axis with citations, and overlays AI pressure per component when an `ai-exposure` play exists in the same slice. Marks emerging components (`is_new`) in conditional voice — *if X became standard, the chain would gain a new piece here* — never *X will happen by Q3*. The map shows where the work sits today and points at where it would move under specific pressures.
+
+![value-map viewer — Outline & Co. mid-market engagement chain plotted on the evolution × visibility plane, with AI-pressure arrows on each component](docs/_assets/value-map-viewer.png)
 
 ### reshuffle — what holds each activity in place, and what AI changes
 
@@ -88,11 +92,15 @@ Source: Simon Wardley, value-mapping. Anchors on a commitment or unit, walks the
 
 Source: Sangeet Paul Choudary, *Reshuffle* (2024). The big idea is that AI does two very different things and they should not be confused: it can accelerate work inside an existing bundle (a tool) or dissolve a constraint that held the bundle together and force a new bundle (an engine). Only engines reconfigure organizations. The playbook asks the agent to identify the constraint type for each activity in the slice (with citations) and to classify each AI use as tool or engine. The output names the rebundle moves the analysis suggests — they are options, not recommendations.
 
+![reshuffle viewer — Outline & Co. activities arranged in the 3×3 matrix of AI class × constraint type, with the "where AI changes structure" leverage cell highlighted](docs/_assets/reshuffle-viewer.png)
+
 ### world-model — the org as a stack
 
 > *What are the organization's capabilities? Which are differentiated, which are standard? What does the org know about itself and the people it serves? What pieces of the chain don't exist yet that the demand already implies?*
 
 Source: Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026). Reads the organization as a stack — capabilities at the bottom (atomic invocable functions with a contract), a world model in the middle (what the org knows about itself and its stakeholders), an intelligence layer that composes capabilities into responses to stakeholder signals, interfaces that deliver. The "what to build next" section names compositions the layer would attempt today and where the response would fall short because one needed piece of the chain isn't there yet. Each missing piece is a candidate to build, in plain language.
+
+![world-model viewer — Outline & Co. as a stack of nine invokable capabilities with full contracts, the Author brand book popover showing the five-criterion wrapper status and who can ask for it](docs/_assets/world-model-viewer.png)
 
 The bundled playbooks are independent. You pick the one that fits the question you have, in any order. They do compose where it makes sense — `world-model` reads outputs of `value-map` and `reshuffle` if they exist in the same slice, `value-map` overlays AI pressure when an `ai-exposure` play is present — but no playbook depends on another being run first. `graph` is usually the lightest first move after the initial `ingest` (it just renders what's there), and `ai-exposure` works as a broad survey, but a deployment that only needs one of the five is a fully valid use of the template.
 

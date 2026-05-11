@@ -1441,8 +1441,10 @@ body {{
   pointer-events: none;
   white-space: nowrap;
   max-width: calc(100vw - 260px);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* overflow:hidden + italic on .what was clipping the last glyph at the
+     sub-pixel edge (italics extend slightly past their nominal box).
+     Content is always short — no need to clip. */
+  padding-right: 4px;
 }}
 .dateline > * {{ white-space: nowrap; }}
 .dateline .org {{
