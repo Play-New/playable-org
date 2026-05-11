@@ -56,7 +56,7 @@ When prose is in a language other than English, prefer the local equivalent over
 - `design.py` at v4 — masthead/colophon/section/marginalia helpers, 5-stop colour scales, surface tokens, motion tokens. Backward-compatible with v3.
 - 1 architecture-philosophy doc: `docs/skills-as-capabilities.md`.
 - `org/` empty: 3 identity stubs (`# REPLACE ME`), zero other content. Lint Tier 1 reports 3 expected warnings on the stubs (empty `sources` arrays); these go to 0 after init.
-- mcp-server e2e: 88/88 PASS against `mcp-server/test-fixtures/sample-org/` (the Outline & Co. fake creative studio: 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources, plus the five canonical playbook artefacts under `plays/data/` — including the graph play with 41 nodes / 165 typed relations).
+- mcp-server e2e: 116/116 PASS against `mcp-server/test-fixtures/sample-org/` (88 pipeline + tool tests, plus 28 graph-viewer design-regression checks that lock the App-pure layout, the *Carta sbiadita* palette, the inspect-grouping-by-verb, the safe-area-inset-honoured mobile chrome, the Pointer-Events + pinch-zoom wiring, the inline favicon, the embedded Inter Variable, and the kinds/edges that the viewer strips). Outline & Co. is a fictional creative studio: 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources; the graph play has 41 nodes / 165 typed relations in the JSON, of which the App-pure viewer renders 32 nodes / 75 edges (corpus and declarative kinds, plus body-markdown link edges, are stripped).
 - TypeScript build: clean.
 
 ## Maintenance
@@ -89,6 +89,6 @@ When the public template gets new features that downstream forks should pull in:
 
 Direct: Andrej Karpathy's *Building an LLM Wiki* gist (https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f, May 2026). The pattern: dense markdown corpus maintained by an LLM agent that follows a `CLAUDE.md`/`AGENTS.md` contract, with `index.md` (catalog) and `log.md` (append-only) as special root files.
 
-Of the five base playbooks, four are explicit compositions of established frames: Anthropic Economic Index (ai-exposure), Wardley (value-map), Choudary (reshuffle), Dorsey + Botha (world-model). The fifth (graph) is sourceless — it renders the structure as the structure declares itself, with no interpretive frame in between. The term "structure" instead of "substrate" follows Simone Cicero, *What is an organization today?* (Through The Boundary, April 2026) — see the vocabulary entry above for the URL.
+Of the five base playbooks, four are explicit compositions of established frameworks: Anthropic Economic Index (ai-exposure), Wardley (value-map), Choudary (reshuffle), Dorsey + Botha (world-model). The fifth (graph) is sourceless — it renders the structure as the structure declares itself, with no interpretive theory in between. The term "structure" instead of "substrate" follows Simone Cicero, *What is an organization today?* (Through The Boundary, April 2026) — see the vocabulary entry above for the URL.
 
 We borrow the pattern; we call our artefact `org/`, not a wiki.

@@ -1,6 +1,7 @@
 ---
 id: mission
 type: identity
+org_name: "Outline & Co."
 sources: [outline-charter-2024]
 ---
 

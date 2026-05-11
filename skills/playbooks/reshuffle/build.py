@@ -219,6 +219,22 @@ def attach_value_map(components: list[dict], vmap_path: Path) -> int:
     return attached
 
 
+def _read_org_name(org_dir: Path) -> str:
+    """Pull the organisation's display name from `identity/mission.md`
+    frontmatter (key: `org_name`) — same convention as graph/build.py."""
+    identity_dir = org_dir / "identity"
+    if identity_dir.is_dir():
+        for f in sorted(identity_dir.glob("*.md")):
+            try:
+                fm = parse_frontmatter(f.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            name = (fm.get("org_name") or "").strip()
+            if name:
+                return name
+    return org_dir.name.replace("-", " ").replace("_", " ").title()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build reshuffle slice skeleton from structure.")
     parser.add_argument("--slice", required=True, help="Slice id (commitment or unit)")
@@ -351,6 +367,7 @@ def main() -> int:
             "terms": anchor_fm.get("terms", ""),
         },
         "_dated": date.today().isoformat(),
+        "_org": _read_org_name(Path(args.org_dir)),
         "_scope": {
             "units": scope_units,
             "stakeholders": scope_stakeholders,

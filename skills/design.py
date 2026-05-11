@@ -8,7 +8,7 @@ Convention: viewers compose primitives, never write inline CSS. This module
 is the only place where typography, spacing, color, and layout decisions
 live. Update once, every viewer follows.
 
-Visual version: 4
+Visual version: 5
 - v1: Inter Variable + monochrome-with-state-accents (#1a1a1a / #e5e5e5).
 - v2: Mirage variable + Play New pure monochrome. Rolled back —
   Klim Type Foundry's standard Mirage license does not permit public
@@ -16,16 +16,32 @@ Visual version: 4
   Inter Variable instead, and forks can swap in their own brand font
   by replacing `_assets/fonts/inter-variable.woff2`.
 - v3: Inter Variable + Play New monochrome + a small pastel data-viz
-  palette (--ds-sage / --ds-lilac / --ds-slate / --ds-sand / --ds-coral)
-  for heatmaps, stage bands, category swatches, category differentiation.
-- v4 (current): editorial direction taken from Giorgia Lupi / Accurat /
-  Federica Fragapane / Density Design — Italianate masthead pattern,
-  numbered-section register, disclosed grid, marginalia, custom
-  geometric marks per data kind, 5-stop colour scales per hue with
-  glow variants, surface tokens (paper / inset-dark / raised), motion
-  tokens for cascading entry, and a colophon footer pattern. See
-  `docs/design-direction.md` for the brief and references.
-  All v3 tokens remain; v4 is additive.
+  palette for heatmaps, stage bands, category swatches.
+- v4: editorial direction with Italianate masthead, numbered-section
+  register, marginalia, 5-stop colour scales per hue with glow
+  variants, surface tokens (paper / inset-dark / raised), motion
+  tokens, colophon footer pattern. v3 tokens preserved.
+- v5 (current): "Carta sbiadita" App-pure shell, ported from the May
+  2026 graph viewer redesign. Cream paper palette (`#f4eee2` ground,
+  `#1c1a16` ink), Inter Variable with `ss01` + `cv11` features active,
+  six load-bearing kind colours (slate · sage · ink · sand · lilac ·
+  terracotta) plus four ambient ones, mobile-app baseline (safe-area
+  insets, viewport-fit=cover, theme-color, apple-mobile-web-app meta,
+  no tap highlight, no user-select on chrome, touch-action: none on
+  canvases), inline SVG favicon (three dots in operational kind
+  colours), Pointer Events for mouse + touch through one path, two-
+  finger pinch zoom on canvas-mode viewers, floating chrome (dateline
+  top-left, date + Analysis CTA top-right, hint bottom-center, kinds
+  ribbon and tools bottom-flanks for canvas viewers, colophon for
+  scroll viewers), Inspect card sliding in from the right on focus
+  (canvas viewers), Analysis modal (`<kicker> / <h1> / <dateline> /
+  <lede> / <ol class="decisions"> / <foot>`), `?focus=<id>` URL
+  permalink. The five viewers split between two layout modes: graph
+  and value-map are *canvas-first*, ai-exposure and reshuffle and
+  world-model are *scroll-on-paper*; both modes share palette,
+  typography, mobile baseline, modal, favicon, theme-color. v4 helpers
+  remain available during the migration and are removed once every
+  viewer is on v5.
 
 License note: `_assets/fonts/inter-variable.woff2` is Inter Variable
 by Rasmus Andersson, SIL Open Font License v1.1, freely
@@ -1259,3 +1275,971 @@ def modal_field(label: str, value_html: str) -> str:
   <div class="pn-modal__field-label">{escape(label)}</div>
   <div class="pn-modal__field-value">{value_html}</div>
 </div>"""
+
+
+# ======================================================================
+# v5 — App-pure shell
+#
+# Shared visual language across all five playbook viewers, ported from
+# the May 2026 graph viewer redesign (Carta sbiadita palette, Inter
+# Variable with ss01 + cv11, mobile-app feel: safe-area-inset, Pointer
+# Events, no tap highlight, inline SVG favicon, embedded font, theme
+# color, viewport-fit=cover).
+#
+# Two layout modes a viewer can opt into:
+#
+#   - canvas-first (graph, value-map): <canvas> or <svg> fills the
+#     viewport; chrome floats on the paper. Inspect card slides in from
+#     the right when the user focuses a node.
+#
+#   - scroll-on-paper (ai-exposure, reshuffle, world-model): vertical
+#     scroll over the same paper palette, with the same dateline + date
+#     + Analysis CTA on top, the same colophon at the bottom, the same
+#     Analysis modal pattern. Inspect card and tooltip are not part of
+#     this mode.
+#
+# Both modes share: palette, typography, mobile baseline, Analysis modal
+# shape, favicon, theme-color. They differ in body-level layout only.
+# ======================================================================
+
+
+# Palette: "Carta sbiadita". Six load-bearing operational kinds (used by
+# graph and value-map for category swatches); paper / ink / hairline
+# tokens for surfaces and editorial chrome; modal scrim alpha.
+APP_PURE_PALETTE = {
+    "paper":       "#f4eee2",
+    "paper_2":     "#ece5d4",
+    "paper_3":     "#e2d9c3",
+    "hairline":    "rgba(28, 26, 22, 0.14)",
+    "hairline_2":  "rgba(28, 26, 22, 0.06)",
+    "ink":         "#1c1a16",
+    "ink_95":      "rgba(28, 26, 22, 0.95)",
+    "ink_80":      "rgba(28, 26, 22, 0.78)",
+    "ink_60":      "rgba(28, 26, 22, 0.58)",
+    "ink_40":      "rgba(28, 26, 22, 0.38)",
+    "ink_25":      "rgba(28, 26, 22, 0.25)",
+    "modal_scrim": "rgba(28, 26, 22, 0.42)",
+    # Operational kind colours
+    "k_unit":              "#6b7d8c",
+    "k_activity":          "#8a9d6b",
+    "k_person":            "#1c1a16",
+    "k_role":              "#bca787",
+    "k_stakeholder":       "#9b8aa3",
+    "k_commitment":        "#b87b5e",
+    "k_financial_summary": "#7e8a6b",
+    "k_identity":          "#b89b94",
+    "k_language_term":     "#8c8a83",
+    "k_source":            "#a09a8e",
+}
+
+
+def app_pure_favicon_href() -> str:
+    """Inline SVG favicon as a data URL — three dots in operational
+    kind colours (slate · sage · terracotta), a miniature graph
+    fragment. Transparent background so the icon sits well on both
+    light and dark browser chrome."""
+    svg = (
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>"
+        "<circle cx='16' cy='9' r='4.5' fill='%236b7d8c'/>"
+        "<circle cx='9' cy='22' r='4' fill='%238a9d6b'/>"
+        "<circle cx='23' cy='22' r='4' fill='%23b87b5e'/>"
+        "</svg>"
+    )
+    return f"data:image/svg+xml;utf8,{svg}"
+
+
+def app_pure_head_meta(title: str) -> str:
+    """<head> meta + favicon link. Drop into every App-pure viewer's
+    HTML between <head> and <style>.
+
+    - viewport-fit=cover for iPhone notch
+    - theme-color matches the paper background
+    - apple-mobile-web-app-* for "Add to Home Screen" full-screen mode
+    """
+    return (
+        '<meta charset="utf-8" />\n'
+        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />\n'
+        f'<meta name="theme-color" content="{APP_PURE_PALETTE["paper"]}" />\n'
+        '<meta name="apple-mobile-web-app-capable" content="yes" />\n'
+        '<meta name="apple-mobile-web-app-status-bar-style" content="default" />\n'
+        f'<title>{escape(title)}</title>\n'
+        f'<link rel="icon" type="image/svg+xml" href="{app_pure_favicon_href()}" />'
+    )
+
+
+def app_pure_css(*, layout: str = "canvas") -> str:
+    """Shared CSS for App-pure viewers.
+
+    `layout` selects body-level rules:
+      - `"canvas"`: fixed full-bleed canvas/svg under floating chrome.
+      - `"scroll"`: vertical scroll on paper, chrome stays sticky/floating.
+
+    Each viewer should concatenate its own playbook-specific CSS after
+    this block (kinds-pills swatches, axis labels, card grids, etc).
+    """
+    p = APP_PURE_PALETTE
+    body_overflow = "hidden" if layout == "canvas" else "auto"
+    body_height = "100%" if layout == "canvas" else "auto"
+    body_touch = "none" if layout == "canvas" else "manipulation"
+    return f"""{_font_face_block()}
+
+:root {{
+  --paper:      {p['paper']};
+  --paper-2:    {p['paper_2']};
+  --paper-3:    {p['paper_3']};
+  --hairline:   {p['hairline']};
+  --hairline-2: {p['hairline_2']};
+  --ink:        {p['ink']};
+  --ink-95:     {p['ink_95']};
+  --ink-80:     {p['ink_80']};
+  --ink-60:     {p['ink_60']};
+  --ink-40:     {p['ink_40']};
+  --ink-25:     {p['ink_25']};
+
+  --k-unit:              {p['k_unit']};
+  --k-activity:          {p['k_activity']};
+  --k-person:            {p['k_person']};
+  --k-role:              {p['k_role']};
+  --k-stakeholder:       {p['k_stakeholder']};
+  --k-commitment:        {p['k_commitment']};
+  --k-financial-summary: {p['k_financial_summary']};
+  --k-identity:          {p['k_identity']};
+  --k-language-term:     {p['k_language_term']};
+  --k-source:            {p['k_source']};
+
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  font-variant-numeric: tabular-nums;
+}}
+* {{ box-sizing: border-box; }}
+html, body {{ height: {body_height}; margin: 0; }}
+body {{
+  background: var(--paper);
+  color: var(--ink);
+  overflow: {body_overflow};
+  overscroll-behavior: none;
+  font-size: 13px;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: {body_touch};
+}}
+::selection {{ background: var(--ink); color: var(--paper); }}
+.inspect, .modal, .scroll-paper {{ -webkit-user-select: text; user-select: text; }}
+
+/* ─── DATELINE — top-left, no border, hangs in space ──────────── */
+.dateline {{
+  position: fixed;
+  top: max(22px, env(safe-area-inset-top));
+  left: max(28px, calc(env(safe-area-inset-left) + 16px));
+  z-index: 5;
+  display: flex; align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: calc(100vw - 260px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}}
+.dateline > * {{ white-space: nowrap; }}
+.dateline .org {{
+  font-weight: 540;
+  letter-spacing: -0.012em;
+  font-size: 14px;
+  color: var(--ink);
+}}
+.dateline .sep {{ color: var(--ink-25); }}
+.dateline .what {{
+  font-style: italic;
+  color: var(--ink-60);
+  font-weight: 380;
+}}
+.dateline .what em {{ font-style: normal; color: var(--ink-80); font-weight: 460; }}
+
+.date-tr {{
+  position: fixed;
+  top: max(24px, calc(env(safe-area-inset-top) + 2px));
+  /* Right offset reserves room for the optional "?" help button
+     between the date and the Analysis CTA. When the help button is
+     not rendered the slot stays empty — small visual gap, harmless. */
+  right: calc(max(180px, env(safe-area-inset-right) + 170px));
+  z-index: 5;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--ink-40);
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+}}
+.date-tr em {{ font-style: normal; color: var(--ink-80); }}
+
+/* ─── ANALYSIS BUTTON — top-right, the editorial CTA ──────────── */
+.analysis {{
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  right: max(22px, calc(env(safe-area-inset-right) + 12px));
+  z-index: 5;
+  display: inline-flex; align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  cursor: pointer;
+  padding: 8px 14px 9px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 540;
+  letter-spacing: -0.012em;
+  border-radius: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}}
+.analysis:hover {{ background: var(--ink); color: var(--paper); }}
+.analysis .arrow {{ font-size: 13px; color: var(--ink-60); transition: color 0.15s ease; }}
+.analysis:hover .arrow {{ color: var(--paper); }}
+
+/* ─── HELP "?" button — sits between date and Analysis CTA ────── */
+.help-btn {{
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  /* Position inside the gap reserved by date-tr (which now sits at
+     right ~ 180+) — Analysis is at right ~ 22-30; 132 lands us
+     between them with breathing room. */
+  right: calc(max(22px, env(safe-area-inset-right) + 12px) + 110px);
+  z-index: 5;
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: 50%;
+  color: var(--ink-60);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 540;
+  font-family: ui-rounded, system-ui, sans-serif;
+  line-height: 1;
+  padding: 0;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}}
+.help-btn:hover {{
+  border-color: var(--ink);
+  color: var(--ink);
+  background: var(--paper-2);
+}}
+@media (max-width: 760px) {{
+  /* Date-tr is hidden on phones (from the shared media query
+     elsewhere in this file). Move the help button into its slot. */
+  .help-btn {{
+    right: calc(max(14px, env(safe-area-inset-right) + 8px) + 100px);
+    top: max(14px, env(safe-area-inset-top));
+  }}
+}}
+
+/* ─── ABOUT modal — opened by the "?" button ──────────────────── */
+.about-scrim {{
+  position: fixed; inset: 0;
+  background: {p['modal_scrim']};
+  display: none;
+  align-items: flex-start; justify-content: center;
+  z-index: 100;
+  padding: 60px 20px;
+  overflow-y: auto;
+}}
+.about-scrim.open {{ display: flex; }}
+.about-card {{
+  background: var(--paper);
+  width: min(720px, 100%);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  padding: 40px 56px 48px;
+  position: relative;
+}}
+@media (max-width: 900px) {{
+  .about-card {{ padding: 32px 28px 36px; }}
+}}
+.about-card .close {{
+  position: absolute;
+  top: 14px; right: 16px;
+  background: transparent; border: 0;
+  font: inherit; font-size: 18px;
+  color: var(--ink-40);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 3px;
+}}
+.about-card .close:hover {{ background: var(--paper-2); color: var(--ink); }}
+.about-card .kicker {{
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  font-weight: 500;
+  margin-bottom: 14px;
+}}
+.about-card h1 {{
+  font-size: 26px;
+  font-weight: 540;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
+  margin: 0 0 16px;
+  text-wrap: balance;
+}}
+.about-card .lede {{
+  font-size: 15.5px;
+  font-style: italic;
+  color: var(--ink-95);
+  line-height: 1.55;
+  letter-spacing: -0.012em;
+  margin: 0 0 22px;
+  text-wrap: pretty;
+}}
+.about-card h2 {{
+  font-size: 16px;
+  font-weight: 540;
+  letter-spacing: -0.014em;
+  margin: 24px 0 8px;
+}}
+.about-card p {{
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-95);
+  margin: 0 0 12px;
+  text-wrap: pretty;
+}}
+
+/* ─── TOOLTIP (hover, mouse-only) ─────────────────────────────── */
+.tooltip {{
+  position: fixed;
+  pointer-events: none;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 11px;
+  padding: 4px 8px 5px;
+  border-radius: 2px;
+  letter-spacing: -0.005em;
+  transform: translate(-50%, calc(-100% - 12px));
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  z-index: 6;
+}}
+.tooltip.show {{ opacity: 1; }}
+.tooltip .meta {{ font-style: italic; opacity: 0.55; margin-left: 6px; }}
+
+/* ─── HINT — bottom-center primer, fades on first interaction ── */
+.hint {{
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--ink-40);
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}}
+.hint.gone {{ opacity: 0; }}
+.hint em {{ font-style: normal; color: var(--ink-60); }}
+
+/* ─── COLOPHON — bottom strip, sits on the paper ──────────────── */
+.colophon {{
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 5;
+  padding: 14px max(24px, env(safe-area-inset-right))
+           max(18px, calc(env(safe-area-inset-bottom) + 12px))
+           max(24px, env(safe-area-inset-left));
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 24px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--paper) 55%);
+}}
+.colophon > * {{ pointer-events: auto; }}
+.colophon-meta {{
+  font-size: 11px;
+  font-style: italic;
+  color: var(--ink-40);
+  letter-spacing: -0.005em;
+}}
+.colophon-meta strong {{
+  font-style: normal;
+  color: var(--ink-80);
+  font-weight: 540;
+  font-variant-numeric: tabular-nums;
+}}
+
+/* ─── INSPECT — floating from right on focus (canvas mode) ────── */
+.inspect {{
+  position: fixed;
+  top: 64px; right: 22px; bottom: 60px;
+  width: 340px;
+  max-width: calc(100vw - 44px);
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  padding: 22px 24px 24px;
+  z-index: 6;
+  overflow-y: auto;
+  transform: translateX(calc(100% + 30px));
+  opacity: 0;
+  transition: transform 0.32s cubic-bezier(.2,.7,.2,1), opacity 0.2s ease;
+}}
+.inspect.open {{ transform: translateX(0); opacity: 1; }}
+.inspect-head {{
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 4px;
+}}
+.inspect-eyebrow {{
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  font-weight: 500;
+}}
+.inspect-close {{
+  margin-left: auto;
+  background: transparent; border: 0;
+  font: inherit; font-size: 16px;
+  color: var(--ink-40);
+  cursor: pointer;
+  padding: 0 4px; line-height: 1;
+}}
+.inspect-close:hover {{ color: var(--ink); }}
+.inspect .kind-tag {{
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  margin-top: 14px; margin-bottom: 6px;
+}}
+.inspect .kind-tag .swatch {{
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--tagcolor, var(--ink-40));
+}}
+.inspect h2 {{
+  font-size: 21px;
+  font-weight: 540;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
+  margin: 0 0 6px;
+  text-wrap: pretty;
+}}
+.inspect .path {{
+  font-size: 11px;
+  color: var(--ink-40);
+  font-style: italic;
+  margin: 0 0 12px;
+  word-break: break-all;
+}}
+.inspect .path em {{ font-style: normal; color: var(--ink-60); }}
+.inspect .blurb {{
+  font-size: 13px;
+  color: var(--ink-95);
+  line-height: 1.55;
+  margin: 0 0 16px;
+  text-wrap: pretty;
+}}
+.rel-group {{
+  margin-top: 14px;
+  border-top: 1px solid var(--hairline-2);
+  padding-top: 12px;
+}}
+.rel-group h3 {{
+  margin: 0 0 6px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  font-weight: 500;
+  display: flex; align-items: baseline; gap: 6px;
+}}
+.rel-group h3 .count {{
+  font-size: 10px;
+  color: var(--ink-25);
+  letter-spacing: 0;
+  text-transform: none;
+  font-style: italic;
+}}
+.rel-verb {{
+  display: flex; align-items: baseline; justify-content: space-between;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--ink-60);
+  padding: 12px 0 4px;
+  letter-spacing: -0.005em;
+}}
+.rel-verb:first-of-type {{ padding-top: 6px; }}
+.rel-verb-count {{
+  font-size: 10px;
+  color: var(--ink-25);
+  font-variant-numeric: tabular-nums;
+  font-style: italic;
+}}
+.rel {{
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 0;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 12.5px;
+}}
+.rel:hover {{ background: var(--paper-2); }}
+.rel .swatch {{ width: 7px; height: 7px; border-radius: 50%; margin-left: 4px; }}
+.rel .name {{
+  color: var(--ink-95);
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}}
+.rel-empty {{
+  font-size: 11px;
+  color: var(--ink-25);
+  font-style: italic;
+  padding: 4px 0;
+}}
+
+/* ─── MODAL — Analysis (editorial, single column) ─────────────── */
+.modal-scrim {{
+  position: fixed; inset: 0;
+  background: {p['modal_scrim']};
+  display: none;
+  align-items: flex-start; justify-content: center;
+  z-index: 100;
+  padding: 60px 20px;
+  overflow-y: auto;
+}}
+.modal-scrim.open {{ display: flex; }}
+.modal {{
+  background: var(--paper);
+  width: min(720px, 100%);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  padding: 40px 56px 48px;
+  position: relative;
+}}
+.modal .close {{
+  position: absolute;
+  top: 14px; right: 16px;
+  background: transparent; border: 0;
+  font: inherit; font-size: 18px;
+  color: var(--ink-40);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 3px;
+}}
+.modal .close:hover {{ background: var(--paper-2); color: var(--ink); }}
+.modal .kicker {{
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  font-weight: 500;
+  margin-bottom: 14px;
+}}
+.modal h1 {{
+  font-size: 30px;
+  font-weight: 540;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  margin: 0 0 12px;
+  text-wrap: balance;
+}}
+.modal .dateline-modal {{
+  font-style: italic;
+  color: var(--ink-40);
+  font-size: 12px;
+  margin-bottom: 24px;
+}}
+.modal .dateline-modal em {{ font-style: normal; color: var(--ink-60); }}
+.modal .lede {{
+  font-size: 17px;
+  font-style: italic;
+  color: var(--ink-95);
+  line-height: 1.5;
+  letter-spacing: -0.012em;
+  margin: 0 0 28px;
+  text-wrap: pretty;
+}}
+.modal .lede em {{ font-style: normal; color: var(--ink); font-weight: 540; }}
+.decisions {{ list-style: none; padding: 0; margin: 0 0 8px; counter-reset: dec; }}
+.decisions li {{
+  counter-increment: dec;
+  padding: 20px 0 22px 64px;
+  border-top: 1px solid var(--hairline-2);
+  position: relative;
+}}
+.decisions li::before {{
+  content: counter(dec, decimal-leading-zero);
+  position: absolute;
+  left: 0; top: 22px;
+  font-size: 12px;
+  color: var(--ink-40);
+  font-style: italic;
+}}
+.decisions h3 {{
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 540;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  line-height: 1.3;
+  text-wrap: pretty;
+}}
+.decisions p {{
+  margin: 0 0 10px;
+  color: var(--ink-95);
+  font-size: 14px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}}
+.decisions .source {{
+  font-size: 11px;
+  color: var(--ink-40);
+  font-style: italic;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin: 0 0 8px;
+  word-break: break-all;
+}}
+.decisions .anchor {{
+  display: inline-block;
+  font-size: 12px;
+  color: var(--ink-60);
+  font-style: italic;
+  cursor: pointer;
+  border-bottom: 0.5px solid var(--ink-25);
+  padding-bottom: 1px;
+}}
+.decisions .anchor:hover {{ color: var(--ink); border-bottom-color: var(--ink); }}
+.decisions .anchor em {{ font-style: normal; color: var(--ink); font-weight: 500; }}
+.modal-foot {{
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline-2);
+  font-size: 11.5px;
+  color: var(--ink-60);
+  font-style: italic;
+  line-height: 1.55;
+}}
+.modal-foot em {{ font-style: normal; color: var(--ink-80); }}
+
+/* ─── SCROLL-ON-PAPER — for ai-exposure / reshuffle / world-model ── */
+.scroll-paper {{
+  max-width: 720px;
+  margin: 0 auto;
+  padding: max(80px, calc(env(safe-area-inset-top) + 64px))
+           max(28px, env(safe-area-inset-right))
+           max(96px, calc(env(safe-area-inset-bottom) + 80px))
+           max(28px, env(safe-area-inset-left));
+}}
+.scroll-paper h1 {{
+  font-size: 30px;
+  font-weight: 540;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  margin: 0 0 12px;
+  text-wrap: balance;
+}}
+.scroll-paper h2 {{
+  font-size: 19px;
+  font-weight: 540;
+  letter-spacing: -0.018em;
+  line-height: 1.2;
+  margin: 36px 0 10px;
+  text-wrap: pretty;
+}}
+.scroll-paper h3 {{
+  font-size: 14.5px;
+  font-weight: 540;
+  letter-spacing: -0.012em;
+  margin: 22px 0 6px;
+}}
+.scroll-paper p {{
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-95);
+  margin: 0 0 12px;
+  text-wrap: pretty;
+}}
+.scroll-paper .lede {{
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink-95);
+  line-height: 1.5;
+  margin: 0 0 28px;
+}}
+.scroll-paper .lede em {{ font-style: normal; color: var(--ink); font-weight: 540; }}
+.scroll-paper .kicker {{
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  font-weight: 500;
+  margin-bottom: 14px;
+}}
+.scroll-paper hr {{
+  border: 0;
+  border-top: 1px solid var(--hairline-2);
+  margin: 28px 0;
+}}
+
+/* ─── RESPONSIVE squeeze ──────────────────────────────────────── */
+@media (max-width: 900px) {{
+  .inspect {{ width: calc(100vw - 44px); top: 56px; }}
+  .modal {{ padding: 32px 28px 36px; }}
+  .modal h1 {{ font-size: 24px; }}
+  .scroll-paper {{ padding-left: 22px; padding-right: 22px; }}
+  .scroll-paper h1 {{ font-size: 24px; }}
+}}
+@media (max-width: 760px) {{
+  .dateline {{
+    left: max(18px, calc(env(safe-area-inset-left) + 12px));
+    top: max(18px, env(safe-area-inset-top));
+    max-width: calc(100vw - 170px);
+    font-size: 12px;
+  }}
+  .dateline .org {{ font-size: 13px; }}
+  .dateline .what {{ display: none; }}
+  .analysis {{
+    right: max(14px, calc(env(safe-area-inset-right) + 8px));
+    top: max(14px, env(safe-area-inset-top));
+    padding: 9px 13px 10px;
+    font-size: 12.5px;
+  }}
+  .colophon {{
+    padding: 10px max(12px, env(safe-area-inset-right))
+             max(14px, calc(env(safe-area-inset-bottom) + 8px))
+             max(12px, env(safe-area-inset-left));
+    gap: 10px;
+  }}
+  .date-tr {{ display: none; }}
+  .hint {{
+    font-size: 11px;
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    white-space: normal;
+    max-width: calc(100vw - 32px);
+    line-height: 1.4;
+    text-align: center;
+    left: 16px; right: 16px;
+    transform: none;
+  }}
+  .inspect {{
+    top: max(58px, calc(env(safe-area-inset-top) + 50px));
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    right: 14px; left: 14px;
+    width: auto;
+    max-width: none;
+    padding: 18px 18px 20px;
+  }}
+  .inspect h2 {{ font-size: 19px; }}
+  .inspect-close {{ padding: 8px 10px; font-size: 20px; }}
+}}
+"""
+
+
+def app_pure_dateline_html(org_name: str, what: str = "the operational <em>structure</em>") -> str:
+    """Top-left dateline. `what` accepts inline HTML (italic + emphasis)."""
+    return (
+        f'<div class="dateline">\n'
+        f'  <span class="org">{escape(org_name)}</span>\n'
+        f'  <span class="sep">/</span>\n'
+        f'  <span class="what">{what}</span>\n'
+        f'</div>'
+    )
+
+
+def app_pure_top_right_html(
+    dated: str,
+    *,
+    show_analysis: bool = True,
+    show_help: bool = False,
+) -> str:
+    """Top-right: italic date + optional outline `?` help button +
+    optional outline Analysis CTA. Click handlers are wired in JS
+    (button ids: `open-help`, `open-analysis`)."""
+    out = f'<div class="date-tr"><em>{escape(dated)}</em></div>'
+    if show_help:
+        out += (
+            '\n<button class="help-btn" id="open-help" type="button" '
+            'aria-label="What is this map?" title="What is this map?">'
+            '?'
+            '</button>'
+        )
+    if show_analysis:
+        out += (
+            '\n<button class="analysis" id="open-analysis" type="button">'
+            'Analysis'
+            '<span class="arrow">→</span>'
+            '</button>'
+        )
+    return out
+
+
+def app_pure_about_modal_html(
+    *,
+    kicker: str,
+    headline: str,
+    lede: str,
+    body_html: str,
+) -> str:
+    """About / "what is this map" modal. Triggered by the `?` button
+    (id: `open-help`). Renders kicker + headline + lede + caller's
+    body HTML. Closed by clicking the scrim, the × button, or Esc.
+
+    `body_html` accepts inline HTML — typically the playbook's
+    intro paragraphs, legend, and any orientation aids."""
+    return f"""<div class="about-scrim" id="about-scrim">
+  <article class="about-card" role="dialog" aria-modal="true" aria-labelledby="about-title">
+    <button class="close" id="about-close" aria-label="Close">×</button>
+    <p class="kicker">{escape(kicker)}</p>
+    <h1 id="about-title">{escape(headline)}</h1>
+    {f'<p class="lede">{lede}</p>' if lede else ''}
+    {body_html}
+  </article>
+</div>"""
+
+
+def app_pure_inspect_aside_html() -> str:
+    """Floating Inspect card (right side). Body is empty — populated
+    by the playbook's JS via document.getElementById('inspect-body')."""
+    return (
+        '<aside class="inspect" id="inspect">\n'
+        '  <div class="inspect-head">\n'
+        '    <span class="inspect-eyebrow">Inspect</span>\n'
+        '    <button class="inspect-close" id="inspect-close" title="Reset focus">×</button>\n'
+        '  </div>\n'
+        '  <div id="inspect-body"></div>\n'
+        '</aside>'
+    )
+
+
+def app_pure_modal_html(
+    *,
+    headline: str,
+    org_name: str,
+    dated: str,
+    decisions_html: str,
+    kicker: str = "Reading the structure",
+    lede: str = "",
+    body_html: str = "",
+    foot_text: str = "",
+) -> str:
+    """Analysis modal. `decisions_html` is the contents of an <ol class='decisions'>;
+    each <li> typically has <h3>question</h3><p>answer</p><span class='anchor'
+    data-focus='node-id'>show <em>X</em> on the canvas →</span>.
+
+    `lede` accepts inline HTML for emphasis (`<em>...</em>` becomes the
+    "named" register inside the lede paragraph).
+
+    `body_html` is rendered between the lede and the <ol> of decisions —
+    used by viewers (e.g. reshuffle) that want to put a section of named
+    candidates above the decisions list.
+
+    `foot_text` accepts inline HTML; defaults to a generic provenance line.
+    """
+    if not foot_text:
+        foot_text = (
+            f"Read from the artefact at <em>{escape(dated)}</em>. "
+            "Each decision points to the part of the structure that produced it; "
+            "click an anchor to dim the rest of the picture and see the local "
+            "neighbourhood."
+        )
+    # Build the article body as a list of non-empty sections so empty
+    # parameters (lede or body_html) don't leak blank indented lines into
+    # the output. Output is deterministic — same inputs produce the same
+    # bytes — which the design-regression suite relies on.
+    sections: list[str] = [
+        f'<button class="close" id="modal-close" aria-label="Close">×</button>',
+        f'<p class="kicker">{escape(kicker)}</p>',
+        f'<h1 id="analysis-title">{escape(headline)}</h1>',
+        f'<p class="dateline-modal"><em>{escape(org_name)}</em> · structure dated {escape(dated)}</p>',
+    ]
+    if lede:
+        sections.append(f'<p class="lede">{lede}</p>')
+    if body_html:
+        sections.append(body_html)
+    if decisions_html:
+        sections.append(f'<ol class="decisions">{decisions_html}</ol>')
+    sections.append(f'<p class="modal-foot">{foot_text}</p>')
+    article_body = "\n    ".join(sections)
+    return f"""<div class="modal-scrim" id="modal-scrim">
+  <article class="modal" role="dialog" aria-modal="true" aria-labelledby="analysis-title">
+    {article_body}
+  </article>
+</div>"""
+
+
+def app_pure_baseline_js() -> str:
+    """Shared JS: modal open/close + Esc + ?-shortcut + ?focus URL
+    permalink. Each viewer concatenates its playbook-specific JS
+    (force simulation, hover handlers, etc) after this baseline.
+
+    Expects in the DOM: `#open-analysis`, `#modal-scrim`, `#modal-close`,
+    optionally a `setFocus(id)` function defined by the playbook (used
+    by the modal's "show on canvas →" anchors).
+    """
+    return r"""
+// ── About modal: open / close / Esc ────────────────────────────
+// Triggered by the "?" button (id: open-help). Holds the
+// "what is this map / how to read it" content the viewer used
+// to put inline at the top of the page.
+(function() {
+  const scrim = document.getElementById('about-scrim');
+  const openBtn = document.getElementById('open-help');
+  const closeBtn = document.getElementById('about-close');
+  if (!scrim) return;
+  function open()  { scrim.classList.add('open');    scrim.setAttribute('aria-hidden', 'false'); }
+  function close() { scrim.classList.remove('open'); scrim.setAttribute('aria-hidden', 'true'); }
+  if (openBtn)  openBtn.addEventListener('click', open);
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  scrim.addEventListener('click', (ev) => { if (ev.target === scrim) close(); });
+  window.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && scrim.classList.contains('open')) close();
+  });
+})();
+
+// ── Analysis modal: open / close / Esc / "?" shortcut ──────────
+(function() {
+  const scrim = document.getElementById('modal-scrim');
+  const openBtn = document.getElementById('open-analysis');
+  const closeBtn = document.getElementById('modal-close');
+  if (!scrim) return;
+  function open()  { scrim.classList.add('open');    scrim.setAttribute('aria-hidden', 'false'); }
+  function close() { scrim.classList.remove('open'); scrim.setAttribute('aria-hidden', 'true'); }
+  if (openBtn)  openBtn.addEventListener('click', open);
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  scrim.addEventListener('click', (ev) => { if (ev.target === scrim) close(); });
+  window.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && scrim.classList.contains('open')) { close(); return; }
+    if (ev.key === '?' || (ev.shiftKey && ev.key === '/')) { if (openBtn) openBtn.click(); }
+  });
+  // "show on canvas →" anchors: close the modal, then call setFocus
+  // if the viewer defined it. Some viewers (scroll-on-paper) don't.
+  scrim.querySelectorAll('.anchor[data-focus]').forEach((a) => {
+    a.addEventListener('click', () => {
+      close();
+      if (typeof window.setFocus === 'function') window.setFocus(a.dataset.focus);
+    });
+  });
+  // ?focus=<id> URL parameter — permalink to a focused node. Run on
+  // load with a small delay so the playbook's force sim has time to
+  // settle before we recentre.
+  try {
+    const params = new URLSearchParams(location.search);
+    const initial = params.get('focus');
+    if (initial) {
+      setTimeout(() => {
+        if (typeof window.setFocus === 'function') window.setFocus(initial);
+      }, 200);
+    }
+  } catch (_) { /* URL parsing failure → ignore */ }
+})();
+"""

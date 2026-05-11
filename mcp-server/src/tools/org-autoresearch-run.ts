@@ -26,11 +26,11 @@ const inputSchema = {
     play_path: {
       type: 'string',
       description:
-        'Relative path to the play JSON, typically under org/plays/data/. The playbook is inferred from the filename prefix (value-map-*, ai-exposure-*, world-model-*, reshuffle-*).',
+        'Relative path to the play JSON, typically under org/plays/data/. The playbook is inferred from the filename prefix (graph-*, value-map-*, ai-exposure-*, world-model-*, reshuffle-*).',
     },
     playbook: {
       type: 'string',
-      enum: ['value-map', 'ai-exposure', 'world-model', 'reshuffle'],
+      enum: ['graph', 'value-map', 'ai-exposure', 'world-model', 'reshuffle'],
       description:
         'Optional override when the filename does not carry the playbook prefix.',
     },
@@ -67,6 +67,7 @@ function runPython(args: string[], cwd: string): Promise<RunResult> {
 
 function inferPlaybook(filename: string): string | null {
   const base = basename(filename);
+  if (base.startsWith('graph-')) return 'graph';
   if (base.startsWith('value-map-')) return 'value-map';
   if (base.startsWith('ai-exposure-')) return 'ai-exposure';
   if (base.startsWith('world-model-')) return 'world-model';
@@ -128,7 +129,7 @@ export const orgAutoresearchRunTool: ToolDefinition = {
             type: 'text',
             text:
               `Error: could not infer playbook from filename "${basename(playPath)}". ` +
-              `Pass playbook=value-map | ai-exposure | world-model | reshuffle explicitly.`,
+              `Pass playbook=graph | value-map | ai-exposure | world-model | reshuffle explicitly.`,
           },
         ],
       };

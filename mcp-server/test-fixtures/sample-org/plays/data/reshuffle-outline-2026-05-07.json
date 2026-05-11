@@ -346,7 +346,7 @@
       "enabled_by_engine": "a3",
       "remaining_binding_constraint": "scarcity",
       "autonomy_coordination_mode": "flywheel",
-      "what_changes": "Pricing changes shape: the studio sells the differentiated work and bundles the production layer as included. Senior designer hours move upstream onto positioning briefs and brand-book authorship. The studio stops competing on UI quality (where AI commoditizes) and competes on positioning + visual language only.",
+      "what_changes": "Pricing changes shape: the studio sells the differentiated work and bundles the production layer as included. Senior designer hours move upstream onto positioning briefs and brand-book authorship. The studio stops competing on UI quality (where AI levels the field) and competes on positioning + visual language only.",
       "risk_of_rebundle": "Radical. Charter §15 names the strategy → identity → digital-product flow as the studio's positioning. Reframing the production layer as included rather than equally-priced is the kind of move that needs founder-led pricing conversations on every existing client. Risk: existing clients hear a price hike where the studio means a re-anchor."
     }
   ],
@@ -367,5 +367,6 @@
       "source": "outline-charter-2024 §15, §20; outline-roles-2025"
     }
   ],
-  "_dated": "2026-05-07"
+  "_dated": "2026-05-07",
+  "_org": "Outline & Co."
 }

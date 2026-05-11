@@ -9,7 +9,7 @@ playable-org/
 ├── org/                  empty starter (3 identity stubs); your instance content goes here
 ├── mcp-server/           TypeScript stdio mcp server, exposes 13 tools to Claude Desktop
 ├── skills/               agent-followed recipes + analytical playbooks + design system
-│   ├── CAPABILITIES.md   four-property frame for capabilities (referenced by world-model)
+│   ├── CAPABILITIES.md   four-property pattern for capabilities (referenced by world-model)
 │   ├── STYLE.md          anti-rhetoric writing charter applied to consumer-facing prose
 │   ├── ROADMAP.md        order of the four base playbooks + meta-skill
 │   ├── design.py         single source of truth for the visual language

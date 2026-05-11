@@ -1,42 +1,33 @@
 #!/usr/bin/env python3
 """
-graph / viewer.py — Render the org graph as a force-directed
-visualization with side panel + click-to-redistribute.
+graph / viewer.py — Render the org graph as a single-file App-pure
+viewer. Canvas-first layout: full-bleed force-directed picture, with
+floating editorial chrome (dateline + Analysis CTA + colophon-strip
+of kinds pills + tools cluster) on the *Carta sbiadita* paper.
 
-Design (after iteration: "popover copre tutto", "nodi mal distribuiti",
-"vorrei che ai click i nodi si ridistribuissero nello spazio"):
+Layout
+    ┌─────────────────────────────────────────────────────────┐
+    │ {org} / the operational structure        [date] [Analy] │
+    │                                                          │
+    │                                                          │
+    │                  full-bleed canvas                       │
+    │                  (force-directed graph)                  │
+    │                                                          │
+    │                          inspect ─── floats in on focus  │
+    │ kinds-as-pills                hint            zoom       │
+    │ unit · activity · ...                         Reset focus│
+    └─────────────────────────────────────────────────────────┘
 
-- **Side panel, not popover.** A fixed-width pane on the right of the
-  graph canvas. Always present. Empty state shows a hint; focused
-  state shows the clicked node's details. The graph never gets
-  covered. Rows in the panel's relation lists are clickable — click
-  them to jump focus.
-
-- **Click redistributes.** When a node is focused, the simulation
-  pulls it strongly toward the centre and lays its first-degree
-  neighbours in a ring around it. Reheat alpha=1 on every focus
-  change. The rest of the graph drifts away under repulsion.
-
-- **Kind-radial seed.** Initial positions arranged as concentric
-  rings by kind (stakeholders innermost — they're the gravity wells —
-  then commitments, units, activities, people outwards). Force
-  refines from a non-degenerate start. Combined with degree-aware
-  repulsion (bigger nodes push harder) and a min-distance hard floor,
-  the layout reads as distributed, not clumped.
-
-- **Default view = operational core.** Visible by default: unit,
-  activity, person, stakeholder, commitment + the structural
-  relations between them. Hidden by default: identity, language-term,
-  role, financial-summary, source nodes; cite, link edges.
-  Toggleable from the legend (legend = live filter, not dimmer:
-  toggling re-runs the simulation with only the visible items).
-
-- **Zoom + pan.** Wheel zoom, drag pan. Essential for AIRC-scale
-  organizations.
+The shared App-pure shell (palette tokens, body baseline, mobile
+polish, dateline + Analysis CTA + Inspect + Modal + responsive,
+favicon, embedded font) lives in `skills/design.py` v5 and is reused
+across all five playbook viewers. This module adds only the
+graph-specific bits: canvas styling, kinds-pills row, tools cluster,
+the force simulation + Pointer Events + pinch-zoom + node rendering
++ inspect grouping by verb.
 
 Usage:
     python3 viewer.py --map <graph.json> --html <out.html>
-                       [--decisions <decisions.json>]
 """
 
 from __future__ import annotations
@@ -47,1113 +38,974 @@ import sys
 from html import escape
 from pathlib import Path
 
-# Import the shared Play New design system
+# Shared App-pure shell — palette, body, mobile baseline, chrome
+# helpers, modal, favicon, font. The graph viewer composes on top.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from design import base_css, masthead, colophon  # noqa: E402
+from design import (  # noqa: E402
+    app_pure_about_modal_html,
+    app_pure_baseline_js,
+    app_pure_css,
+    app_pure_dateline_html,
+    app_pure_head_meta,
+    app_pure_inspect_aside_html,
+    app_pure_modal_html,
+    app_pure_top_right_html,
+)
 
 
-EXTRA_CSS = """
-/* graph viewer — Play New design (unified with the other four playbooks).
-   The graph canvas is the cardinal block on the page; everything around
-   it is centered editorial chrome at 820px. */
-
-:root {
-  /* Node colours by kind — pulled from the project's data-viz palette
-     so brand and viz stay in sync. */
-  --kind-identity:           var(--ds-coral);
-  --kind-language-term:      var(--fg-light);
-  --kind-unit:               var(--ds-slate);
-  --kind-activity:           var(--ds-sage);
-  --kind-person:             var(--fg);
-  --kind-role:               var(--fg-muted);
-  --kind-stakeholder:        var(--ds-lilac);
-  --kind-commitment:         var(--ds-coral);
-  --kind-financial-summary:  var(--ds-sand);
-  --kind-source:             var(--fg-light);
+# ----------------------------------------------------------------------
+# Per-edge-kind verb labels. The structure stores edge.kind (e.g.
+# "performer", "party_committing"), the inspect panel needs a readable
+# verb in both directions ("performed by" outgoing, "performs" incoming).
+# ----------------------------------------------------------------------
+REL_LABELS_OUT = {
+    "parent":           "is part of",
+    "unit":             "in",
+    "performer":        "performed by",
+    "head_role":        "led by",
+    "holds_role":       "holds",
+    "covers":           "responsible for",
+    "party_committing": "binds",
+    "party_benefiting": "benefits",
+    "touches":          "involves",
+    "cite":             "cites",
+    "link":             "links to",
+}
+REL_LABELS_IN = {
+    "parent":           "contains",
+    "unit":             "groups",
+    "performer":        "performs",
+    "head_role":        "leads",
+    "holds_role":       "filled by",
+    "covers":           "owned by",
+    "party_committing": "bound by",
+    "party_benefiting": "benefits from",
+    "touches":          "involved in",
+    "cite":             "cited by",
+    "link":             "linked from",
 }
 
-body { background: #FFFFFF; color: var(--fg); }
+# The viewer's reading: this is the *operational* structure — the
+# topology of who does what for whom under which commitments. Six
+# kinds qualify (unit, activity, person, role, stakeholder,
+# commitment); the rest of the schema (sources, identity, financial
+# summaries, language terms) is corpus / declarative metadata that
+# build.py still emits into the JSON for other tools, but the viewer
+# strips it before rendering. All six kinds are visible by default.
+KIND_ORDER = [
+    "unit", "activity", "person", "role", "stakeholder", "commitment",
+]
+KIND_LABEL_DISPLAY = {}
+EXCLUDED_KINDS = {"source", "identity", "language-term", "financial-summary"}
+# `link` is body-markdown cross-references (not a dependency); `cite`
+# only points at sources we're already dropping. Both go.
+EXCLUDED_EDGE_KINDS = {"link", "cite"}
 
-.container { max-width: 1240px; margin: 0 auto; padding: 80px 40px 96px; }
-@media (max-width: 900px) { .container { padding: 56px 24px 80px; } }
-
-header { max-width: 820px; margin: 0 auto 48px; }
-header .eyebrow { font-family: var(--font-display); font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 16px; }
-header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); }
-header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0; }
-
-.intro { max-width: 820px; margin: 0 auto 56px; }
-.intro p { font-size: 0.95rem; line-height: 1.7; margin: 0 0 14px; color: var(--fg); }
-.intro p strong { font-weight: 500; }
-.intro .pull { padding: 14px 0 14px 18px; margin: 22px 0; font-size: 1.0rem; color: var(--fg); border-left: 2px solid var(--fg); line-height: 1.65; }
-
-.stats-strip { max-width: 820px; margin: 0 auto 28px; display: flex; flex-wrap: wrap; gap: 32px; padding: 18px 0; border-top: 1px solid var(--fg-hairline); border-bottom: 1px solid var(--fg-hairline); }
-.stats-strip .stat { display: flex; flex-direction: column; gap: 6px; }
-.stats-strip .stat .num { font-family: var(--font-display); font-size: 1.7rem; font-weight: var(--w-extrabold); letter-spacing: -0.04em; color: var(--fg); font-variant-numeric: tabular-nums; line-height: 1; }
-.stats-strip .stat .lab { font-family: var(--font-display); font-style: italic; font-size: 0.78rem; color: var(--fg-muted); letter-spacing: 0; text-transform: none; }
-
-/* Legend now lives INSIDE the dark .graph-shell, as part of the
-   graph console chrome (Lupi/Accurat: legend integrated into the
-   composition, not floating above). The token overrides on
-   .graph-shell cascade into the swatches so person/role/source
-   read the right colour against the dark canvas. */
-.graph-shell .legend { display: flex; flex-direction: column; gap: 10px; padding: 16px 22px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-.graph-shell .legend .row { display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: center; font-family: var(--font-display); font-size: 0.78rem; color: rgba(255,255,255,0.65); }
-.graph-shell .legend .label { font-style: italic; font-size: 0.7rem; color: rgba(255,255,255,0.45); min-width: 92px; letter-spacing: 0; text-transform: none; font-weight: var(--w-medium); }
-.graph-shell .legend .swatch { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; transition: color 0.15s, opacity 0.15s; user-select: none; color: rgba(255,255,255,0.78); }
-.graph-shell .legend .swatch:hover { color: rgba(255,255,255,1); }
-.graph-shell .legend .swatch.off { opacity: 0.32; text-decoration: line-through; text-decoration-thickness: 1px; }
-.graph-shell .legend .swatch .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(255,255,255,0.25); }
-.graph-shell .legend .swatch .line { display: inline-block; width: 18px; height: 2px; }
-.graph-shell .legend .actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-.graph-shell .legend .btn { background: transparent; border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.7); font-size: 0.74rem; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-family: inherit; transition: border-color 0.15s, color 0.15s; }
-.graph-shell .legend .btn:hover { border-color: rgba(255,255,255,0.7); color: rgba(255,255,255,1); }
-.graph-shell .legend .hint { font-style: italic; font-size: 0.74rem; color: rgba(255,255,255,0.45); }
-
-/* Canvas + side panel — the cardinal block, rendered as a dark
-   "data console" inset against the editorial white page chrome.
-   Inside the shell, kind colours pop against the dark surface, glow
-   filters work, and the rhythm of the page becomes white → dark →
-   white as the eye descends from intro to graph to decisions. */
-.graph-shell {
-  max-width: 1160px; margin: 0 auto;
-  border-radius: 8px;
-  background: var(--surf-inset-dark);
-  overflow: hidden;
-  display: flex; flex-direction: column;
-  box-shadow: var(--surf-raised-shadow);
-
-  /* Override the kind colours that don't read well on dark.
-     The data-viz pastels (sage / lilac / slate / sand / coral) are
-     already legible on dark; only the tokens that mapped to near-black
-     or low-opacity black need rebinding to light variants. */
-  --kind-person:        rgba(255,255,255,0.92);
-  --kind-role:          rgba(255,255,255,0.6);
-  --kind-language-term: rgba(255,255,255,0.5);
-  --kind-source:        rgba(255,255,255,0.5);
-}
-.graph-shell .canvas-row { display: flex; align-items: stretch; min-height: 720px; }
-.graph-shell .canvas-row > svg {
-  flex: 1; min-width: 0; display: block; height: 720px; cursor: grab;
-  background-color: transparent;
-  background-image:
-    radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.5) 100%),
-    radial-gradient(circle at center, rgba(255,255,255,0.07) 0.6px, transparent 1.2px);
-  background-size: 100% 100%, 26px 26px;
-}
-.graph-shell .canvas-row > svg.dragging { cursor: grabbing; }
-.graph-shell svg .edge { fill: none; stroke: rgba(255,255,255,0.22); transition: opacity 0.18s ease-out, stroke-width 0.15s ease-out; }
-.graph-shell svg .edge.kind-link { stroke: rgba(255,255,255,0.12); }
-.graph-shell svg .edge.kind-cite { stroke: rgba(255,255,255,0.12); stroke-dasharray: 2 3; }
-.graph-shell svg .edge.kind-parent { stroke: rgba(255,255,255,0.6); stroke-width: 1.2; }
-.graph-shell svg .edge.in-focus { stroke: rgba(255,255,255,0.7); stroke-width: 1.4; }
-.graph-shell svg .node-hit { fill: rgba(255,255,255,0.001); cursor: pointer; }
-.graph-shell svg .node-circle {
-  /* Stronger stroke on dark so the pastel pallini have a definitive
-     edge against the slate background. */
-  stroke: rgba(255,255,255,0.55);
-  stroke-width: 1.2;
-  pointer-events: none;
-  transition: opacity 0.18s ease-out, stroke-width 0.15s ease-out, r 0.18s ease-out, filter 0.2s ease-out;
-}
-.graph-shell svg .node-circle.hovered {
-  stroke: rgba(255,255,255,0.95);
-  stroke-width: 2;
-  filter: drop-shadow(0 0 8px rgba(255,255,255,0.5));
-}
-.graph-shell svg .node-circle.focused {
-  stroke: rgba(255,255,255,1);
-  stroke-width: 2.6;
-  filter: drop-shadow(0 0 14px rgba(255,255,255,0.6)) drop-shadow(0 0 4px rgba(255,255,255,0.85));
-}
-/* Labels are always shown in small for visible nodes — Obsidian
-   pattern. The focused node gets the larger, brighter style. */
-.graph-shell svg .node-label {
-  font-family: var(--font-display);
-  font-size: 10.5px;
-  fill: rgba(255,255,255,0.65);
-  pointer-events: none;
-  transition: opacity 0.18s ease-out, font-size 0.12s ease-out, fill 0.12s ease-out;
-}
-.graph-shell svg .node-label.large { font-size: 13px; fill: rgba(255,255,255,1); font-weight: 500; }
-
-.graph-panel {
-  width: 300px; flex-shrink: 0;
-  border-left: 1px solid rgba(255,255,255,0.08);
-  background: #1a1d24;
-  color: rgba(255,255,255,0.92);
-  padding: 22px 24px 24px; overflow-y: auto; max-height: 720px;
-  position: relative;
-}
-.graph-panel .panel-close { position: absolute; top: 14px; right: 14px; background: transparent; border: 0; cursor: pointer; font-size: 1.3rem; color: rgba(255,255,255,0.5); padding: 0; line-height: 1; transition: color 0.15s; }
-.graph-panel .panel-close:hover { color: rgba(255,255,255,1); }
-.graph-panel .placeholder { color: rgba(255,255,255,0.62); font-size: 0.85rem; line-height: 1.65; padding-top: 4px; }
-.graph-panel .placeholder strong { color: rgba(255,255,255,1); font-weight: 500; }
-.graph-panel .panel-content { display: none; }
-.graph-panel.has-focus .placeholder { display: none; }
-.graph-panel.has-focus .panel-content { display: block; }
-.graph-panel .eyebrow { font-family: var(--font-display); font-size: 0.62rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 8px; color: rgba(255,255,255,0.62); }
-.graph-panel .eyebrow .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: middle; margin-right: 6px; transform: translateY(-1px); box-shadow: 0 0 6px currentColor; }
-.graph-panel h3 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 500; letter-spacing: -0.01em; margin: 0 0 10px; color: rgba(255,255,255,1); padding-right: 22px; line-height: 1.25; }
-.graph-panel .desc { font-size: 0.86rem; line-height: 1.6; color: rgba(255,255,255,0.85); margin: 0 0 12px; }
-.graph-panel .section-label { font-family: var(--font-display); font-size: 0.62rem; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.10em; font-weight: 500; margin-top: 18px; margin-bottom: 6px; }
-.graph-panel .neighbour-list { display: flex; flex-direction: column; gap: 1px; font-size: 0.82rem; color: rgba(255,255,255,0.92); }
-.graph-panel .neighbour-list .neighbour { display: flex; gap: 10px; align-items: baseline; padding: 5px 7px; margin: 0 -7px; cursor: pointer; border-radius: 3px; transition: background 0.12s; }
-.graph-panel .neighbour-list .neighbour:hover { background: rgba(255,255,255,0.06); }
-.graph-panel .neighbour-list .rel { font-family: ui-monospace, SF Mono, Menlo, monospace; font-size: 0.7rem; color: rgba(255,255,255,0.5); min-width: 88px; flex-shrink: 0; }
-.graph-panel .neighbour-list .target { color: rgba(255,255,255,0.95); }
-.graph-panel .citation { font-size: 0.7rem; color: rgba(255,255,255,0.5); font-family: ui-monospace, SF Mono, Menlo, monospace; padding-top: 14px; margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.10); word-break: break-all; }
-
-@media (max-width: 900px) {
-  .graph-shell .canvas-row { flex-direction: column; min-height: auto; }
-  .graph-shell .canvas-row > svg { height: 480px; }
-  .graph-panel { width: 100%; max-height: 320px; border-left: 0; border-top: 1px solid rgba(255,255,255,0.08); }
+# Palette: "Carta sbiadita" v2 (Claude Design — Play New, paper-aged,
+# never saturated). The five operational kinds carry distinguishing
+# hue; the five default-off kinds sit closer to warm grey so they
+# read as ambient when toggled on.
+KIND_COLORS = {
+    "unit":              "#6b7d8c",  # blu polvere
+    "activity":          "#8a9d6b",  # verde foglia secca
+    "person":            "#1c1a16",  # ink
+    "stakeholder":       "#9b8aa3",  # lilla cenere
+    "commitment":        "#b87b5e",  # terracotta
+    "role":              "#bca787",  # sabbia
+    "financial-summary": "#7e8a6b",  # oliva
+    "identity":          "#b89b94",  # rosa antico
+    "language-term":     "#8c8a83",  # pietra
+    "source":            "#a09a8e",  # grigio caldo
 }
 
-/* Decisions section — centered editorial column, identical to the other playbooks. */
-.section { max-width: 820px; margin: 96px auto 0; padding-top: 40px; border-top: 1px solid var(--fg-hairline); }
-.section h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 20px; }
-.section p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; max-width: 720px; }
-.section .lead { font-size: 0.95rem; color: var(--fg-muted); line-height: 1.65; max-width: 720px; margin: 0 0 28px; }
+# All six operational kinds are visible by default. There is no
+# default-off any more (the corpus / declarative kinds are stripped
+# upstream in _adapt_data, not just hidden).
+DEFAULT_ON = set(KIND_ORDER)
 
-.decision { margin-bottom: 32px; }
-.decision .question { font-family: var(--font-display); font-size: 1.05rem; font-weight: 500; color: var(--fg); margin: 0 0 8px; letter-spacing: -0.01em; }
-.decision .answer { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 6px; max-width: 720px; }
-.decision .source { font-size: 0.78rem; color: var(--fg-muted); font-family: ui-monospace, SF Mono, Menlo, monospace; }
+
+# ----------------------------------------------------------------------
+# Graph-specific CSS — composes on top of design.app_pure_css(). Only
+# the bits that don't generalise to the other viewers live here:
+# canvas full-bleed sizing, the kinds-pills ribbon, the bottom-right
+# tools cluster (zoom readout + Reset focus link).
+# ----------------------------------------------------------------------
+EXTRA_CSS = r"""
+/* ─── CANVAS — full-bleed. The artefact. ──────────────────────── */
+canvas {
+  display: block;
+  position: fixed;
+  inset: 0;
+  width: 100vw; height: 100vh;
+  cursor: grab;
+  touch-action: none;
+}
+canvas.dragging { cursor: grabbing; }
+
+/* ─── KINDS RIBBON (bottom-left) — one pill per visible kind. ─── */
+.kinds {
+  display: flex; flex-wrap: nowrap; align-items: center;
+  gap: 6px 8px;
+  max-width: calc(100vw - 220px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.kinds::-webkit-scrollbar { display: none; }
+.k {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px 6px;
+  cursor: pointer; user-select: none;
+  font-size: 11.5px;
+  letter-spacing: -0.005em;
+  color: var(--ink-95);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--paper);
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.k .swatch { width: 7px; height: 7px; border-radius: 50%; background: var(--swatch, var(--ink-40)); }
+.k .num { font-size: 10px; color: var(--ink-40); font-style: italic; }
+.k:hover { border-color: var(--ink); }
+.k.off { color: var(--ink-40); background: transparent; }
+.k.off .swatch { opacity: 0.35; }
+.k.off .num { color: var(--ink-25); }
+
+/* ─── TOOLS (bottom-right) — zoom readout + Reset focus link ──── */
+.tools {
+  display: inline-flex; flex-direction: column; align-items: flex-end;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--ink-60);
+  white-space: nowrap;
+}
+.tools .zoom { font-style: italic; color: var(--ink-40); }
+.tools .zoom em {
+  font-style: normal;
+  color: var(--ink-80);
+  border-bottom: 0.5px solid var(--ink-40);
+  padding-bottom: 1px;
+}
+.tools button {
+  background: transparent;
+  border: 0;
+  padding: 0 0 1px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  border-bottom: 0.5px solid var(--ink-40);
+  line-height: 1;
+}
+.tools button:hover { border-bottom-color: var(--ink); }
+
+@media (max-width: 760px) {
+  .kinds { gap: 6px 6px; max-width: 60vw; }
+  .k { padding: 7px 11px; font-size: 11.5px; }
+  .tools { gap: 8px; font-size: 11.5px; }
+  .tools button { padding: 6px 0; }
+}
 """
 
 
-HTML_TEMPLATE = """<!DOCTYPE html>
+# ----------------------------------------------------------------------
+# Graph-specific JavaScript — force simulation + Pointer Events + pinch
+# zoom + node rendering on canvas + kinds ribbon toggle + inspect
+# grouping by verb. Modal open/close, Esc handler, "?" shortcut, and
+# `?focus=<id>` permalink are provided by design.app_pure_baseline_js;
+# the graph exposes `window.setFocus(id)` so those callers can drive it.
+# ----------------------------------------------------------------------
+JS = r"""
+(() => {
+  const DATA = JSON.parse(document.getElementById('graph-data').textContent);
+  const KIND = Object.fromEntries(DATA.kinds.map(k => [k.id, k]));
+  const NODE = Object.fromEntries(DATA.nodes.map(n => [n.id, n]));
+  const REL_OUT = DATA.rel_out || {};
+  const REL_IN  = DATA.rel_in  || {};
+
+  // adjacency
+  const ADJ = {};
+  DATA.nodes.forEach(n => ADJ[n.id] = []);
+  DATA.edges.forEach((e, i) => {
+    e._i = i;
+    ADJ[e.f].push({other: e.t, e, dir: 'out'});
+    ADJ[e.t].push({other: e.f, e, dir: 'in'});
+  });
+
+  const state = {
+    on: new Set(DATA.kinds.filter(k => k.default).map(k => k.id)),
+    focus: null,
+    hover: null,
+    nodePos: {},
+    pan: {x: 0, y: 0},
+    zoom: 1,
+    sim: {alpha: 1.0},
+    drag: null,
+  };
+
+  // ---------- canvas ----------
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  let W = 0, H = 0;
+  function resize() {
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener('resize', () => { resize(); state.sim.alpha = Math.max(state.sim.alpha, 0.3); });
+  resize();
+
+  // ---------- initial layout (kind-radial seed + warm-up) ----------
+  function initLayout() {
+    const groups = {};
+    DATA.nodes.forEach(n => (groups[n.kind] = groups[n.kind] || []).push(n));
+    const kindIds = DATA.kinds.map(k => k.id);
+    const cx = W/2, cy = H/2;
+    const R = Math.min(W, H) * 0.28;
+    kindIds.forEach((kid, ki) => {
+      const ang = (ki / kindIds.length) * Math.PI * 2;
+      const cxk = cx + Math.cos(ang) * R * 0.6;
+      const cyk = cy + Math.sin(ang) * R * 0.6;
+      const list = groups[kid] || [];
+      list.forEach((n, i) => {
+        const a = (i / Math.max(1, list.length)) * Math.PI * 2;
+        const r = 20 + Math.random() * 50;
+        state.nodePos[n.id] = { x: cxk + Math.cos(a)*r, y: cyk + Math.sin(a)*r, vx:0, vy:0, fixed:false };
+      });
+    });
+    state.sim.alpha = 1.0;
+    // Warm-up: run the simulation synchronously so the first frame
+    // already shows a settled, centred graph instead of a cluster
+    // collapsing into one quadrant. Reset alpha each iteration so
+    // step()'s built-in cooling doesn't bail mid-warmup.
+    for (let i = 0; i < 280; i++) { state.sim.alpha = 1.0; step(); }
+    state.sim.alpha = 0.4;
+  }
+
+  // ---------- simulation ----------
+  function visibleNodes() { return DATA.nodes.filter(n => state.on.has(n.kind)); }
+  function visibleEdges() { return DATA.edges.filter(e => state.on.has(NODE[e.f].kind) && state.on.has(NODE[e.t].kind)); }
+
+  function step() {
+    if (state.sim.alpha < 0.005) return;
+    const nodes = visibleNodes();
+    const edges = visibleEdges();
+    const cx = W/2, cy = H/2;
+    const a = state.sim.alpha;
+    for (let i = 0; i < nodes.length; i++) {
+      const A = state.nodePos[nodes[i].id];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const B = state.nodePos[nodes[j].id];
+        let dx = A.x - B.x, dy = A.y - B.y;
+        let d2 = dx*dx + dy*dy;
+        if (d2 < 0.01) { dx = (Math.random()-0.5); dy = (Math.random()-0.5); d2 = 1; }
+        const d = Math.sqrt(d2);
+        const f = 1500 / d2;
+        const fx = (dx/d)*f, fy = (dy/d)*f;
+        A.vx += fx*a; A.vy += fy*a; B.vx -= fx*a; B.vy -= fy*a;
+      }
+    }
+    edges.forEach(e => {
+      const A = state.nodePos[e.f], B = state.nodePos[e.t];
+      const dx = B.x - A.x, dy = B.y - A.y;
+      const d = Math.sqrt(dx*dx+dy*dy) || 1;
+      const desired = 100;
+      const k = 0.04;
+      const f = (d - desired) * k;
+      const fx = (dx/d)*f, fy = (dy/d)*f;
+      A.vx += fx*a; A.vy += fy*a; B.vx -= fx*a; B.vy -= fy*a;
+    });
+    nodes.forEach(n => {
+      const p = state.nodePos[n.id];
+      p.vx += (cx - p.x) * 0.0055 * a;
+      p.vy += (cy - p.y) * 0.0055 * a;
+    });
+    nodes.forEach(n => {
+      const p = state.nodePos[n.id];
+      if (p.fixed) { p.vx = 0; p.vy = 0; return; }
+      p.vx *= 0.82; p.vy *= 0.82;
+      p.x += p.vx * 0.5; p.y += p.vy * 0.5;
+    });
+    state.sim.alpha *= 0.985;
+  }
+
+  initLayout();
+
+  // ---------- transforms ----------
+  function w2s(p) {
+    return { x: (p.x - W/2) * state.zoom + W/2 + state.pan.x * state.zoom,
+             y: (p.y - H/2) * state.zoom + H/2 + state.pan.y * state.zoom };
+  }
+  function s2w(sx, sy) {
+    return { x: (sx - W/2 - state.pan.x * state.zoom) / state.zoom + W/2,
+             y: (sy - H/2 - state.pan.y * state.zoom) / state.zoom + H/2 };
+  }
+
+  function neighborSet(id) { const s = new Set([id]); (ADJ[id]||[]).forEach(a => s.add(a.other)); return s; }
+  function nodeRadius(n) {
+    const deg = (ADJ[n.id]||[]).filter(a => state.on.has(NODE[a.other].kind)).length;
+    return 4.5 + Math.min(8, deg * 0.45);
+  }
+
+  // ---------- render ----------
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+    const nodes = visibleNodes();
+    const edges = visibleEdges();
+    const focusSet = state.focus ? neighborSet(state.focus) : null;
+    const hoverSet = state.hover ? neighborSet(state.hover) : null;
+
+    // edges
+    edges.forEach(e => {
+      const fp = state.nodePos[e.f], tp = state.nodePos[e.t];
+      if (!fp || !tp) return;
+      const sf = w2s(fp), st = w2s(tp);
+      let alpha = 0.30;
+      const dim = focusSet ? !(focusSet.has(e.f) && focusSet.has(e.t)) : false;
+      if (dim) alpha = 0.05;
+      if (hoverSet && !focusSet && (hoverSet.has(e.f) || hoverSet.has(e.t))) alpha = 0.55;
+      ctx.strokeStyle = `rgba(28,26,22,${alpha})`;
+      ctx.lineWidth = (focusSet && focusSet.has(e.f) && focusSet.has(e.t) ? 1.1 : 0.8);
+      ctx.beginPath();
+      ctx.moveTo(sf.x, sf.y);
+      const dx = st.x - sf.x, dy = st.y - sf.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy/len, ny = dx/len;
+      const bow = 5;
+      ctx.quadraticCurveTo((sf.x+st.x)/2 + nx*bow*0.4, (sf.y+st.y)/2 + ny*bow*0.4, st.x, st.y);
+      ctx.stroke();
+    });
+
+    // nodes
+    nodes.forEach(n => {
+      const p = state.nodePos[n.id]; if (!p) return;
+      const s = w2s(p);
+      const r = nodeRadius(n) * Math.sqrt(state.zoom);
+      const dim = focusSet ? !focusSet.has(n.id) : false;
+      const focused = state.focus === n.id;
+      const k = KIND[n.kind];
+      ctx.globalAlpha = dim ? 0.18 : 1;
+      if (focused || state.hover === n.id) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, r + 6, 0, Math.PI*2);
+        ctx.strokeStyle = state.hover === n.id && !focused ? 'rgba(28,26,22,0.35)' : 'rgba(28,26,22,0.10)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, r + 5, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(28,26,22,0.05)';
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, r, 0, Math.PI*2);
+      ctx.fillStyle = k.color;
+      ctx.fill();
+      ctx.lineWidth = focused ? 1.5 : 1;
+      ctx.strokeStyle = focused ? 'rgba(28,26,22,0.95)' : 'rgba(28,26,22,0.18)';
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    });
+
+    // ---- focus label, tight against node ----
+    if (state.focus) {
+      const n = NODE[state.focus];
+      const p = state.nodePos[n.id];
+      if (p) {
+        const s = w2s(p);
+        const r = nodeRadius(n) * Math.sqrt(state.zoom);
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'left';
+        ctx.font = '540 13px Inter, system-ui, sans-serif';
+        const tw = ctx.measureText(n.label).width;
+        const lx = s.x + r + 8;
+        const ly = s.y;
+        ctx.fillStyle = 'rgba(244,238,226,0.92)';
+        ctx.fillRect(lx - 3, ly - 9, tw + 8, 18);
+        ctx.fillStyle = 'rgba(28,26,22,0.95)';
+        ctx.fillText(n.label, lx, ly);
+        ctx.font = 'italic 10px Inter, system-ui, sans-serif';
+        ctx.fillStyle = 'rgba(28,26,22,0.5)';
+        ctx.fillText(n.kind, lx, ly - 14);
+      }
+    }
+
+    // labels for focus-neighbors only
+    if (focusSet) {
+      DATA.nodes.forEach(n => {
+        if (!state.on.has(n.kind)) return;
+        if (!focusSet.has(n.id)) return;
+        if (n.id === state.focus) return;
+        const p = state.nodePos[n.id]; if (!p) return;
+        const s = w2s(p);
+        const r = nodeRadius(n) * Math.sqrt(state.zoom);
+        ctx.font = '460 11px Inter, system-ui, sans-serif';
+        const tw = ctx.measureText(n.label).width;
+        ctx.fillStyle = 'rgba(244,238,226,0.85)';
+        ctx.fillRect(s.x + r + 5, s.y - 7, tw + 4, 14);
+        ctx.fillStyle = 'rgba(28,26,22,0.85)';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(n.label, s.x + r + 7, s.y);
+      });
+    }
+  }
+
+  function hitTest(sx, sy) {
+    const nodes = visibleNodes();
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      const n = nodes[i];
+      const p = state.nodePos[n.id]; if (!p) continue;
+      const s = w2s(p);
+      const r = nodeRadius(n) * Math.sqrt(state.zoom) + 3;
+      const dx = sx - s.x, dy = sy - s.y;
+      if (dx*dx + dy*dy <= r*r) return n;
+    }
+    return null;
+  }
+
+  function loop() { step(); render(); requestAnimationFrame(loop); }
+  requestAnimationFrame(loop);
+
+  // ---------- inputs ----------
+  const tooltip = document.getElementById('tooltip');
+  const hint = document.getElementById('hint');
+  const zoomReadout = document.getElementById('zoom-readout');
+  function updateZoom() { zoomReadout.querySelector('em').textContent = Math.round(state.zoom*100) + '%'; }
+
+  // ── Pointer Events: a single code path for mouse, touch, and
+  //    pen. Tracks all active pointers so we can do pinch-zoom on
+  //    touch (two fingers) without losing the mouse-drag flow.
+  const pointers = new Map(); // id -> {x, y}
+  let pinch = null;           // {dist, cx, cy} when 2 pointers down
+  let lastPointerType = 'mouse';
+
+  function setPinch() {
+    if (pointers.size !== 2) { pinch = null; return; }
+    const [a, b] = [...pointers.values()];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    pinch = { dist: Math.hypot(dx, dy), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2 };
+  }
+
+  canvas.addEventListener('pointerdown', (ev) => {
+    canvas.setPointerCapture(ev.pointerId);
+    pointers.set(ev.pointerId, {x: ev.clientX, y: ev.clientY});
+    lastPointerType = ev.pointerType || 'mouse';
+
+    if (pointers.size >= 2) {
+      if (state.drag && state.drag.type === 'node') {
+        state.nodePos[state.drag.id].fixed = false;
+      }
+      state.drag = null;
+      canvas.classList.remove('dragging');
+      setPinch();
+      return;
+    }
+
+    const sx = ev.clientX, sy = ev.clientY;
+    const hit = hitTest(sx, sy);
+    if (hit) {
+      state.drag = { type:'node', id:hit.id, lastX:sx, lastY:sy, moved:false };
+      state.nodePos[hit.id].fixed = true;
+      canvas.classList.add('dragging');
+    } else {
+      state.drag = { type:'pan', lastX:sx, lastY:sy, moved:false };
+      canvas.classList.add('dragging');
+    }
+
+    if (lastPointerType === 'touch') {
+      state.hover = null;
+      tooltip.classList.remove('show');
+    }
+  });
+
+  canvas.addEventListener('pointermove', (ev) => {
+    if (pointers.has(ev.pointerId)) {
+      pointers.set(ev.pointerId, {x: ev.clientX, y: ev.clientY});
+    }
+
+    if (pinch && pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const newDist = Math.hypot(dx, dy);
+      const newCx = (a.x + b.x) / 2, newCy = (a.y + b.y) / 2;
+      if (pinch.dist > 0) {
+        const scale = newDist / pinch.dist;
+        const before = s2w(newCx, newCy);
+        state.zoom = Math.max(0.4, Math.min(3.0, state.zoom * scale));
+        const after = s2w(newCx, newCy);
+        state.pan.x += (after.x - before.x);
+        state.pan.y += (after.y - before.y);
+        const panDx = (newCx - pinch.cx) / state.zoom;
+        const panDy = (newCy - pinch.cy) / state.zoom;
+        state.pan.x += panDx;
+        state.pan.y += panDy;
+        updateZoom();
+      }
+      pinch.dist = newDist; pinch.cx = newCx; pinch.cy = newCy;
+      return;
+    }
+
+    const sx = ev.clientX, sy = ev.clientY;
+    if (state.drag) {
+      const dx = sx - state.drag.lastX;
+      const dy = sy - state.drag.lastY;
+      state.drag.lastX = sx; state.drag.lastY = sy;
+      if (Math.abs(dx) + Math.abs(dy) > 2) state.drag.moved = true;
+      if (state.drag.type === 'node') {
+        const p = state.nodePos[state.drag.id];
+        p.x += dx / state.zoom; p.y += dy / state.zoom;
+        p.vx = 0; p.vy = 0;
+        state.sim.alpha = Math.max(state.sim.alpha, 0.4);
+      } else {
+        state.pan.x += dx / state.zoom;
+        state.pan.y += dy / state.zoom;
+      }
+    } else if (lastPointerType !== 'touch') {
+      const hit = hitTest(sx, sy);
+      const newHover = hit ? hit.id : null;
+      if (newHover !== state.hover) {
+        state.hover = newHover;
+        if (hit) {
+          tooltip.innerHTML = `${hit.label}<span class="meta">${hit.kind}</span>`;
+          tooltip.classList.add('show');
+          canvas.style.cursor = 'pointer';
+        } else {
+          tooltip.classList.remove('show');
+          canvas.style.cursor = state.drag ? 'grabbing' : 'grab';
+        }
+      }
+      if (hit) {
+        tooltip.style.left = sx + 'px';
+        tooltip.style.top = sy + 'px';
+      }
+    }
+  });
+
+  function endPointer(ev) {
+    pointers.delete(ev.pointerId);
+    if (pointers.size < 2) pinch = null;
+    if (!state.drag) return;
+    if (pointers.size > 0) return;
+    const d = state.drag;
+    canvas.classList.remove('dragging');
+    if (d.type === 'node' && !d.moved) setFocus(d.id);
+    if (d.type === 'pan' && !d.moved) setFocus(null);
+    if (d.type === 'node') { state.nodePos[d.id].fixed = false; state.sim.alpha = Math.max(state.sim.alpha, 0.25); }
+    state.drag = null;
+  }
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', endPointer);
+
+  canvas.addEventListener('wheel', (ev) => {
+    ev.preventDefault();
+    const before = s2w(ev.clientX, ev.clientY);
+    state.zoom = Math.max(0.4, Math.min(3.0, state.zoom * Math.exp(-ev.deltaY * 0.0015)));
+    const after = s2w(ev.clientX, ev.clientY);
+    state.pan.x += (after.x - before.x);
+    state.pan.y += (after.y - before.y);
+    updateZoom();
+  }, {passive:false});
+
+  // hide hint after first interaction
+  let hintHidden = false;
+  function hideHint() { if (hintHidden || !hint) return; hintHidden = true; hint.classList.add('gone'); setTimeout(() => hint.remove(), 700); }
+  canvas.addEventListener('pointerdown', hideHint, {once:true});
+  canvas.addEventListener('wheel', hideHint, {once:true});
+
+  // ---------- kinds ribbon ----------
+  function renderKinds() {
+    const root = document.getElementById('kinds');
+    root.innerHTML = '';
+    DATA.kinds.forEach((k) => {
+      const count = DATA.nodes.filter(n => n.kind === k.id).length;
+      const span = document.createElement('span');
+      span.className = 'k' + (state.on.has(k.id) ? '' : ' off');
+      span.style.setProperty('--swatch', k.color);
+      span.innerHTML = `<span class="swatch"></span><span class="lbl">${k.label}</span> <span class="num">${count}</span>`;
+      span.addEventListener('click', () => {
+        if (state.on.has(k.id)) state.on.delete(k.id); else state.on.add(k.id);
+        state.sim.alpha = Math.max(state.sim.alpha, 0.6);
+        renderKinds();
+        if (state.focus && !state.on.has(NODE[state.focus].kind)) setFocus(null);
+        if (state.focus) renderInspect();
+      });
+      root.appendChild(span);
+    });
+  }
+  renderKinds();
+
+  // ---------- inspect ----------
+  const inspect = document.getElementById('inspect');
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+  function groupByVerb(rows, verbFn) {
+    const order = [];
+    const groups = new Map();
+    rows.forEach(a => {
+      const v = verbFn(a.e.verb);
+      if (!groups.has(v)) { groups.set(v, []); order.push(v); }
+      groups.get(v).push(a);
+    });
+    return order.map(v => ({verb: v, items: groups.get(v)}));
+  }
+  function renderRelSection(label, count, groups) {
+    if (!count) return `<div class="rel-group"><h3>${label} <span class="count">0</span></h3><div class="rel-empty">no ${label.toLowerCase()} ties</div></div>`;
+    const body = groups.map(g => `
+      <div class="rel-verb"><span>${escapeHtml(g.verb)}</span><span class="rel-verb-count">${g.items.length}</span></div>
+      ${g.items.map(a => `<div class="rel" data-id="${escapeHtml(a.other)}">
+        <span class="swatch" style="background:${KIND[NODE[a.other].kind].color}"></span>
+        <span class="name">${escapeHtml(NODE[a.other].label)}</span>
+      </div>`).join('')}
+    `).join('');
+    return `<div class="rel-group"><h3>${label} <span class="count">${count}</span></h3>${body}</div>`;
+  }
+  function renderInspect() {
+    const body = document.getElementById('inspect-body');
+    if (!state.focus) { inspect.classList.remove('open'); return; }
+    inspect.classList.add('open');
+    const n = NODE[state.focus]; const k = KIND[n.kind];
+    const adj = ADJ[n.id] || [];
+    const out = adj.filter(a => a.dir==='out' && state.on.has(NODE[a.other].kind));
+    const inn = adj.filter(a => a.dir==='in'  && state.on.has(NODE[a.other].kind));
+    const verbOut = (kind) => REL_OUT[kind] || kind;
+    const verbIn  = (kind) => REL_IN[kind]  || kind;
+
+    const outGroups = groupByVerb(out, verbOut);
+    const innGroups = groupByVerb(inn, verbIn);
+
+    body.innerHTML = `
+      <div class="kind-tag" style="--tagcolor:${k.color}"><span class="swatch"></span><span>${escapeHtml(k.label)}</span></div>
+      <h2>${escapeHtml(n.label)}</h2>
+      ${n.path ? `<p class="path"><em>_path</em>  ${escapeHtml(n.path)}</p>` : ''}
+      ${n.blurb ? `<p class="blurb">${escapeHtml(n.blurb)}</p>` : ''}
+      ${renderRelSection('Outgoing', out.length, outGroups)}
+      ${renderRelSection('Incoming', inn.length, innGroups)}`;
+    body.querySelectorAll('.rel[data-id]').forEach(li => li.addEventListener('click', () => setFocus(li.dataset.id)));
+  }
+
+  function setFocus(id) {
+    state.focus = id;
+    if (id) { const h = document.getElementById('hint'); if (h) h.classList.add('gone'); }
+    if (id && !state.on.has(NODE[id].kind)) {
+      state.on.add(NODE[id].kind);
+      renderKinds();
+    }
+    if (id) state.sim.alpha = Math.max(state.sim.alpha, 0.2);
+    renderInspect();
+  }
+  document.getElementById('inspect-close').addEventListener('click', () => setFocus(null));
+
+  // ---------- buttons ----------
+  document.getElementById('reset').addEventListener('click', () => {
+    setFocus(null);
+    state.pan = {x:0, y:0};
+    state.zoom = 1;
+    updateZoom();
+  });
+
+  // Expose setFocus for the shared modal anchors and ?focus permalink.
+  // The wrapper also pans + zooms slightly so the focused node lands
+  // visibly left of centre (so the inspect card doesn't cover it).
+  window.setFocus = function(id) {
+    if (!id) { setFocus(null); return; }
+    if (!NODE[id]) return;
+    setFocus(id);
+    const p = state.nodePos[id];
+    if (p) {
+      state.pan.x = -(p.x - W/2) - 80;
+      state.pan.y = -(p.y - H/2);
+      state.zoom = Math.max(state.zoom, 1.15);
+      updateZoom();
+    }
+  };
+
+  // Esc clears focus (the shared baseline closes modals on Esc, but
+  // doesn't know to clear focus on a canvas viewer — graph-specific).
+  window.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape') {
+      const scrim = document.getElementById('modal-scrim');
+      if (scrim && scrim.classList.contains('open')) return;  // baseline handled it
+      setFocus(null);
+    }
+  });
+
+  setTimeout(() => { resize(); state.sim.alpha = 1.0; }, 60);
+  updateZoom();
+})();
+"""
+
+
+# ----------------------------------------------------------------------
+# HTML template — assembled at render time from the App-pure shell
+# helpers + graph-specific body (canvas, tooltip, hint, kinds, tools).
+# ----------------------------------------------------------------------
+HTML_TEMPLATE = """<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>{title} · graph</title>
-<style>{css}</style>
+{head_meta}
+<style>
+{css}
+</style>
 </head>
 <body>
-  <div class="container">
-    {masthead_html}
 
-    <section class="stats-strip">
-      <div class="stat"><div class="num" id="stat-nodes">{n_nodes}</div><div class="lab">nodes</div></div>
-      <div class="stat"><div class="num" id="stat-edges">{n_edges}</div><div class="lab">relations</div></div>
-      <div class="stat"><div class="num" id="stat-kinds">{n_kinds}</div><div class="lab">kinds</div></div>
-      <div class="stat"><div class="num" id="stat-isolates">{n_isolates}</div><div class="lab">floating</div></div>
-    </section>
+{dateline}
 
-    <div class="graph-shell">
-      <div class="legend" id="legend">
-        <div class="row" id="legend-nodes">
-          <span class="label">Show nodes</span>
-          <span class="swatch" data-kind="unit"><span class="dot" style="background: var(--kind-unit)"></span>unit</span>
-          <span class="swatch" data-kind="activity"><span class="dot" style="background: var(--kind-activity)"></span>activity</span>
-          <span class="swatch" data-kind="person"><span class="dot" style="background: var(--kind-person)"></span>person</span>
-          <span class="swatch" data-kind="stakeholder"><span class="dot" style="background: var(--kind-stakeholder)"></span>stakeholder</span>
-          <span class="swatch" data-kind="commitment"><span class="dot" style="background: var(--kind-commitment); border: 1px solid var(--ds-coral)"></span>commitment</span>
-          <span class="swatch off" data-kind="role"><span class="dot" style="background: var(--kind-role)"></span>role</span>
-          <span class="swatch off" data-kind="financial-summary"><span class="dot" style="background: var(--kind-financial-summary)"></span>financial</span>
-          <span class="swatch off" data-kind="identity"><span class="dot" style="background: var(--kind-identity)"></span>identity</span>
-          <span class="swatch off" data-kind="language-term"><span class="dot" style="background: var(--kind-language-term)"></span>language</span>
-          <span class="swatch off" data-kind="source"><span class="dot" style="background: var(--kind-source)"></span>source</span>
-        </div>
-        <div class="row" id="legend-edges">
-          <span class="label">Show relations</span>
-          <span class="swatch" data-edgekind="parent"><span class="line" style="background: rgba(255,255,255,0.7)"></span>part of</span>
-          <span class="swatch" data-edgekind="unit"><span class="line" style="background: rgba(255,255,255,0.55)"></span>in</span>
-          <span class="swatch" data-edgekind="performer"><span class="line" style="background: rgba(255,255,255,0.55)"></span>performed by</span>
-          <span class="swatch" data-edgekind="party_committing"><span class="line" style="background: rgba(255,255,255,0.55)"></span>binds</span>
-          <span class="swatch" data-edgekind="party_benefiting"><span class="line" style="background: rgba(255,255,255,0.55)"></span>for</span>
-          <span class="swatch" data-edgekind="touches"><span class="line" style="background: rgba(255,255,255,0.55)"></span>involves</span>
-          <span class="swatch" data-edgekind="head_role"><span class="line" style="background: rgba(255,255,255,0.55)"></span>led by</span>
-          <span class="swatch" data-edgekind="holds_role"><span class="line" style="background: rgba(255,255,255,0.55)"></span>as</span>
-          <span class="swatch" data-edgekind="covers"><span class="line" style="background: rgba(255,255,255,0.55)"></span>responsible for</span>
-          <span class="swatch off" data-edgekind="link"><span class="line" style="background: rgba(255,255,255,0.35); height: 1px;"></span>mentions</span>
-          <span class="swatch off" data-edgekind="cite"><span class="line" style="background: transparent; height: 1px; border-top: 1px dashed rgba(255,255,255,0.35);"></span>cites</span>
-          <span class="actions">
-            <button class="btn" id="btn-reheat">re-shake</button>
-            <button class="btn" id="btn-reset-view">reset view</button>
-          </span>
-        </div>
-        <div class="row">
-          <span class="hint">click a node to focus · click empty space to clear · wheel zoom · drag pan</span>
-        </div>
-      </div>
-      <div class="canvas-row">
-        <svg id="graph" viewBox="0 0 1000 760" preserveAspectRatio="xMidYMid meet">
-          <g id="viewport">
-            <g id="edges-layer"></g>
-            <g id="nodes-layer"></g>
-            <g id="labels-layer"></g>
-          </g>
-        </svg>
-        <aside class="graph-panel" id="graph-panel">
-          <button class="panel-close" id="panel-close" aria-label="Close">×</button>
-          <div class="placeholder"><strong>Click a node</strong> in the graph to focus on its neighbourhood. The clicked node and its first-degree neighbours stay bright; everything else dims. Use the legend toggles to add or remove kinds; the simulation re-runs with only what's visible.</div>
-          <div class="panel-content"></div>
-        </aside>
-      </div>
-    </div>
+{top_right}
 
-    {decisions_section}
+<canvas id="canvas"></canvas>
+<div class="tooltip" id="tooltip"></div>
 
-    {colophon_html}
+<div class="hint" id="hint">click any node to <em>focus</em> · drag to reposition · scroll to zoom · drag empty space to pan</div>
+
+<div class="colophon">
+  <div class="kinds" id="kinds"></div>
+  <div class="tools">
+    <span class="zoom" id="zoom-readout">zoom <em>100%</em></span>
+    <button id="reset" type="button">Reset focus</button>
   </div>
+</div>
 
+{inspect_aside}
+
+{modal_html}
+
+<script type="application/json" id="graph-data">{data_json}</script>
 <script>
-const NODES = {nodes_json};
-const EDGES = {edges_json};
-
-// Kind colours are read from the .graph-shell so the dark-mode
-// overrides (--kind-person etc, redefined inside .graph-shell)
-// take effect.
-const SHELL_EL = document.querySelector('.graph-shell');
-const _shellStyle = getComputedStyle(SHELL_EL);
-const KIND_COLOR = {{
-  'identity':           _shellStyle.getPropertyValue('--kind-identity').trim(),
-  'language-term':      _shellStyle.getPropertyValue('--kind-language-term').trim(),
-  'unit':               _shellStyle.getPropertyValue('--kind-unit').trim(),
-  'activity':           _shellStyle.getPropertyValue('--kind-activity').trim(),
-  'person':             _shellStyle.getPropertyValue('--kind-person').trim(),
-  'role':               _shellStyle.getPropertyValue('--kind-role').trim(),
-  'stakeholder':        _shellStyle.getPropertyValue('--kind-stakeholder').trim(),
-  'commitment':         _shellStyle.getPropertyValue('--kind-commitment').trim(),
-  'financial-summary':  _shellStyle.getPropertyValue('--kind-financial-summary').trim(),
-  'source':             _shellStyle.getPropertyValue('--kind-source').trim(),
-}};
-
-// Relation labels — TO-BE taxonomy. Plain English, no schema-jargon
-// leakage. The asymmetry between forward (out) and reverse (in)
-// labels reflects the directional nature of each relation; pairs
-// that read identically both ways (`for`) are kept symmetric because
-// the panel's Outgoing / Incoming sections already disambiguate.
-const REL_LABELS = {{
-  'parent':           'is part of',
-  'unit':             'in',
-  'performer':        'performed by',
-  'head_role':        'led by',
-  'holds_role':       'as',
-  'covers':           'responsible for',
-  'party_committing': 'binds',
-  'party_benefiting': 'for',
-  'touches':          'involves',
-  'cite':             'cites',
-  'link':             'mentions',
-}};
-const REL_LABELS_REV = {{
-  'parent':           'contains',
-  'unit':             'hosts',
-  'performer':        'performs',
-  'head_role':        'leads',
-  'holds_role':       'filled by',
-  'covers':           'owned by',
-  'party_committing': 'bound by',
-  'party_benefiting': 'for',
-  'touches':          'involved in',
-  'cite':             'cited by',
-  'link':             'mentioned by',
-}};
-
-// Default to the operational core: units, the activities they run,
-// the people who run them, the stakeholders served, the commitments
-// that bind everyone. All structural edges are on so the lines
-// follow the nodes — `isEdgeVisible` already filters edges whose
-// endpoints aren't visible, so toggling a node kind off cleanly
-// removes its incoming/outgoing edges from the picture.
-const DEFAULT_VISIBLE_NODES = new Set(['unit','activity','person','stakeholder','commitment']);
-const DEFAULT_VISIBLE_EDGES = new Set([
-  'parent','unit','performer','head_role','holds_role','covers',
-  'party_committing','party_benefiting','touches'
-]);
-const visibleNodeKinds = new Set(DEFAULT_VISIBLE_NODES);
-const visibleEdgeKinds = new Set(DEFAULT_VISIBLE_EDGES);
-
-const FORCE = {{
-  // Tuned for "settles, then stops". Earlier we kept the simulation
-  // perpetually alive at low alpha; that produced visible jitter
-  // because residual repulsion never fully zeroed out. Now alpha
-  // cools all the way to 0 and the loop stops; every user
-  // interaction (drag, hover, click, toggle, re-shake) calls reheat
-  // to restart it. Stronger damping (0.78) so velocities die quickly
-  // after each reheat — the layout converges and stays put.
-  k: 150,             // ideal edge length
-  repulse: 6500,
-  centering: 0.0005,
-  damping: 0.78,
-  alphaCutoff: 0.005,  // simulation halts below this
-  // Velocity cap per tick — stops the "flying balls" effect when a
-  // strong reheat (e.g. clicking a node, which engages the focus
-  // attractor at high alpha) transiently pumps a lot of energy in.
-  // Each node moves at most this many pixels per frame; transitions
-  // become a slide, not an explosion.
-  vMax: 16,
-  edgeStrength: {{
-    parent: 0.10,
-    unit: 0.08,
-    performer: 0.07,
-    head_role: 0.07,
-    holds_role: 0.06,
-    covers: 0.05,
-    party_committing: 0.07,
-    party_benefiting: 0.07,
-    touches: 0.05,
-    link: 0.025,
-    cite: 0.02,
-  }},
-  focusPullCenter: 0.04,
-  focusRingPull: 0.03,
-  focusRingRadius: 180,
-}};
-
-const W = 1000, H = 760;
-const NODE_BY_ID = Object.fromEntries(NODES.map(n => [n.id, n]));
-
-function escapeHtml(s) {{
-  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({{
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }})[c]);
-}}
-
-function recomputeDegrees() {{
-  NODES.forEach(n => {{ n._degree = 0; }});
-  EDGES.forEach(e => {{
-    if (!isEdgeVisible(e)) return;
-    const a = NODE_BY_ID[e.from], b = NODE_BY_ID[e.to];
-    if (!a || !b) return;
-    a._degree++; b._degree++;
-  }});
-}}
-
-function radiusFor(n) {{
-  return 5 + Math.log(1 + (n._degree || 0)) * 4.5;
-}}
-
-function isNodeVisible(n) {{ return visibleNodeKinds.has(n.kind); }}
-function isEdgeVisible(e) {{
-  if (!visibleEdgeKinds.has(e.kind)) return false;
-  const a = NODE_BY_ID[e.from], b = NODE_BY_ID[e.to];
-  return !!(a && b && isNodeVisible(a) && isNodeVisible(b));
-}}
-
-// --- focus + hover state ---------------------------------------------
-// Two layers (Obsidian pattern). Hover is transient & light, click
-// commits a focus that pulls the node to centre and populates the
-// side panel.
-let focusedId = null;
-let focusedNeighbours = new Set();
-let hoveredId = null;
-let hoveredNeighbours = new Set();
-
-function neighboursOf(id) {{
-  const set = new Set();
-  EDGES.forEach(e => {{
-    if (!isEdgeVisible(e)) return;
-    if (e.from === id) set.add(e.to);
-    if (e.to === id) set.add(e.from);
-  }});
-  return set;
-}}
-function setFocus(id) {{
-  focusedId = id;
-  focusedNeighbours = id ? neighboursOf(id) : new Set();
-}}
-function setHover(id) {{
-  hoveredId = id;
-  hoveredNeighbours = id ? neighboursOf(id) : new Set();
-}}
-
-// "Active" highlight = focus or hover. Focus wins on intensity.
-function isInFocus(nodeId) {{
-  if (focusedId) return nodeId === focusedId || focusedNeighbours.has(nodeId);
-  if (hoveredId) return nodeId === hoveredId || hoveredNeighbours.has(nodeId);
-  return true;
-}}
-function edgeInFocus(e) {{
-  if (focusedId) return e.from === focusedId || e.to === focusedId;
-  if (hoveredId) return e.from === hoveredId || e.to === hoveredId;
-  return true;
-}}
-function hasAnyHighlight() {{ return !!(focusedId || hoveredId); }}
-
-// --- initial seed: kind-radial bands ---------------------------------
-// Stakeholders innermost — they're the gravity wells (every activity
-// touches them). Commitments next, then units, then activities,
-// then people. The other kinds (when toggled on) get bands further
-// out. Each kind's nodes spread evenly around their ring; the force
-// loop refines from this non-degenerate start.
-function seedPositions() {{
-  const KIND_RADIUS = {{
-    'stakeholder':       110,
-    'commitment':        185,
-    'unit':              250,
-    'role':              285,
-    'activity':          325,
-    'person':            370,
-    'financial-summary': 310,
-    'identity':          400,
-    'language-term':     430,
-    'source':            450,
-  }};
-  const kindCount = {{}};
-  const kindIndex = {{}};
-  NODES.forEach(n => {{ kindCount[n.kind] = (kindCount[n.kind] || 0) + 1; }});
-  NODES.forEach(n => {{
-    const ring = KIND_RADIUS[n.kind] || 250;
-    const total = kindCount[n.kind];
-    const i = (kindIndex[n.kind] = (kindIndex[n.kind] || 0) + 1) - 1;
-    const baseAngle = (i / total) * Math.PI * 2;
-    const jitter = (Math.random() - 0.5) * 0.5;
-    const r = ring + (Math.random() - 0.5) * 30;
-    n.x = W/2 + Math.cos(baseAngle + jitter) * r;
-    n.y = H/2 + Math.sin(baseAngle + jitter) * r;
-    n.vx = 0; n.vy = 0;
-  }});
-}}
-seedPositions();
-recomputeDegrees();
-
-// --- force step + tick -----------------------------------------------
-// `forceStep` runs one iteration of the physics with no DOM work, so
-// it can be called in a synchronous hot loop at boot to pre-settle
-// the layout. `tick` is the rAF-driven version that also renders.
-let alpha = 1;
-let running = false;
-function forceStep() {{
-  const visible = NODES.filter(isNodeVisible);
-
-  // Repulsion (degree-aware: bigger nodes push harder + min-distance
-  // hard floor so circles never overlap).
-  for (let i = 0; i < visible.length; i++) {{
-    for (let j = i+1; j < visible.length; j++) {{
-      const a = visible[i], b = visible[j];
-      let dx = a.x - b.x, dy = a.y - b.y;
-      let d2 = dx*dx + dy*dy;
-      if (d2 < 1) {{ dx = (Math.random()-0.5)*2; dy = (Math.random()-0.5)*2; d2 = 4; }}
-      const ra = radiusFor(a), rb = radiusFor(b);
-      const sizeBoost = 1 + (ra * rb) / 60;
-      const minD = ra + rb + 22;
-      let f = (FORCE.repulse * sizeBoost / d2) * alpha;
-      // Hard floor: when nodes get too close, ramp the force.
-      if (d2 < minD * minD) f *= 4;
-      const d = Math.sqrt(d2);
-      const fx = (dx/d) * f, fy = (dy/d) * f;
-      a.vx += fx; a.vy += fy;
-      b.vx -= fx; b.vy -= fy;
-    }}
-  }}
-
-  // Edge attraction.
-  EDGES.forEach(e => {{
-    if (!isEdgeVisible(e)) return;
-    const a = NODE_BY_ID[e.from], b = NODE_BY_ID[e.to];
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const d = Math.sqrt(dx*dx + dy*dy) || 1;
-    const strength = FORCE.edgeStrength[e.kind] || 0.05;
-    const f = (d - FORCE.k) * strength * alpha;
-    const fx = (dx/d) * f, fy = (dy/d) * f;
-    a.vx += fx; a.vy += fy;
-    b.vx -= fx; b.vy -= fy;
-  }});
-
-  // (No focus attractor — clicking a node only highlights it; the
-  // positions don't move. The Obsidian model: click = open / read,
-  // drag = manually reposition, legend toggle = re-layout because
-  // the topology changed. Trying to "redistribute on click" pits
-  // the attractor against repulsion + edges and produces chaos.)
-
-  // Centring + integrate (visible only). Pinned nodes (n.fx/n.fy set
-  // by the drag handler) override the simulation: they stay where the
-  // user is holding them.
-  visible.forEach(n => {{
-    if (n.fx != null && n.fy != null) {{
-      n.x = n.fx; n.y = n.fy;
-      n.vx = 0; n.vy = 0;
-      return;
-    }}
-    n.vx += (W/2 - n.x) * FORCE.centering;
-    n.vy += (H/2 - n.y) * FORCE.centering;
-    n.vx *= FORCE.damping;
-    n.vy *= FORCE.damping;
-    // Cap per-tick velocity so a high-alpha reheat can't fling
-    // nodes across the canvas. Convergence still happens; it just
-    // slides instead of flying.
-    const vmag = Math.hypot(n.vx, n.vy);
-    if (vmag > FORCE.vMax) {{
-      n.vx = (n.vx / vmag) * FORCE.vMax;
-      n.vy = (n.vy / vmag) * FORCE.vMax;
-    }}
-    n.x += n.vx;
-    n.y += n.vy;
-    const r = radiusFor(n) + 4;
-    n.x = Math.max(r, Math.min(W - r, n.x));
-    n.y = Math.max(r, Math.min(H - r, n.y));
-  }});
-  alpha *= 0.992;
-}}
-
-function tick() {{
-  forceStep();
-  applyDOMState();
-  if (alpha > FORCE.alphaCutoff) {{
-    requestAnimationFrame(tick);
-  }} else {{
-    // Snap remaining tiny velocities to zero so the picture is fully
-    // still — no shimmer, no sub-pixel drift.
-    NODES.forEach(n => {{ n.vx = 0; n.vy = 0; }});
-    running = false;
-  }}
-}}
-function reheat(target = 1) {{
-  alpha = Math.max(alpha, target);
-  if (!running) {{
-    running = true;
-    requestAnimationFrame(tick);
-  }}
-}}
-
-// --- DOM creation ----------------------------------------------------
-const svg = document.getElementById('graph');
-const viewport = document.getElementById('viewport');
-const edgesLayer = document.getElementById('edges-layer');
-const nodesLayer = document.getElementById('nodes-layer');
-const labelsLayer = document.getElementById('labels-layer');
-
-function el(name, attrs) {{
-  const e = document.createElementNS('http://www.w3.org/2000/svg', name);
-  for (const k in (attrs || {{}})) e.setAttribute(k, attrs[k]);
-  return e;
-}}
-
-EDGES.forEach(e => {{
-  // Edges are bezier curves (quadratic) instead of straight lines.
-  // The bow direction comes from the edge's index parity so adjacent
-  // edges curve slightly differently — gives the graph an organic
-  // feel without computing a real bundle layout. Stroke colours are
-  // set in CSS via class so dark-mode overrides apply uniformly.
-  const path = el('path', {{
-    class: 'edge kind-' + e.kind,
-    'stroke-width': e.kind === 'parent' ? 1.2 : (e.kind === 'cite' || e.kind === 'link' ? 0.5 : 0.8),
-  }});
-  e._line = path;
-  edgesLayer.appendChild(path);
-}});
-NODES.forEach(n => {{
-  // Hit halo: an invisible larger circle behind each visible node
-  // that captures pointer events. Makes the click target much bigger
-  // than the visible dot (which can be as small as r=5) without
-  // changing what the user sees.
-  const hit = el('circle', {{
-    class: 'node-hit',
-    'data-id': n.id,
-  }});
-  n._hit = hit;
-  nodesLayer.appendChild(hit);
-  const circle = el('circle', {{
-    class: 'node-circle kind-' + n.kind,
-    fill: KIND_COLOR[n.kind] || '#888',
-    'data-id': n.id,
-  }});
-  n._circle = circle;
-  nodesLayer.appendChild(circle);
-  const label = el('text', {{ class: 'node-label' }});
-  label.textContent = n.label.length > 32 ? n.label.slice(0, 31) + '…' : n.label;
-  n._label = label;
-  labelsLayer.appendChild(label);
-}});
-
-function applyDOMState() {{
-  const dimming = hasAnyHighlight();
-  NODES.forEach(n => {{
-    const r = radiusFor(n);
-    if (n._circle) {{
-      n._circle.setAttribute('cx', n.x);
-      n._circle.setAttribute('cy', n.y);
-      n._circle.setAttribute('r', r);
-    }}
-    if (n._hit) {{
-      n._hit.setAttribute('cx', n.x);
-      n._hit.setAttribute('cy', n.y);
-      n._hit.setAttribute('r', r + 9);
-    }}
-    if (n._label) {{
-      n._label.setAttribute('x', n.x + r + 5);
-      n._label.setAttribute('y', n.y + 4);
-      n._label.classList.toggle('large', focusedId === n.id);
-    }}
-    const visible = isNodeVisible(n);
-    const inFocus = isInFocus(n.id);
-    if (n._circle) {{
-      n._circle.style.display = visible ? '' : 'none';
-      // Non-highlighted dim is gentle (0.20) so all visible pallini
-      // stay legible — they're how the leader reads the structure.
-      n._circle.style.opacity = !visible ? 0 : (inFocus ? 1 : 0.20);
-      n._circle.classList.toggle('focused', focusedId === n.id);
-      n._circle.classList.toggle('hovered', hoveredId === n.id && focusedId !== n.id);
-    }}
-    if (n._hit) {{
-      n._hit.style.display = visible ? '' : 'none';
-    }}
-    if (n._label) {{
-      // Labels are always shown for visible nodes (small) — Obsidian
-      // pattern. Opacity follows focus state so the focused
-      // neighbourhood's labels read brighter than the background ones.
-      n._label.style.display = visible ? '' : 'none';
-      let labelOp;
-      if (!visible) labelOp = 0;
-      else if (focusedId === n.id || focusedNeighbours.has(n.id)) labelOp = 1;
-      else if (hoveredId === n.id || hoveredNeighbours.has(n.id)) labelOp = 1;
-      else if (dimming) labelOp = 0.25;
-      else labelOp = 0.7;
-      n._label.style.opacity = labelOp;
-    }}
-  }});
-  EDGES.forEach((e, idx) => {{
-    if (!e._line) return;
-    const a = NODE_BY_ID[e.from], b = NODE_BY_ID[e.to];
-    if (!a || !b) {{ e._line.style.display = 'none'; return; }}
-    // Quadratic bezier with a small bow perpendicular to the chord.
-    // Bow direction alternates by edge index so neighbouring edges
-    // curve apart instead of overlapping.
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const dist = Math.hypot(dx, dy) || 1;
-    const bow = Math.min(36, dist * 0.18) * (idx % 2 === 0 ? 1 : -1);
-    const cx = (a.x + b.x) / 2 + (-dy / dist) * bow;
-    const cy = (a.y + b.y) / 2 + ( dx / dist) * bow;
-    e._line.setAttribute('d', `M${{a.x.toFixed(1)}},${{a.y.toFixed(1)}} Q${{cx.toFixed(1)}},${{cy.toFixed(1)}} ${{b.x.toFixed(1)}},${{b.y.toFixed(1)}}`);
-    const ev = isEdgeVisible(e);
-    const inFocus = edgeInFocus(e);
-    e._line.style.display = ev ? '' : 'none';
-    e._line.classList.toggle('in-focus', !!ev && !!inFocus && hasAnyHighlight());
-    e._line.style.opacity = !ev ? 0 : (inFocus ? 0.7 : 0.04);
-  }});
-}}
-
-function updateStats() {{
-  const visibleNodes = NODES.filter(isNodeVisible);
-  const visibleEdges = EDGES.filter(isEdgeVisible);
-  const incident = new Set();
-  visibleEdges.forEach(e => {{ incident.add(e.from); incident.add(e.to); }});
-  const isolates = visibleNodes.filter(n => !incident.has(n.id)).length;
-  const kinds = new Set(visibleNodes.map(n => n.kind)).size;
-  document.getElementById('stat-nodes').textContent = visibleNodes.length;
-  document.getElementById('stat-edges').textContent = visibleEdges.length;
-  document.getElementById('stat-kinds').textContent = kinds;
-  document.getElementById('stat-isolates').textContent = isolates;
-}}
-
-// --- side panel ------------------------------------------------------
-const panelEl = document.getElementById('graph-panel');
-const panelContent = panelEl.querySelector('.panel-content');
-const panelClose = document.getElementById('panel-close');
-
-function buildPanelHtml(n) {{
-  const out = [], inn = [];
-  EDGES.forEach(e => {{
-    if (!visibleEdgeKinds.has(e.kind)) return;
-    if (e.from === n.id) {{
-      const t = NODE_BY_ID[e.to];
-      if (t && visibleNodeKinds.has(t.kind)) {{
-        out.push({{ rel: REL_LABELS[e.kind] || e.kind, target: t }});
-      }}
-    }} else if (e.to === n.id) {{
-      const f = NODE_BY_ID[e.from];
-      if (f && visibleNodeKinds.has(f.kind)) {{
-        inn.push({{ rel: REL_LABELS_REV[e.kind] || e.kind, target: f }});
-      }}
-    }}
-  }});
-  const dotColor = KIND_COLOR[n.kind] || '#888';
-  let html = `<div class="eyebrow"><span class="dot" style="background:${{dotColor}}"></span>${{escapeHtml(n.kind)}}</div>`;
-  html += `<h3>${{escapeHtml(n.label)}}</h3>`;
-  if (n.description) html += `<div class="desc">${{escapeHtml(n.description)}}</div>`;
-  if (out.length) {{
-    html += `<div class="section-label">Outgoing (${{out.length}})</div>`;
-    html += `<div class="neighbour-list">` + out.map(r =>
-      `<div class="neighbour" data-target-id="${{escapeHtml(r.target.id)}}"><span class="rel">${{escapeHtml(r.rel)}}</span><span class="target">${{escapeHtml(r.target.label)}}</span></div>`
-    ).join('') + `</div>`;
-  }}
-  if (inn.length) {{
-    html += `<div class="section-label">Incoming (${{inn.length}})</div>`;
-    html += `<div class="neighbour-list">` + inn.map(r =>
-      `<div class="neighbour" data-target-id="${{escapeHtml(r.target.id)}}"><span class="rel">${{escapeHtml(r.rel)}}</span><span class="target">${{escapeHtml(r.target.label)}}</span></div>`
-    ).join('') + `</div>`;
-  }}
-  if (n._path) html += `<div class="citation">${{escapeHtml(n._path)}}</div>`;
-  return html;
-}}
-
-function updatePanel() {{
-  if (!focusedId) {{
-    panelEl.classList.remove('has-focus');
-    panelContent.innerHTML = '';
-    return;
-  }}
-  const n = NODE_BY_ID[focusedId];
-  if (!n) return;
-  panelEl.classList.add('has-focus');
-  panelContent.innerHTML = buildPanelHtml(n);
-}}
-
-panelClose.addEventListener('click', () => {{
-  setFocus(null);
-  updatePanel();
-  applyDOMState();
-}});
-
-panelContent.addEventListener('click', (e) => {{
-  const row = e.target.closest('.neighbour');
-  if (!row) return;
-  const targetId = row.dataset.targetId;
-  if (!targetId || !NODE_BY_ID[targetId]) return;
-  setFocus(targetId);
-  updatePanel();
-  applyDOMState();
-}});
-
-// --- legend toggles --------------------------------------------------
-function refreshSwatchUI() {{
-  document.querySelectorAll('#legend-nodes .swatch').forEach(s => {{
-    s.classList.toggle('off', !visibleNodeKinds.has(s.dataset.kind));
-  }});
-  document.querySelectorAll('#legend-edges .swatch').forEach(s => {{
-    s.classList.toggle('off', !visibleEdgeKinds.has(s.dataset.edgekind));
-  }});
-}}
-refreshSwatchUI();
-
-document.querySelectorAll('#legend-nodes .swatch').forEach(s => {{
-  s.addEventListener('click', () => {{
-    const k = s.dataset.kind;
-    if (visibleNodeKinds.has(k)) visibleNodeKinds.delete(k);
-    else visibleNodeKinds.add(k);
-    refreshSwatchUI();
-    setFocus(null);
-    updatePanel();
-    recomputeDegrees();
-    updateStats();
-    reheat(1);
-  }});
-}});
-document.querySelectorAll('#legend-edges .swatch').forEach(s => {{
-  s.addEventListener('click', () => {{
-    const k = s.dataset.edgekind;
-    if (visibleEdgeKinds.has(k)) visibleEdgeKinds.delete(k);
-    else visibleEdgeKinds.add(k);
-    refreshSwatchUI();
-    setFocus(null);
-    updatePanel();
-    recomputeDegrees();
-    updateStats();
-    reheat(0.6);
-  }});
-}});
-
-document.getElementById('btn-reheat').addEventListener('click', () => {{
-  NODES.forEach(n => {{
-    if (!isNodeVisible(n)) return;
-    n.vx += (Math.random() - 0.5) * 12;
-    n.vy += (Math.random() - 0.5) * 12;
-  }});
-  reheat(1);
-}});
-
-// --- viewport zoom + pan ---------------------------------------------
-let view = {{ x: 0, y: 0, k: 1 }};
-function applyViewport() {{
-  viewport.setAttribute('transform', `translate(${{view.x}} ${{view.y}}) scale(${{view.k}})`);
-}}
-document.getElementById('btn-reset-view').addEventListener('click', () => {{
-  view = {{ x: 0, y: 0, k: 1 }};
-  applyViewport();
-}});
-
-let dragState = null;
-svg.addEventListener('mousedown', (e) => {{
-  if (e.target.classList && e.target.classList.contains('node-circle')) return;
-  dragState = {{ x: e.clientX, y: e.clientY, vx: view.x, vy: view.y }};
-  svg.classList.add('dragging');
-}});
-document.addEventListener('mousemove', (e) => {{
-  if (!dragState) return;
-  view.x = dragState.vx + (e.clientX - dragState.x);
-  view.y = dragState.vy + (e.clientY - dragState.y);
-  applyViewport();
-}});
-document.addEventListener('mouseup', () => {{
-  dragState = null;
-  svg.classList.remove('dragging');
-}});
-svg.addEventListener('wheel', (e) => {{
-  e.preventDefault();
-  const rect = svg.getBoundingClientRect();
-  const mx = ((e.clientX - rect.left) / rect.width)  * W;
-  const my = ((e.clientY - rect.top)  / rect.height) * H;
-  const factor = Math.exp(-e.deltaY * 0.0015);
-  const newK = Math.min(4, Math.max(0.3, view.k * factor));
-  view.x = mx - (mx - view.x) * (newK / view.k);
-  view.y = my - (my - view.y) * (newK / view.k);
-  view.k = newK;
-  applyViewport();
-}}, {{ passive: false }});
-
-// Helper: click/hover events fire on the hit halo OR the visible
-// circle. Either one carries the data-id we need.
-function nodeIdFromTarget(t) {{
-  if (!t || !t.classList) return null;
-  if (t.classList.contains('node-circle') || t.classList.contains('node-hit')) {{
-    return t.getAttribute('data-id');
-  }}
-  return null;
-}}
-
-// --- node click → focus (visual only, no movement) ------------------
-svg.addEventListener('click', (e) => {{
-  const id = nodeIdFromTarget(e.target);
-  if (!id) return;
-  // If we just finished a drag, suppress the synthetic click that
-  // follows mouseup so dragging a node doesn't also focus it.
-  if (suppressNextClick) {{ suppressNextClick = false; e.stopPropagation(); return; }}
-  if (!NODE_BY_ID[id]) return;
-  setFocus(id);
-  updatePanel();
-  applyDOMState();
-  e.stopPropagation();
-}});
-
-// --- node hover → soft highlight (doesn't open the panel) -----------
-svg.addEventListener('mouseover', (e) => {{
-  const id = nodeIdFromTarget(e.target);
-  if (!id) return;
-  setHover(id);
-  applyDOMState();
-}});
-svg.addEventListener('mouseout', (e) => {{
-  const id = nodeIdFromTarget(e.target);
-  if (!id) return;
-  if (hoveredId === id) {{
-    setHover(null);
-    applyDOMState();
-  }}
-}});
-
-// --- node drag → user-pinned position --------------------------------
-// Dragging only kicks in after a 5px movement threshold from the
-// initial mousedown. Below the threshold we treat the gesture as a
-// click. This keeps focus reliable: a slightly-trembly hand on a
-// small dot still registers as a click, not a degenerate drag.
-let nodeDrag = null;
-let suppressNextClick = false;
-const DRAG_THRESHOLD_PX = 5;
-
-function svgPointerToWorld(clientX, clientY) {{
-  const rect = svg.getBoundingClientRect();
-  const vbx = ((clientX - rect.left) / rect.width)  * W;
-  const vby = ((clientY - rect.top)  / rect.height) * H;
-  return {{ x: (vbx - view.x) / view.k, y: (vby - view.y) / view.k }};
-}}
-svg.addEventListener('mousedown', (e) => {{
-  const id = nodeIdFromTarget(e.target);
-  if (!id) return;
-  const n = NODE_BY_ID[id];
-  if (!n) return;
-  nodeDrag = {{ id, startClientX: e.clientX, startClientY: e.clientY, moved: false }};
-  e.preventDefault();
-}});
-document.addEventListener('mousemove', (e) => {{
-  if (!nodeDrag) return;
-  if (!nodeDrag.moved) {{
-    const dx = e.clientX - nodeDrag.startClientX;
-    const dy = e.clientY - nodeDrag.startClientY;
-    if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
-    nodeDrag.moved = true;
-  }}
-  const n = NODE_BY_ID[nodeDrag.id];
-  if (!n) return;
-  const w = svgPointerToWorld(e.clientX, e.clientY);
-  n.fx = w.x; n.fy = w.y;
-  reheat(0.5);
-}});
-document.addEventListener('mouseup', () => {{
-  if (!nodeDrag) return;
-  const n = NODE_BY_ID[nodeDrag.id];
-  if (n && nodeDrag.moved) {{ n.fx = null; n.fy = null; }}
-  if (nodeDrag.moved) {{ suppressNextClick = true; reheat(0.4); }}
-  nodeDrag = null;
-}});
-
-// Click anywhere else clears focus. Walks up the DOM looking for an
-// "interactive" ancestor; if it doesn't find one, the click counts as
-// "empty space" and clears the focus.
-document.addEventListener('click', (e) => {{
-  let n = e.target;
-  while (n && n.nodeType === 1) {{
-    if (n.id === 'graph-panel') return;
-    if (n.classList && (
-      n.classList.contains('node-circle') ||
-      n.classList.contains('node-hit') ||
-      n.classList.contains('swatch') ||
-      n.classList.contains('btn') ||
-      n.classList.contains('neighbour')
-    )) return;
-    n = n.parentNode;
-  }}
-  if (focusedId) {{
-    setFocus(null);
-    updatePanel();
-    applyDOMState();
-  }}
-}}, true);
-
-document.addEventListener('keydown', e => {{
-  if (e.key === 'Escape' && focusedId) {{
-    setFocus(null);
-    updatePanel();
-    applyDOMState();
-  }}
-}});
-
-// Boot — pre-settle the layout synchronously so the page opens with
-// nodes already at rest. No animation, no moving click targets, no
-// "i'm trying to click but the node moves". The visible simulation
-// only runs after a real user action (toggle, drag, re-shake).
-updateStats();
-alpha = 1;
-for (let i = 0; i < 350; i++) {{
-  if (alpha < FORCE.alphaCutoff) break;
-  forceStep();
-}}
-NODES.forEach(n => {{ n.vx = 0; n.vy = 0; }});
-alpha = 0;
-applyDOMState();
+{baseline_js}
+{js}
 </script>
 </body>
-</html>"""
+</html>
+"""
 
 
-def render_html(d: dict, title: str) -> str:
-    nodes = d.get("nodes", []) or []
-    edges = d.get("edges", []) or []
+# ----------------------------------------------------------------------
+# Adapter — our schema → the JS data shape
+# ----------------------------------------------------------------------
+def _adapt_data(d: dict, org_name: str) -> dict:
+    # Filter to load-bearing kinds only. Sources / identity / language /
+    # financial summaries belong to other readings (provenance, mission,
+    # money flow) — they pollute the dependency picture if rendered here.
+    raw_nodes = d.get("nodes", []) or []
+    nodes_in = [n for n in raw_nodes if n.get("kind") not in EXCLUDED_KINDS]
+    valid_ids = {n["id"] for n in nodes_in}
 
-    DEFAULT_VISIBLE_NODE_KINDS = {
-        "unit", "activity", "person", "stakeholder", "commitment"
+    # Drop body-markdown link edges (not a dependency, just prose
+    # cross-reference) and cite edges (point at sources we just
+    # dropped). Also drop any edge whose endpoint disappeared with the
+    # node filter.
+    raw_edges = d.get("edges", []) or []
+    edges_in = [
+        e for e in raw_edges
+        if e.get("kind") not in EXCLUDED_EDGE_KINDS
+        and e.get("from") in valid_ids
+        and e.get("to") in valid_ids
+    ]
+
+    js_nodes = []
+    for n in nodes_in:
+        js_nodes.append({
+            "id":    n["id"],
+            "kind":  n["kind"],
+            "label": n.get("label") or n["id"],
+            "path":  n.get("_path", ""),
+            "blurb": (n.get("description") or "").strip(),
+        })
+
+    js_edges = [
+        {"f": e["from"], "t": e["to"], "verb": e["kind"]}
+        for e in edges_in
+    ]
+
+    present_kinds = {n["kind"] for n in nodes_in}
+    js_kinds = []
+    for k in KIND_ORDER:
+        if k not in present_kinds:
+            continue
+        js_kinds.append({
+            "id":      k,
+            "label":   KIND_LABEL_DISPLAY.get(k, k),
+            "color":   KIND_COLORS.get(k, "#888"),
+            "default": k in DEFAULT_ON,
+        })
+    # Surface unexpected kinds (e.g. a future kind added to build.py
+    # before viewer.py learns about it) so they show up rather than
+    # vanish silently.
+    for k in sorted(present_kinds - set(KIND_ORDER)):
+        js_kinds.append({
+            "id":      k,
+            "label":   k,
+            "color":   "#888",
+            "default": False,
+        })
+
+    return {
+        "org":     org_name,
+        "kinds":   js_kinds,
+        "nodes":   js_nodes,
+        "edges":   js_edges,
+        "rel_out": REL_LABELS_OUT,
+        "rel_in":  REL_LABELS_IN,
     }
-    DEFAULT_VISIBLE_EDGE_KINDS = {
-        "parent", "unit", "performer", "head_role", "holds_role", "covers",
-        "party_committing", "party_benefiting", "touches"
-    }
 
-    def node_visible_default(n):
-        return n.get("kind") in DEFAULT_VISIBLE_NODE_KINDS
 
-    def edge_visible_default(e):
-        if e.get("kind") not in DEFAULT_VISIBLE_EDGE_KINDS:
-            return False
-        a = next((x for x in nodes if x.get("id") == e.get("from")), None)
-        b = next((x for x in nodes if x.get("id") == e.get("to")), None)
-        return a is not None and b is not None and node_visible_default(a) and node_visible_default(b)
-
-    visible_nodes = [n for n in nodes if node_visible_default(n)]
-    visible_edges = [e for e in edges if edge_visible_default(e)]
-    visible_kinds = {n.get("kind") for n in visible_nodes}
-    incident: set[str] = set()
-    for e in visible_edges:
-        incident.add(e.get("from", ""))
-        incident.add(e.get("to", ""))
-    isolates = [n for n in visible_nodes if n.get("id") not in incident]
-
+def _build_modal_html(d: dict, org_name: str, dated: str) -> str:
     decisions = d.get("decisions") or []
-    decisions_section = ""
-    if decisions:
-        items = []
-        for dec in decisions:
-            q = escape(dec.get("question", ""))
-            ans_paragraphs = "".join(
-                f'<p class="answer">{escape(p)}</p>'
-                for p in (dec.get("answer", "") or "").split("\n\n") if p.strip()
+    if not decisions:
+        return ""
+
+    # Build node label lookup once.
+    node_label = {n["id"]: (n.get("label") or n["id"]) for n in d.get("nodes", []) or []}
+
+    items = []
+    for dec in decisions:
+        question = (dec.get("question") or "").strip()
+        answer_paragraphs = [
+            p.strip() for p in (dec.get("answer") or "").split("\n\n") if p.strip()
+        ]
+        node_ids = dec.get("node_ids") or []
+        anchor_html = ""
+        if node_ids:
+            first = node_ids[0]
+            label = node_label.get(first, first)
+            anchor_html = (
+                f'<span class="anchor" data-focus="{escape(first)}">'
+                f'show <em>{escape(label)}</em> on the canvas →'
+                f'</span>'
             )
-            src = escape(dec.get("source", ""))
-            src_html = f'<div class="source">{src}</div>' if src else ""
-            items.append(f'<div class="decision"><div class="question">{q}</div>{ans_paragraphs}{src_html}</div>')
-        decisions_section = (
-            '<div class="section" id="decisions">'
-            '<h2>How to read this graph</h2>'
-            '<p class="lead">The leader-facing reading of the graph: which nodes are load-bearing, which regions are sparse, what the topology says about where the structure has been written down and where it has not.</p>'
-            + "".join(items)
-            + '</div>'
+        source = (dec.get("source") or "").strip()
+        source_html = f'<p class="source">{escape(source)}</p>' if source else ""
+        ps_html = "".join(f"<p>{escape(p)}</p>" for p in answer_paragraphs)
+        items.append(
+            f'<li><h3>{escape(question)}</h3>{ps_html}{source_html}{anchor_html}</li>'
         )
 
-    # --- editorial chrome (Italianate masthead + magazine colophon) ---
-    scope = d.get("_scope", "whole-org") or "whole-org"
-    # Pull the dataset's "today" from the play filename if obvious;
-    # otherwise leave blank — the colophon doesn't insist.
-    n_sources = sum(1 for n in nodes if n.get("kind") == "source")
-    n_citations = sum(1 for e in edges if e.get("kind") == "cite")
-    masthead_html = masthead(
-        kicker_left="graph",
-        kicker_num=f"№ {len(visible_nodes):02d}",
-        kicker_right=f"scope · {scope}",
-        title=f"The whole <em>operational</em> graph",
+    # Headline + lede: synthesise a neutral one from the count of
+    # decisions. The agent that populates `decisions[]` can override
+    # by including a top-level `_headline` / `_lede` in the JSON.
+    n = len(decisions)
+    headline = d.get("_headline") or (
+        f"Four decisions sit on the desk after one pass through the graph."
+        if n == 4
+        else f"{n} decision{'s' if n != 1 else ''} surface{'s' if n == 1 else ''} from one pass through the graph."
+    )
+    lede_text = d.get("_lede") or ""
+    lede_html = ""
+    if lede_text:
+        # Pre-escape; lede in app_pure_modal_html accepts inline HTML
+        # for emphasis but we don't have any here — escape to be safe.
+        lede_html = escape(lede_text)
+
+    return app_pure_modal_html(
+        headline=headline,
+        org_name=org_name,
+        dated=dated,
+        decisions_html="".join(items),
+        kicker="Reading the structure",
+        lede=lede_html,
+    )
+
+
+# ----------------------------------------------------------------------
+# render_html — the public entry point
+# ----------------------------------------------------------------------
+def render_html(d: dict, title: str, *, org_name: str = "") -> str:
+    # Resolution order for the org name in the dateline:
+    # 1. --org-name CLI flag (explicit override)
+    # 2. JSON `_org` field (populated by build.py from identity/mission.md
+    #    frontmatter key `org_name`)
+    # 3. The page title — last resort so the chrome never goes blank.
+    org = org_name or d.get("_org") or title
+    dated = d.get("_dated", "—")
+
+    js_data = _adapt_data(d, org)
+    modal_html = _build_modal_html(d, org, dated)
+    has_decisions = bool(d.get("decisions"))
+
+    # About modal — plain-language explanation of what this picture is,
+    # what's been kept and what's been stripped, and how to read it.
+    # graph is the only playbook without an external analytical
+    # framework — it renders the structure as the structure declares
+    # itself. The about-modal makes that explicit.
+    n_nodes = len(js_data.get("nodes") or [])
+    n_edges = len(js_data.get("edges") or [])
+    about_body = """
+  <p>The picture above is the operational structure of the organisation, drawn from the cited markdown corpus under <code>org/</code>. Every dot is a node the corpus declares; every line is a typed dependency declared in frontmatter (an activity belongs to a unit, a person performs an activity, a commitment binds a party, ...).</p>
+
+  <h2>What this map shows</h2>
+  <p><strong>The six load-bearing kinds.</strong> Units (containers of work), activities (the work that gets done), people (who does it), roles (named accountability slots), stakeholders (who the work is for), commitments (the obligations that bind parties together).</p>
+  <p>Pills at the bottom-left toggle each kind on or off. Hovering a node highlights it; clicking focuses it — first-degree neighbours stay bright, the rest dims, and the Inspect card on the right fills with the node's incoming and outgoing dependencies, grouped by verb.</p>
+
+  <h2>What it does not show</h2>
+  <p><strong>Sources, identity, glossary, financial summaries</strong> are part of the JSON but stripped from this picture. They are corpus-level metadata (provenance, mission, vocabulary, money flows), not operational dependencies. Other tools read them; this view doesn't.</p>
+  <p><strong>Body-markdown links</strong> (a node's prose mentioning another node by name) are also stripped. They are cross-references in writing, not dependencies in the structure. Including them would muddy the load picture without adding signal.</p>
+
+  <h2>How to read it</h2>
+  <p>Bigger circles = more first-degree neighbours in the currently visible kinds. The size is a directly-readable proxy for "how much load this node is carrying right now". Toggle a kind off and sizes recompute to reflect the slimmer picture.</p>
+  <p><strong>Drag</strong> a node to reposition it · <strong>scroll</strong> to zoom · <strong>drag empty space</strong> to pan · <strong>two-finger pinch</strong> on touch · <strong>?focus=&lt;node-id&gt;</strong> in the URL is a permalink to a focused view.</p>
+
+  <h2>Where it comes from</h2>
+  <p>Unlike the other four bundled playbooks (ai-exposure, value-map, reshuffle, world-model), <em>graph</em> has no external source theory: it renders the structure as the structure declares itself, with no analytical framework layered on top. It is the lightest read — useful right after the first ingest, before any of the framed analyses.</p>
+"""
+    about_modal_html_str = app_pure_about_modal_html(
+        kicker=f"№ {n_nodes:02d} · graph",
+        headline=org,
         lede=(
-            "Every unit, the activities they run, the people who run them, "
-            "the stakeholders served, and the commitments that bind everyone — "
-            "as one connected drawing of how the work hangs together."
+            "The operational structure as it has been written down — "
+            "every node, every typed dependency, no interpretive framework "
+            "layered on top."
         ),
-        dateline="dated " + (d.get("_dated") or ""),
-        tags=[
-            f"{len(visible_nodes)} nodes",
-            f"{len(visible_edges)} relations",
-            f"{len(visible_kinds)} kinds",
-            f"{len(isolates)} floating",
-        ],
-    )
-    colophon_html = colophon(
-        citations=n_citations,
-        sources=n_sources,
-        generator="skills/playbooks/graph",
-        generated_on=d.get("_dated", ""),
-        audit="pass",
-        autoresearch="4 / 4 deterministic dimensions pass",
-        extra_lines=[
-            "Click any node to focus · drag to reposition · use the legend toggles to scope.",
-        ],
+        body_html=about_body,
     )
 
+    # The page <title> reads "<org> — graph" so the browser tab matches
+    # the dateline. The CLI's --title flag still wins if explicitly set
+    # (the default sentinel "The whole graph" is checked here so we can
+    # tell apart "user passed nothing" from "user passed a custom title").
+    page_title = title if title and title != "The whole graph" else f"{org} — graph"
     return HTML_TEMPLATE.format(
-        css=base_css() + EXTRA_CSS,
-        title=escape(title),
-        masthead_html=masthead_html,
-        colophon_html=colophon_html,
-        n_nodes=len(visible_nodes),
-        n_edges=len(visible_edges),
-        n_kinds=len(visible_kinds),
-        n_isolates=len(isolates),
-        decisions_section=decisions_section,
-        nodes_json=json.dumps(nodes, ensure_ascii=False),
-        edges_json=json.dumps(edges, ensure_ascii=False),
+        head_meta=app_pure_head_meta(page_title),
+        css=app_pure_css(layout="canvas") + EXTRA_CSS,
+        dateline=app_pure_dateline_html(org),
+        top_right=app_pure_top_right_html(dated, show_analysis=has_decisions, show_help=True),
+        inspect_aside=app_pure_inspect_aside_html(),
+        modal_html=modal_html + about_modal_html_str,
+        # Escape "</" inside embedded JSON so a stray "</script>" in
+        # the data cannot close the wrapping <script> tag. JSON allows
+        # "\/" as an escape for "/", so the parser still gets clean data.
+        data_json=json.dumps(js_data, ensure_ascii=False).replace("</", "<\\/"),
+        baseline_js=app_pure_baseline_js(),
+        js=JS,
     )
 
 
+# ----------------------------------------------------------------------
+# CLI
+# ----------------------------------------------------------------------
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Render a graph JSON as interactive HTML.")
+    parser = argparse.ArgumentParser(description="Render a graph JSON as a fullscreen app.")
     parser.add_argument("--map", required=True, help="Graph JSON path")
     parser.add_argument("--html", required=True, help="Output HTML path")
     parser.add_argument("--title", default="The whole graph", help="Page title")
+    parser.add_argument("--org-name", default="", help="Organization name for the masthead")
     parser.add_argument(
         "--decisions",
-        help="Optional JSON list of {question, answer, source} merged into the map under top-level "
-             "'decisions[]'. Renders the 'How to read this graph' section. Required for a shippable "
-             "play — autoresearch fails without it.",
+        help="Optional JSON list merged into the map under 'decisions[]' before render.",
     )
     args = parser.parse_args()
 
     d = json.loads(Path(args.map).read_text(encoding="utf-8"))
     if args.decisions:
-        decisions = json.loads(Path(args.decisions).read_text(encoding="utf-8"))
-        if not isinstance(decisions, list):
-            print("--decisions must be a JSON list of {question, answer, source}", file=sys.stderr)
-            return 1
-        d["decisions"] = decisions
+        d["decisions"] = json.loads(Path(args.decisions).read_text(encoding="utf-8"))
 
-    html = render_html(d, args.title)
+    # Pass the CLI override through verbatim (may be empty). render_html
+    # resolves the dateline org name in this order: --org-name > JSON
+    # `_org` > page title. Don't shortcut to title here.
+    html = render_html(d, args.title, org_name=args.org_name)
     Path(args.html).write_text(html, encoding="utf-8")
     print(f"Wrote {Path(args.html).resolve()} ({len(html):,} bytes)")
     return 0

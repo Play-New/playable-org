@@ -465,10 +465,421 @@ def test_org_read_search_list_neighbors():
         assertion("play_run graph build returns topology summary",
                   "_topology" in skel and "by_node_kind" in skel["_topology"],
                   str(skel.get("_topology", {}))[:200])
+        # Defect-to-test: build.py must emit `_org` (read from
+        # identity/mission.md frontmatter `org_name` key) so the
+        # viewer's dateline doesn't fall through to a generic
+        # placeholder when invoked via the mcp pipeline that doesn't
+        # pass --org-name.
+        assertion("play_run graph build returns _org",
+                  isinstance(skel.get("_org"), str) and skel["_org"],
+                  f"_org={skel.get('_org')!r}")
+        assertion("play_run graph build _org matches sample-org identity",
+                  skel.get("_org") == "Outline & Co.",
+                  f"_org={skel.get('_org')!r}")
     finally:
         if test_artefact_path.exists():
             test_artefact_path.unlink()
 
+    # ---- org_autoresearch_run — was untested in the suite (caught during
+    # the May 2026 sweep). Defect-to-test for two real bugs found:
+    # the tool's `inferPlaybook` filename helper missed `graph-*`, and
+    # the playbook enum excluded `graph` entirely. Both fixed; this test
+    # locks the fix.
+    sample_play = "plays/data/graph-outline-2026-05-09.json"  # relative to sample-org dataDir
+    out = call(d, "org_autoresearch_run", {"play_path": sample_play})
+    try:
+        parsed = json.loads(out)
+    except json.JSONDecodeError:
+        parsed = {}
+    overall = parsed.get("overall") if isinstance(parsed, dict) else None
+    assertion("autoresearch_run on graph play returns PASS",
+              overall == "PASS",
+              f"overall={overall}, body={out[:200]}")
+    assertion("autoresearch_run reports the four deterministic dimensions",
+              isinstance(parsed, dict) and len(parsed.get("dimensions", [])) >= 4,
+              str(parsed.get("dimensions", []) if isinstance(parsed, dict) else parsed)[:200])
+    assertion("autoresearch_run accepts 'graph' as a playbook (no inference error)",
+              "could not infer playbook" not in out,
+              out[:200])
+
+
+
+def test_graph_viewer_design_regression():
+    """Regression net for the graph viewer's HTML output. Locks in the
+    decisions we converged to: App-pure layout, paper palette
+    (Carta sbiadita v2), Pointer Events + pinch zoom, safe-area-inset,
+    inline favicon, embedded Inter Variable font, focus permalink,
+    grouped inspect panel by verb. Body-markdown link edges and corpus /
+    declarative kinds are stripped from the viewer (see SKILL.md).
+
+    Runs viewer.py directly against the canonical sample-org fixture
+    JSON. Defect-to-test principle: every issue we fixed in the design
+    iteration is now an automated check.
+    """
+    fixture = REPO_ROOT / "mcp-server" / "test-fixtures" / "sample-org" / "plays" / "data" / "graph-outline-2026-05-09.json"
+    viewer = REPO_ROOT / "skills" / "playbooks" / "graph" / "viewer.py"
+    out_html = Path(tempfile.mkdtemp(prefix="graph-viewer-test-")) / "out.html"
+    try:
+        proc = subprocess.run(
+            ["python3", str(viewer),
+             "--map", str(fixture),
+             "--html", str(out_html),
+             "--title", "test",
+             "--org-name", "test"],
+            capture_output=True, text=True, timeout=15,
+        )
+        assertion("graph viewer renders without error",
+                  proc.returncode == 0,
+                  f"stderr={proc.stderr[:300]}")
+        html = out_html.read_text()
+
+        # ---- structural shell (App-pure layout) ----
+        assertion("viewer has full-bleed canvas tag",
+                  '<canvas id="canvas">' in html)
+        assertion("viewer has top-right Analysis button",
+                  'id="open-analysis"' in html and 'class="analysis"' in html)
+        assertion("viewer has floating inspect panel",
+                  'class="inspect"' in html and 'id="inspect"' in html)
+        assertion("viewer has analysis modal",
+                  'class="modal-scrim"' in html and 'id="modal-scrim"' in html)
+        assertion("viewer has bottom-center hint",
+                  'class="hint"' in html and 'id="hint"' in html)
+        assertion("viewer has bottom kinds ribbon",
+                  'class="kinds"' in html and 'id="kinds"' in html)
+
+        # ---- inspect grouping by verb (was the "involved in × 13" bug) ----
+        assertion("inspect groups rels by verb",
+                  'rel-verb' in html and 'rel-verb-count' in html)
+
+        # ---- mobile-app polish ----
+        assertion("safe-area-inset honoured",
+                  'env(safe-area-inset-' in html)
+        assertion("touch-action: none on canvas",
+                  'touch-action: none' in html)
+        assertion("pinch-zoom handler present",
+                  'pointers.size === 2' in html and "'pointerdown'" in html)
+        assertion("apple-mobile-web-app capable meta",
+                  'apple-mobile-web-app-capable' in html)
+        assertion("viewport-fit=cover for iPhone notch",
+                  'viewport-fit=cover' in html)
+        assertion("theme-color set for browser chrome",
+                  'name="theme-color"' in html)
+
+        # ---- favicon (inline, no extra file) ----
+        assertion("inline SVG favicon",
+                  'rel="icon"' in html and 'data:image/svg+xml' in html)
+
+        # ---- font embedded (no CDN, file:// works) ----
+        assertion("Inter Variable embedded as data URL",
+                  'data:font/woff2;base64,' in html)
+        assertion("Inter ss01 + cv11 features active",
+                  '"ss01"' in html and '"cv11"' in html)
+
+        # ---- Carta sbiadita v2 palette ----
+        assertion("unit colour is slate (Carta sbiadita)",
+                  '#6b7d8c' in html)
+        assertion("activity colour is sage",
+                  '#8a9d6b' in html)
+        assertion("commitment colour is terracotta",
+                  '#b87b5e' in html)
+
+        # ---- focus permalink ----
+        assertion("?focus=<id> permalink handler wired",
+                  "params.get('focus')" in html or 'params.get("focus")' in html)
+
+        # ---- viewer scope: operational dependencies only ----
+        assertion("viewer drops corpus/declarative kinds (no source pill)",
+                  '"id":"source"' not in html and '"id": "source"' not in html)
+        assertion("viewer drops corpus/declarative kinds (no identity pill)",
+                  '"id":"identity"' not in html and '"id": "identity"' not in html)
+        assertion("viewer drops corpus/declarative kinds (no language pill)",
+                  '"id":"language-term"' not in html and '"id": "language-term"' not in html)
+        assertion("viewer drops corpus/declarative kinds (no financial pill)",
+                  '"id":"financial-summary"' not in html and '"id": "financial-summary"' not in html)
+        assertion("viewer drops link edges (markdown cross-references aren't dependencies)",
+                  '"verb":"link"' not in html and '"verb": "link"' not in html)
+        assertion("viewer drops cite edges (sources aren't in the graph)",
+                  '"verb":"cite"' not in html and '"verb": "cite"' not in html)
+
+        # ---- no orphan Python format placeholders ----
+        # JS template literals look like ${x} which is fine; we only
+        # care about Python-style {x} that .format() should have filled.
+        import re
+        unfilled = re.findall(r'(?<!\$)\{[a-z_][a-z0-9_]*\}', html)
+        assertion("no orphan Python format placeholders in output",
+                  len(unfilled) == 0,
+                  f"found: {unfilled[:5]}")
+    finally:
+        shutil.rmtree(out_html.parent, ignore_errors=True)
+
+
+def _render_viewer_to_tmp(playbook: str, fixture: Path, *, mode: str = "map") -> str:
+    """Run a playbook viewer against the canonical fixture and return the HTML.
+    mode = 'map' for --map/--html, 'matches' for --matches/--out (ai-exposure),
+    'mapsvg' for --map/--html/--svg (value-map). Raises on non-zero exit."""
+    viewer = REPO_ROOT / "skills" / "playbooks" / playbook / "viewer.py"
+    tmp = Path(tempfile.mkdtemp(prefix=f"{playbook}-viewer-test-"))
+    out_html = tmp / "out.html"
+    try:
+        if mode == "matches":
+            args = ["python3", str(viewer), "--matches", str(fixture), "--out", str(out_html)]
+        elif mode == "mapsvg":
+            args = ["python3", str(viewer), "--map", str(fixture), "--html", str(out_html), "--svg", str(tmp / "out.svg")]
+        else:
+            args = ["python3", str(viewer), "--map", str(fixture), "--html", str(out_html)]
+        proc = subprocess.run(args, capture_output=True, text=True, timeout=20)
+        assertion(f"{playbook} viewer renders without error",
+                  proc.returncode == 0,
+                  f"stderr={proc.stderr[:300]}")
+        return out_html.read_text()
+    finally:
+        # Caller may want to inspect tmp; but for these tests we read text
+        # and discard the tmp dir.
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def _assert_no_jargon_in_user_visible(playbook: str, html: str):
+    """Strip <script>, <style>, <!-- ... --> and assert that user-visible
+    prose has none of the framework jargon banned by skills/STYLE.md.
+
+    Acronyms (DRI, IC, SLO) — never visible.
+    Forbidden words in body prose (moat, commodity, commoditize, etc.) — never visible.
+    The visual code labels 'differentiated' and 'standard' replace 'moat' and 'commodity'.
+    """
+    import re
+    s = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.S)
+    s = re.sub(r'<style[^>]*>.*?</style>', '', s, flags=re.S)
+    s = re.sub(r'<!--.*?-->', '', s, flags=re.S)
+    patterns = [
+        (r'\bDRI\b', 'DRI acronym'),
+        (r'\bIC[s]?\b', 'IC acronym'),
+        (r'\bSLO\b', 'SLO acronym'),
+        (r'\bmoat\b', '"moat" in body prose (use "differentiated")'),
+        (r'\bcommodity\b', '"commodity" in body prose (use "standard")'),
+        (r'engine candidate', '"engine candidate" jargon'),
+        (r'coordination tax', '"coordination tax" jargon'),
+        (r'judgment density', '"judgment density" jargon'),
+        (r'capability stack', '"capability stack" jargon'),
+        (r'failure[ -]signal', '"failure signal" jargon'),
+        (r'piece-to-build', 'kebab "piece-to-build" leaking into prose'),
+        (r'commoditiz', '"commoditize" jargon'),
+    ]
+    for pat, desc in patterns:
+        m = re.search(pat, s)
+        assertion(f"{playbook}: no {desc} in user-visible prose",
+                  m is None,
+                  f"found near: ...{s[max(0,m.start()-40):m.end()+40] if m else ''}...")
+
+
+def test_ai_exposure_viewer_design_regression():
+    """Regression net for ai-exposure viewer. Locks in:
+    App-pure scroll-on-paper shell with ? + Analysis chrome, unit filter
+    pills, activity grid, per-activity popover showing AEI matches table,
+    decisions in Analysis modal. No jargon leak in user prose (per STYLE.md)."""
+    fixture = REPO_ROOT / "mcp-server" / "test-fixtures" / "sample-org" / "plays" / "data" / "ai-exposure-outline-2026-05-07.json"
+    html = _render_viewer_to_tmp("ai-exposure", fixture, mode="matches")
+
+    # Shell + chrome
+    assertion("ai-exposure: editorial column container present",
+              'class="wrap"' in html or 'editorial' in html or 'max-width' in html)
+    assertion("ai-exposure: ? help button + about modal scaffold",
+              'id="open-help"' in html and 'id="about-scrim"' in html)
+    assertion("ai-exposure: Analysis CTA + modal scaffold",
+              'id="open-analysis"' in html and 'id="modal-scrim"' in html)
+    assertion("ai-exposure: theme-color meta",
+              'name="theme-color"' in html)
+    assertion("ai-exposure: inline SVG favicon (no external assets)",
+              'rel="icon"' in html and 'data:image/svg+xml' in html)
+    assertion("ai-exposure: Inter Variable embedded",
+              'data:font/woff2;base64,' in html)
+
+    # AEI-specific content
+    assertion("ai-exposure: unit filter pills",
+              'data-unit' in html)
+    assertion("ai-exposure: activity cards present",
+              'class="card' in html)
+
+    _assert_no_jargon_in_user_visible("ai-exposure", html)
+
+    # No orphan format placeholders. The viewer ships a runtime i18n
+    # dictionary (JS uses .replace('{n}', value) at render-time) so we
+    # whitelist those known tokens before checking.
+    import re
+    I18N_TOKENS = {'{n}', '{total}', '{x}'}
+    unfilled = [u for u in re.findall(r'(?<!\$)\{[a-z_][a-z0-9_]*\}', html) if u not in I18N_TOKENS]
+    assertion("ai-exposure: no orphan Python format placeholders",
+              len(unfilled) == 0, f"found: {unfilled[:5]}")
+
+
+def test_value_map_viewer_design_regression():
+    """Regression net for value-map viewer. Locks in:
+    SVG map on a 4-stage evolution axis, framework axis labels (Genesis /
+    Custom / Product / Commodity allowed AS axis labels per STYLE.md),
+    component cards, coral border for emerging components, no commodity /
+    commoditize in body prose, ? + Analysis chrome."""
+    fixture = REPO_ROOT / "mcp-server" / "test-fixtures" / "sample-org" / "plays" / "data" / "value-map-studio-mid-market-baseline-2026-05-07.json"
+    html = _render_viewer_to_tmp("value-map", fixture, mode="mapsvg")
+
+    # Shell + chrome
+    assertion("value-map: ? help button + about modal scaffold",
+              'id="open-help"' in html and 'id="about-scrim"' in html)
+    assertion("value-map: Analysis CTA + modal scaffold",
+              'id="open-analysis"' in html and 'id="modal-scrim"' in html)
+    assertion("value-map: Inter Variable embedded",
+              'data:font/woff2;base64,' in html)
+    assertion("value-map: inline SVG favicon",
+              'rel="icon"' in html and 'data:image/svg+xml' in html)
+    assertion("value-map: theme-color meta",
+              'name="theme-color"' in html)
+
+    # Map-specific content
+    assertion("value-map: SVG map element present",
+              '<svg' in html and 'viewBox' in html)
+    assertion("value-map: 4-stage evolution axis labelled",
+              'Genesis' in html and 'Custom' in html and 'Product' in html and 'Commodity' in html)
+
+    # Anti-rhetoric: 'commoditize' must not appear, 'commodity' only as
+    # axis label (we just asserted Commodity capitalized as the axis stop;
+    # any lowercase 'commodity' in body prose is a leak).
+    _assert_no_jargon_in_user_visible("value-map", html)
+
+    import re
+    unfilled = re.findall(r'(?<!\$)\{[a-z_][a-z0-9_]*\}', html)
+    assertion("value-map: no orphan Python format placeholders",
+              len(unfilled) == 0, f"found: {unfilled[:5]}")
+
+
+def test_reshuffle_viewer_design_regression():
+    """Regression net for reshuffle viewer. Locks in:
+    Canvas-first 3x3 matrix (AI class × constraint), 'where AI changes
+    structure' highlight on the leverage cell, activity chips clickable,
+    direction options inside Analysis modal, ? + Analysis chrome, no
+    'engine candidate' jargon in user prose."""
+    fixture = REPO_ROOT / "mcp-server" / "test-fixtures" / "sample-org" / "plays" / "data" / "reshuffle-outline-2026-05-07.json"
+    html = _render_viewer_to_tmp("reshuffle", fixture)
+
+    # Shell + chrome
+    assertion("reshuffle: ? help button + about modal scaffold",
+              'id="open-help"' in html and 'id="about-scrim"' in html)
+    assertion("reshuffle: Analysis CTA + modal scaffold",
+              'id="open-analysis"' in html and 'id="modal-scrim"' in html)
+    assertion("reshuffle: Inter Variable embedded",
+              'data:font/woff2;base64,' in html)
+    assertion("reshuffle: inline SVG favicon",
+              'rel="icon"' in html and 'data:image/svg+xml' in html)
+    assertion("reshuffle: theme-color meta",
+              'name="theme-color"' in html)
+
+    # Matrix-specific content
+    assertion("reshuffle: 3x3 matrix container present",
+              'class="matrix"' in html)
+    assertion("reshuffle: matrix has the three AI-class rows",
+              'AI as infrastructure' in html and 'AI as accelerator' in html and 'AI not relevant' in html)
+    assertion("reshuffle: leverage cell badge 'where AI changes structure'",
+              'where AI changes structure' in html)
+
+    _assert_no_jargon_in_user_visible("reshuffle", html)
+
+    import re
+    unfilled = re.findall(r'(?<!\$)\{[a-z_][a-z0-9_]*\}', html)
+    assertion("reshuffle: no orphan Python format placeholders",
+              len(unfilled) == 0, f"found: {unfilled[:5]}")
+
+
+def test_world_model_viewer_design_regression():
+    """Regression net for world-model viewer. Locks in:
+    Editorial column 820px inside 1240px, three layers (Interfaces top,
+    Capabilities middle dominant, World models bottom 2-column), middle-
+    layer annotation between Capabilities and World models, capability
+    cards with sentence-cased names + 'callable N/5' dots, ? + Analysis
+    chrome, Analysis modal has 'The move, in three steps' + decisions,
+    no missing-capabilities section on the page or in the modal."""
+    fixture = REPO_ROOT / "mcp-server" / "test-fixtures" / "sample-org" / "plays" / "data" / "world-model-outline-2026-05-07.json"
+    html = _render_viewer_to_tmp("world-model", fixture)
+
+    # Shell + chrome
+    assertion("world-model: ? help button + about modal scaffold",
+              'id="open-help"' in html and 'id="about-scrim"' in html)
+    assertion("world-model: Analysis CTA + modal scaffold",
+              'id="open-analysis"' in html and 'id="modal-scrim"' in html)
+    assertion("world-model: editorial 820px column class present",
+              'max-width: 820px' in html or '.editorial' in html or 'wm-body' in html)
+    assertion("world-model: Inter Variable embedded",
+              'data:font/woff2;base64,' in html)
+    assertion("world-model: inline SVG favicon",
+              'rel="icon"' in html and 'data:image/svg+xml' in html)
+    assertion("world-model: theme-color meta",
+              'name="theme-color"' in html)
+
+    # 3-layer stack
+    assertion("world-model: Interfaces layer present",
+              'data-layer="interfaces"' in html or 'layer-interfaces' in html or '>Interfaces<' in html)
+    assertion("world-model: Capabilities layer present",
+              'data-layer="capabilities"' in html or 'layer-capabilities' in html or '>Capabilities<' in html)
+    assertion("world-model: World models band (plural)",
+              '>World models<' in html or '>World model<' in html)
+    assertion("world-model: middle-layer annotation between Capabilities and World models",
+              'intelligence-annotation' in html)
+
+    # 2-column world model band (organization side + stakeholder side)
+    assertion("world-model: 'Organization side' sub-section present",
+              'Organization side' in html)
+    assertion("world-model: 'Stakeholder side' sub-section present",
+              'Stakeholder side' in html)
+
+    # Capability cards: sentence-case names + callable N/5 dots
+    assertion("world-model: capability cards rendered",
+              'cap-card' in html)
+    assertion("world-model: 'callable N/5' wrapper-status label",
+              'callable ' in html and '/5' in html)
+    assertion("world-model: sentence-cased capability name (no visible kebab)",
+              '>Define positioning<' in html or 'Define positioning' in html)
+    # Kebab IDs are still in data-id for stable lookup — must NOT appear as visible card name
+    assertion("world-model: kebab capability id NOT shown as card title",
+              '<h3 class="card-name">define-positioning</h3>' not in html)
+
+    # Coral border for differentiated capabilities, hairline for standard.
+    # Visual code is in EXTRA_CSS; we just assert the classes exist on cards.
+    assertion("world-model: 'differentiated' class on moat cards",
+              'cap-card differentiated' in html)
+    assertion("world-model: 'standard' class on commodity cards",
+              'cap-card standard' in html)
+
+    # Analysis modal structure: 3 moves + decisions, NO missing-capabilities
+    assertion("world-model: Analysis modal has 'The move, in three steps' section",
+              'The move, in three steps' in html)
+    assertion("world-model: 'Running the loop' headline in Analysis modal",
+              'Running the loop' in html)
+    # The roadmap section (if rendered) lived under #roadmap or .roadmap-section
+    # in the OLD design. In the current shape it must NOT appear as an on-page
+    # section. The cards themselves may still exist as dead code in the JS
+    # NODES dict for backwards compatibility; what matters is no on-page block.
+    import re
+    # ensure no <section class="roadmap-section" on page (was the on-page
+    # roadmap block we deliberately removed)
+    assertion("world-model: no on-page roadmap-section block",
+              re.search(r'<section[^>]*class="[^"]*roadmap-section', html) is None)
+
+    # Anti-rhetoric / no jargon
+    _assert_no_jargon_in_user_visible("world-model", html)
+
+    # Plain-language labels (replacements for DRI / Callable by / Composes with)
+    # appear in the JS, but the popover *content* uses these phrases.
+    # Confirm the popover renderer is wired with the plain labels (JS strings
+    # are inside <script>, so search the raw html before strip).
+    assertion("world-model: popover uses 'Run by' label on card meta",
+              'Run by' in html)
+    assertion("world-model: popover uses 'Who can ask for it' label",
+              "Who can ask for it" in html)
+    assertion("world-model: popover uses 'Used together with' label",
+              "Used together with" in html)
+    assertion("world-model: popover uses 'callable today' framing",
+              "How callable today" in html or "callable today" in html.lower())
+
+    # No orphan Python placeholders
+    unfilled = re.findall(r'(?<!\$)\{[a-z_][a-z0-9_]*\}', html)
+    assertion("world-model: no orphan Python format placeholders",
+              len(unfilled) == 0, f"found: {unfilled[:5]}")
 
 
 def test_repo_root_tooling():
@@ -524,6 +935,29 @@ def test_repo_root_tooling():
     assertion("lint_run tier1 exit_code is 0",
               parsed.get("tier1", {}).get("exit_code") == 0,
               parsed.get("tier1", {}).get("stderr", "")[:200])
+
+    # ---- org_lint_run Tier 2 — semantic checks ----
+    # Locks the typo fix (was `ORG = ROOT / "Org"` which silently broke on
+    # case-sensitive filesystems) and the --org-dir CLI flag both scripts
+    # now accept. The empty starter has 3 identity stubs, so Tier 2 returns
+    # 0 metrics violations — what we assert is that the script ran cleanly.
+    out = call(d, "org_lint_run", {"tier": "tier2"})
+    parsed = json.loads(out)
+    assertion("lint_run tier2 exit_code is 0",
+              parsed.get("tier2", {}).get("exit_code") == 0,
+              parsed.get("tier2", {}).get("stderr", "")[:200])
+    assertion("lint_run tier2 returns a report path",
+              str(parsed.get("tier2", {}).get("summary", {}).get("report", "")).endswith(".md"),
+              parsed.get("tier2", {}).get("summary", {}).get("report"))
+
+    # ---- org_lint_run --tier both — both scripts run in one call ----
+    out = call(d, "org_lint_run", {"tier": "both"})
+    parsed = json.loads(out)
+    assertion("lint_run both runs tier1 cleanly",
+              parsed.get("tier1", {}).get("exit_code") == 0)
+    assertion("lint_run both runs tier2 cleanly",
+              parsed.get("tier2", {}).get("exit_code") == 0)
+
 
     # ---- org_open ----
     out = call(d, "org_open", {"path": "org/log.md"})
@@ -623,6 +1057,11 @@ def main():
     run_section("org_save_source", test_org_save_source)
     run_section("org_write_node", test_org_write_node)
     run_section("Read-side tools (read/search/list/neighbors)", test_org_read_search_list_neighbors)
+    run_section("Graph viewer design regression", test_graph_viewer_design_regression)
+    run_section("ai-exposure viewer design regression", test_ai_exposure_viewer_design_regression)
+    run_section("value-map viewer design regression", test_value_map_viewer_design_regression)
+    run_section("reshuffle viewer design regression", test_reshuffle_viewer_design_regression)
+    run_section("world-model viewer design regression", test_world_model_viewer_design_regression)
     run_section("Repo-root tooling (skills_list, skill_read, lint_run, open)", test_repo_root_tooling)
     run_section("Concurrent safety", test_concurrent_safety)
     run_section("Unicode payloads", test_unicode_payload)

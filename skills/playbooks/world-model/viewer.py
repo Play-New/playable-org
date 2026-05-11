@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 """
-world-model / viewer.py — Render a world-model JSON as interactive HTML.
+world-model / viewer.py — Render a world-model slice as an editorial-column
+3-layer page per the frozen spec in SKILL.md §8.
 
-The visualization is a layered stack: stakeholders at the top, interfaces
-below, intelligence layer, world model, capabilities at the bottom. A
-side panel shows the failure-signal roadmap. Click any element for full
-detail.
+Three layers stacked: Interfaces (top), Capabilities (middle, dominant),
+World model (bottom, three sub-sections). Intelligence layer rendered as
+a thin annotation between Capabilities and World model. Roadmap section
+reads the captured-signals subset of the world model that no current
+composition can fulfil. Decisions follow.
 
-Output is for a reader with no prior knowledge of the source framework
-or of the organization. Every term is defined inline; every number
-declares its scale. Style charter applies.
+Visual code (frozen): cards with full hairline border, coral border for
+differentiated capabilities, hairline for standard. No left-rule cards.
+Click → popover (below the clicked card, centered, flips above when no
+room). Plain-language labels: differentiated / standard, never moat /
+commodity.
 
 Usage:
-    python3 viewer.py --map <world-model.json> --html <out.html>
+    python3 viewer.py --map <slice.json> --html <out.html>
 """
 
 from __future__ import annotations
@@ -23,270 +27,601 @@ import sys
 from html import escape
 from pathlib import Path
 
-# Import the shared Play New design system
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from design import base_css, masthead, colophon  # noqa: E402
+from design import (  # noqa: E402
+    app_pure_about_modal_html,
+    app_pure_baseline_js,
+    app_pure_css,
+    app_pure_dateline_html,
+    app_pure_head_meta,
+    app_pure_modal_html,
+    app_pure_top_right_html,
+)
+
+
+def _humanize(s: str) -> str:
+    """Title-case a kebab-case id."""
+    return (
+        (s or "")
+        .replace("-", " ")
+        .replace("_", " ")
+        .strip()
+        .split()
+    )
+
+
+def _human(s: str) -> str:
+    """Title-case (each word capitalized): used for proper nouns like
+    person names. marco-bellini → Marco Bellini."""
+    parts = _humanize(s)
+    if not parts:
+        return ""
+    return " ".join(p[0].upper() + p[1:] if p else "" for p in parts)
+
+
+def _sentence(s: str) -> str:
+    """Sentence-case (first letter capitalized only): used for capability
+    names and other verb-object kebab ids that read as actions, not as
+    proper nouns. define-positioning → Define positioning."""
+    if not s:
+        return ""
+    cleaned = s.replace("-", " ").replace("_", " ").strip()
+    if not cleaned:
+        return ""
+    return cleaned[0].upper() + cleaned[1:]
 
 
 EXTRA_CSS = """
-/* world-model viewer — Play New design (unified with value-map and ai-exposure).
-   Pure white surface, editorial typography, hairlines, single accent.
-   One uniform container width applied to every block on the page. */
+/* world-model viewer — editorial-column 3-layer page (SKILL.md §8 frozen).
+   1240px outer container; every block lives in a centered 820px column.
+   Layers stacked: Interfaces → Capabilities → World model. Intelligence
+   layer rendered as a thin annotation between Capabilities and World
+   model. Roadmap + Decisions sections follow. Cards full-border, coral
+   for differentiated, hairline for standard. Click → popover. */
 
-:root {
-  /* Stack layers + moat / commodity — data-viz palette mirror, used
-     only as light tint accents on the layer heads. */
-  --moat:                       var(--ds-coral);
-  --commodity:                  var(--fg-hairline);
-  --layer-stakeholder-accent:   var(--fg);
-  --layer-interface-accent:     var(--ds-slate);
-  --layer-intelligence-accent:  var(--ds-lilac);
-  --layer-worldmodel-accent:    var(--ds-sage);
-  --layer-capability-accent:    var(--ds-sand);
+.wm-body {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: max(72px, calc(env(safe-area-inset-top) + 60px))
+           max(28px, env(safe-area-inset-right))
+           max(80px, calc(env(safe-area-inset-bottom) + 60px))
+           max(28px, env(safe-area-inset-left));
 }
 
-body { background: #FFFFFF; color: var(--fg); }
+.editorial {
+  max-width: 820px;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-/* One container width, applied uniformly to every block on the page. */
-.container { max-width: 1240px; margin: 0 auto; padding: 80px 40px 96px; }
-@media (max-width: 900px) { .container { padding: 56px 24px 80px; } }
+/* === HEADER === */
+.wm-header { margin: 0 auto 28px; max-width: 820px; }
+.wm-header .eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  margin: 0 0 8px;
+}
+.wm-header h1 {
+  font-size: 34px;
+  font-weight: 540;
+  letter-spacing: -0.018em;
+  line-height: 1.12;
+  margin: 0 0 14px;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.wm-header .lead {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-95);
+  margin: 0;
+  text-wrap: pretty;
+}
+.wm-intro {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink-95);
+  margin: 0 auto 36px;
+  max-width: 820px;
+  text-wrap: pretty;
+}
 
-/* Editorial text columns at the start and end of the page sit in a
-   centered narrower column inside the 1240px container; data-heavy
-   blocks (stack, capability grid, signals) span the full container. */
-header { max-width: 820px; margin: 0 auto 48px; }
-header .eyebrow { font-family: var(--font-display); font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 16px; }
-header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); }
-header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0; }
+/* === LAYER === */
+.layer { margin: 32px auto; max-width: 820px; }
+.layer-head {
+  margin: 0 0 14px;
+  border-top: 2px solid var(--ink);
+  padding-top: 12px;
+}
+.layer-head .layer-name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.layer-head .layer-hint {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--ink-60);
+  line-height: 1.55;
+  margin: 0;
+  text-wrap: pretty;
+}
 
-.intro { max-width: 820px; margin: 0 auto 56px; }
-.intro h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 16px; }
-.intro p { font-size: 0.95rem; line-height: 1.7; margin: 0 0 14px; color: var(--fg); }
-.intro p strong { font-weight: 500; }
-.intro .pull { padding: 14px 0 14px 18px; margin: 22px 0; font-size: 1.0rem; color: var(--fg); border-left: 2px solid var(--fg); line-height: 1.65; }
+/* === CARD (shared shape) === */
+.card {
+  padding: 14px 18px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  background: var(--paper);
+  cursor: pointer;
+  transition: border-color 0.15s, opacity 0.2s;
+}
+.card:hover { border-color: var(--ink); }
+.card.differentiated { border-color: var(--k-commitment); }
+.card.is-focused { box-shadow: inset 0 0 0 1px var(--ink); border-color: var(--ink); }
+.card.dimmed { opacity: 0.30; }
+.card .card-eyebrow {
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  margin: 0 0 4px;
+}
+.card.differentiated .card-eyebrow { color: var(--k-commitment); }
+.card .card-name {
+  font-size: 14px;
+  font-weight: 540;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  margin: 0 0 4px;
+  text-wrap: pretty;
+}
+.card .card-meta {
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--ink-60);
+  margin: 4px 0;
+  letter-spacing: -0.005em;
+  line-height: 1.4;
+}
 
-/* Stack — vertical flow of layer blocks, each in the same 820px
-   centered column as the rest of the page so nothing escapes the
-   editorial grid. */
-.stack { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; }
-.stack-layer { padding: 36px 0 36px; border-top: 1px solid var(--fg-hairline); }
-.stack-layer .layer-head { margin-bottom: 18px; }
-.stack-layer .layer-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; padding-left: 14px; border-left: 2px solid var(--commodity); margin-bottom: 10px; }
-.stack-layer.layer-stakeholders   .layer-name { border-left-color: var(--layer-stakeholder-accent); }
-.stack-layer.layer-interfaces     .layer-name { border-left-color: var(--layer-interface-accent); }
-.stack-layer.layer-intelligence   .layer-name { border-left-color: var(--layer-intelligence-accent); }
-.stack-layer.layer-worldmodel     .layer-name { border-left-color: var(--layer-worldmodel-accent); }
-.stack-layer.layer-capabilities   .layer-name { border-left-color: var(--layer-capability-accent); }
-.stack-layer .layer-hint { font-size: 0.92rem; color: var(--fg-muted); line-height: 1.65; padding-left: 16px; }
-.stack-layer .layer-body { }
-.layer-explainer { font-size: 0.95rem; color: var(--fg); line-height: 1.7; margin: 0 0 12px; max-width: 720px; }
-.layer-explainer strong { font-weight: 500; }
-.layer-explainer em { font-style: italic; color: var(--fg); }
-.il-section-hint { font-size: 0.85rem; color: var(--fg-muted); margin-bottom: 12px; line-height: 1.6; max-width: 720px; }
+/* === INTERFACES row === */
+.if-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.if-card .card-state {
+  font-size: 11.5px;
+  line-height: 1.5;
+  margin: 4px 0 0;
+  color: var(--ink-95);
+}
+.if-card .state-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-40);
+  margin-right: 5px;
+}
 
-/* All clickable items render as cards with a full hairline border.
-   Hover signal is uniform across the page: the border darkens to fg.
-   The moat accent on capability cards is the full border in the
-   data-viz coral, not just a left rule. */
-.stakeholder-row, .interface-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
-.stakeholder { background: transparent; color: var(--fg); padding: 7px 14px; border: 1px solid var(--fg-hairline); border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: border-color 0.15s; }
-.stakeholder:hover { border-color: var(--fg); }
+/* === CAPABILITIES grid (dominant) === */
+.cap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.cap-card .card-contract {
+  font-size: 10.5px;
+  color: var(--ink-95);
+  font-family: ui-monospace, SF Mono, Menlo, monospace;
+  line-height: 1.5;
+  margin: 6px 0 0;
+  word-break: break-word;
+}
+.cap-card .card-contract .arrow { color: var(--ink-40); padding: 0 4px; }
+.cap-card .wrapper-status {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0 0;
+  align-items: center;
+}
+.cap-card .wrapper-status .ws-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  border: 1px solid var(--ink-40);
+  background: var(--paper);
+}
+.cap-card .wrapper-status .ws-dot.met       { background: var(--ink); border-color: var(--ink); }
+.cap-card .wrapper-status .ws-dot.partial   { background: var(--ink-40); border-color: var(--ink-40); }
+.cap-card .wrapper-status .ws-label {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-40);
+  margin-left: 6px;
+}
 
-.interface { background: transparent; border: 1px solid var(--fg-hairline); border-radius: 4px; padding: 7px 14px; font-size: 0.85rem; cursor: pointer; color: var(--fg); transition: border-color 0.15s; }
-.interface:hover { border-color: var(--fg); }
+/* === Intelligence layer annotation === */
+.intelligence-annotation {
+  text-align: center;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--ink-60);
+  letter-spacing: -0.005em;
+  line-height: 1.55;
+  margin: 36px auto;
+  max-width: 820px;
+  padding: 10px 14px;
+  border-top: 1px dashed var(--hairline);
+  border-bottom: 1px dashed var(--hairline);
+}
+.intelligence-annotation strong {
+  font-style: normal;
+  font-weight: 540;
+  color: var(--ink);
+}
 
-/* Intelligence layer / world model — two columns side-by-side inside
-   the 820px column, because each layer is a comparison: held-by-
-   people-today vs could-be-held-by-systems on the intelligence layer,
-   about-itself vs about-the-people-it-serves on the world model. The
-   contrast is the point. */
-.il-grid, .wm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
-@media (max-width: 720px) { .il-grid, .wm-grid { grid-template-columns: 1fr; gap: 16px; } }
-.il-section .il-title, .wm-section .wm-title { font-family: var(--font-display); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 10px; font-weight: 500; }
-.il-card, .wm-card { padding: 14px 16px; margin-bottom: 10px; font-size: 0.88rem; border: 1px solid var(--fg-hairline); border-radius: 4px; transition: border-color 0.15s; cursor: pointer; }
-.il-card:hover, .wm-card:hover { border-color: var(--fg); }
-.il-card.potential { border-color: var(--fg); }
-.il-card .trigger, .wm-card .label { font-weight: 500; margin-bottom: 4px; color: var(--fg); }
-.il-card .meta, .wm-card .meta { font-size: 0.78rem; color: var(--fg-muted); }
+/* === World model (2 columns: organization + stakeholder) === */
+.wm-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.wm-two h4 {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  margin: 0 0 4px;
+}
+.wm-two .col-hint {
+  font-size: 11px;
+  font-style: italic;
+  color: var(--ink-60);
+  line-height: 1.5;
+  margin: 0 0 10px;
+  text-wrap: pretty;
+}
+.wm-two ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--ink-95);
+}
+.wm-two li {
+  padding: 6px 10px;
+  border-left: 2px solid var(--hairline);
+  margin: 0 0 4px;
+}
+.wm-two li.maturity-low    { border-left-color: var(--k-commitment); }
+.wm-two li.maturity-medium { border-left-color: var(--ink-40); }
+.wm-two li.maturity-high   { border-left-color: var(--ink); }
+.wm-two li.clickable {
+  cursor: pointer;
+  transition: background 0.15s, border-left-width 0.15s;
+}
+.wm-two li.clickable:hover { background: var(--paper); border-left-width: 3px; }
+.wm-two li.clickable.is-focused { background: var(--paper); border-left-width: 3px; }
+.wm-two li em { font-style: italic; color: var(--ink-60); font-weight: 380; font-size: 10.5px; }
+.wm-two .where { font-size: 10.5px; color: var(--ink-60); font-style: italic; }
+.wm-two .empty {
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--ink-40);
+  line-height: 1.55;
+}
 
-/* Capability cards — grid that fits inside the 820px column. */
-.cap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
-.cap-card { padding: 14px 16px; cursor: pointer; transition: border-color 0.15s; border: 1px solid var(--fg-hairline); border-radius: 4px; }
-.cap-card.moat { border-color: var(--moat); }
-.cap-card:hover { border-color: var(--fg); }
-.cap-card.moat:hover { border-color: var(--moat); }
-.cap-card .name { font-weight: 500; font-size: 0.95rem; font-family: var(--font-display); letter-spacing: -0.01em; margin-bottom: 6px; color: var(--fg); }
-.cap-card .desc { font-size: 0.85rem; color: var(--fg-muted); line-height: 1.55; margin-bottom: 10px; }
-.cap-card .meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.7rem; }
-.cap-card .pill { background: transparent; border: 1px solid var(--fg-hairline); padding: 1px 8px; border-radius: 999px; color: var(--fg-muted); font-weight: 500; letter-spacing: 0.02em; }
-.cap-card .pill.moat { background: var(--moat); color: var(--fg); border-color: var(--moat); }
-.cap-card .pill.commodity { color: var(--fg-muted); }
+/* === Roadmap (also used inside the Analysis modal) === */
+.modal-roadmap { margin: 24px 0 0; }
+.modal-section-head {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  margin: 0 0 6px;
+}
+.modal-section-hint {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-60);
+  line-height: 1.55;
+  margin: 0 0 14px;
+  text-wrap: pretty;
+}
+.moves-list {
+  list-style: none;
+  counter-reset: move;
+  padding: 0;
+  margin: 0 0 8px;
+}
+.moves-list li {
+  counter-increment: move;
+  padding: 14px 0 14px 36px;
+  border-top: 1px solid var(--hairline-2);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-95);
+  position: relative;
+  text-wrap: pretty;
+}
+.moves-list li:last-child { border-bottom: 1px solid var(--hairline-2); }
+.moves-list li::before {
+  content: counter(move, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 16px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink-40);
+}
+.moves-list li strong { color: var(--ink); font-weight: 540; }
+.roadmap-section { margin: 56px auto 32px; max-width: 820px; }
+.roadmap-section h2 {
+  font-size: 18px;
+  font-weight: 540;
+  letter-spacing: -0.012em;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+.roadmap-section .lead {
+  font-size: 13.5px;
+  color: var(--ink-95);
+  line-height: 1.55;
+  margin: 0 0 20px;
+  text-wrap: pretty;
+}
+.roadmap-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.roadmap-card { border-color: var(--k-commitment); }
+.roadmap-card .card-trigger {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-95);
+  margin: 4px 0 8px;
+  text-wrap: pretty;
+}
+.roadmap-card .card-trigger strong { font-weight: 540; }
+.roadmap-card .card-needed {
+  font-size: 11.5px;
+  color: var(--ink-60);
+  font-style: italic;
+  line-height: 1.55;
+  margin: 0;
+  text-wrap: pretty;
+}
 
-/* Shared principle — editorial pull, no filled background. Centered. */
-.principle-block { max-width: 820px; margin: 56px auto; padding: 18px 0 18px 18px; border-left: 2px solid var(--moat); }
-.principle-block .label { font-family: var(--font-display); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.10em; color: var(--ds-coral); font-weight: 600; margin-bottom: 8px; }
-.principle-block .text { font-size: 0.95rem; color: var(--fg); line-height: 1.65; }
+/* === Decisions === */
+.decisions-section { margin: 56px auto 80px; max-width: 820px; }
+.decisions-section h2 {
+  font-size: 18px;
+  font-weight: 540;
+  letter-spacing: -0.012em;
+  margin: 0 0 8px;
+}
+.decisions-section .lead {
+  font-size: 13.5px;
+  color: var(--ink-95);
+  line-height: 1.55;
+  margin: 0 0 20px;
+}
+.decisions-section ol {
+  list-style: none;
+  counter-reset: dec;
+  padding: 0;
+  margin: 0;
+}
+.decisions-section li {
+  counter-increment: dec;
+  padding: 18px 0;
+  border-top: 1px solid var(--hairline-2);
+}
+.decisions-section li::before {
+  content: counter(dec, decimal-leading-zero) " ";
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink-40);
+}
+.decisions-section .question {
+  font-size: 14.5px;
+  font-weight: 540;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  margin: 0 0 8px;
+  display: inline;
+}
+.decisions-section .answer {
+  font-size: 13px;
+  color: var(--ink-95);
+  line-height: 1.65;
+  margin: 8px 0;
+  text-wrap: pretty;
+}
+.decisions-section .source {
+  font-size: 10.5px;
+  color: var(--ink-60);
+  font-family: ui-monospace, SF Mono, Menlo, monospace;
+  margin: 8px 0 0;
+}
 
-/* Failure signals — same 820px column. Cards stack vertically. */
-.signals-block { max-width: 820px; margin: 56px auto 0; padding-top: 36px; border-top: 1px solid var(--fg-hairline); }
-.signals-block h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 16px; }
-.signals-block > p.layer-explainer { margin: 0 0 24px; }
-.signals-grid { display: flex; flex-direction: column; gap: 12px; }
-.signal-card { padding: 14px 16px; cursor: pointer; transition: border-color 0.15s; border: 1px solid var(--fg-hairline); border-radius: 4px; }
-.signal-card:hover { border-color: var(--fg); }
-.signal-card .trigger { font-weight: 500; font-size: 0.95rem; margin-bottom: 6px; color: var(--fg); }
-.signal-card .missing { font-size: 0.8rem; color: var(--fg-muted); font-family: ui-monospace, SF Mono, Menlo, monospace; }
-
-/* Decisions section — centered editorial column, same as value-map and ai-exposure. */
-.section { max-width: 820px; margin: 96px auto 0; padding-top: 40px; border-top: 1px solid var(--fg-hairline); }
-.section h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 20px; }
-.section p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; max-width: 720px; }
-.section .lead { font-size: 0.95rem; color: var(--fg-muted); line-height: 1.65; max-width: 720px; margin: 0 0 28px; }
-
-.decision { margin-bottom: 32px; }
-.decision .question { font-family: var(--font-display); font-size: 1.05rem; font-weight: 500; color: var(--fg); margin: 0 0 8px; letter-spacing: -0.01em; }
-.decision .answer { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 6px; max-width: 720px; }
-.decision .source { font-size: 0.78rem; color: var(--fg-muted); font-family: ui-monospace, SF Mono, Menlo, monospace; }
-
-/* Popover — same pattern as value-map and ai-exposure. */
-.popover { position: absolute; display: none; max-width: 380px; min-width: 240px; padding: 14px 18px 16px; background: #FFFFFF; border: 1px solid var(--fg-hairline); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); z-index: 100; animation: pn-pop 0.18s ease; }
+/* === Popover === */
+.popover {
+  position: absolute;
+  display: none;
+  max-width: 420px;
+  min-width: 280px;
+  padding: 16px 20px 18px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  box-shadow: 0 4px 18px rgba(28,26,22,0.12);
+  z-index: 150; /* above modal scrim (100) so popovers in Analysis are visible */
+}
 .popover.open { display: block; }
-.popover .close { position: absolute; top: 6px; right: 8px; background: transparent; border: 0; cursor: pointer; font-size: 1.1rem; color: var(--fg-muted); padding: 0; line-height: 1; }
-.popover .close:hover { color: var(--fg); }
-.popover .eyebrow { font-family: var(--font-display); font-size: 0.62rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 6px; color: var(--fg-muted); }
-.popover .eyebrow.moat { color: var(--ds-coral); }
-.popover h3 { font-family: var(--font-display); font-size: 1.0rem; font-weight: 500; letter-spacing: -0.015em; margin: 0 0 8px; line-height: 1.25; color: var(--fg); padding-right: 18px; }
-.popover .desc { font-size: 0.85rem; line-height: 1.55; color: var(--fg); margin: 0 0 10px; }
-.popover .section-label { font-family: var(--font-display); font-size: 0.62rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; font-weight: 500; margin-top: 12px; margin-bottom: 4px; }
-.popover .contract { padding: 8px 10px; background: var(--bg-alt); border-radius: 3px; margin-top: 6px; }
-.popover .contract dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 0.78rem; }
-.popover .contract dt { color: var(--fg-muted); margin: 0; }
-.popover .contract dd { margin: 0; color: var(--fg); }
-.popover .pill-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
-.popover .pill { background: transparent; border: 1px solid var(--fg-hairline); padding: 1px 8px; border-radius: 999px; font-size: 0.7rem; color: var(--fg); }
-.popover .citation { font-size: 0.7rem; color: var(--fg-muted); font-family: ui-monospace, SF Mono, Menlo, monospace; padding-top: 8px; margin-top: 10px; border-top: 1px solid var(--fg-hairline); }
+.popover .pop-close {
+  position: absolute;
+  top: 8px; right: 10px;
+  background: transparent; border: 0;
+  font: inherit; font-size: 16px;
+  color: var(--ink-40);
+  cursor: pointer;
+  padding: 2px 6px; line-height: 1;
+}
+.popover .pop-close:hover { color: var(--ink); }
+.popover .pop-eyebrow {
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--ink-60);
+  margin: 0 0 4px;
+}
+.popover .pop-eyebrow.differentiated { color: var(--k-commitment); }
+.popover h3 {
+  font-size: 14.5px;
+  font-weight: 540;
+  letter-spacing: -0.012em;
+  margin: 0 0 8px;
+  padding-right: 24px;
+  text-wrap: pretty;
+  color: var(--ink);
+}
+.popover .desc {
+  font-size: 12.5px;
+  line-height: 1.55;
+  margin: 0 0 8px;
+  color: var(--ink-95);
+  text-wrap: pretty;
+}
+.popover .desc strong { font-weight: 540; }
+.popover .section-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  margin: 12px 0 4px;
+}
+.popover ul {
+  font-size: 12px;
+  padding-left: 20px;
+  margin: 4px 0;
+  line-height: 1.55;
+  color: var(--ink-95);
+}
+.popover .citation {
+  font-size: 10.5px;
+  color: var(--ink-60);
+  padding: 4px 0 4px 10px;
+  border-left: 1px solid var(--hairline);
+  margin-top: 6px;
+  line-height: 1.5;
+  font-family: ui-monospace, SF Mono, Menlo, monospace;
+  font-style: italic;
+}
+
+@media (max-width: 760px) {
+  .wm-body { padding: max(56px, calc(env(safe-area-inset-top) + 50px)) 14px max(72px, calc(env(safe-area-inset-bottom) + 56px)); }
+  .wm-two { grid-template-columns: 1fr; }
+  .cap-grid { grid-template-columns: 1fr 1fr; }
+  .if-row { grid-template-columns: 1fr 1fr; }
+  .layer { margin: 24px auto; }
+}
 """
 
 
-HTML_TEMPLATE = """<!DOCTYPE html>
+HTML_TEMPLATE = """<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>{title} · world model</title>
+{head_meta}
 <style>{css}</style>
 </head>
 <body>
-  <div class="container">
-    {masthead_html}
 
-    <div class="intro">
-      <p>Behind every org-chart there is a different structure: who the org serves, the surfaces where it reaches them, the way requests get composed into responses, the things the org knows about itself and its world, and the atomic things it can do. The map below reads each layer for this organization and surfaces the pieces that aren't there yet.</p>
-      <div class="pull">The bottom layers are where the value compounds. The top layers are where it gets delivered. The work that lives between them — picking the right things to do and connecting them — is where the cost of keeping everyone aligned shows up today, paid in meeting hours and hand-off attrition. Replacing it with shared knowledge is the move that ages well.</div>
+{dateline}
+
+{top_right}
+
+<main class="wm-body">
+
+  <header class="wm-header">
+    <p class="eyebrow">world model</p>
+    <h1>{org_name}</h1>
+    <p class="lead">{lead_text}</p>
+  </header>
+
+  <p class="wm-intro">{intro_text}</p>
+
+  <section class="layer" id="layer-interfaces">
+    <div class="layer-head">
+      <p class="layer-name">Interfaces</p>
+      <p class="layer-hint">Where customers, partners, vendors meet the studio: meetings, calls, documents. Today these mostly push deliverables out. With AI in the middle, they could also catch what comes back: preferences, complaints, drift signals. Each card shows the contrast between what the surface delivers today and what it could also collect.</p>
     </div>
+    <div class="if-row">{interface_cards}</div>
+  </section>
 
-    <div class="stack">
-
-      <div class="stack-layer layer-stakeholders">
-        <div class="layer-head">
-          <div class="layer-name">Stakeholders</div>
-          <div class="layer-hint">Who the organization serves and who serves it back. Every type both uses something the org offers and contributes something in return — the contribution makes the org better at serving the next person of the same type.</div>
-        </div>
-        <div class="layer-body">
-          <div class="stakeholder-row">{stakeholders_html}</div>
-        </div>
-      </div>
-
-      <div class="stack-layer layer-interfaces">
-        <div class="layer-head">
-          <div class="layer-name">Interfaces</div>
-          <div class="layer-hint">The surfaces where the org meets people — a website, an app, a call, an event, a hand-off. Where work gets delivered, not where its value is made.</div>
-        </div>
-        <div class="layer-body">
-          <div class="interface-row">{interfaces_html}</div>
-        </div>
-      </div>
-
-      <div class="stack-layer layer-intelligence">
-        <div class="layer-head">
-          <div class="layer-name">Intelligence layer</div>
-          <div class="layer-hint">When a request needs more than one thing the org does, the response is composed: the right things, in the right order. Today most of this lives in meetings and hand-offs. The right column is where it could live in shared systems instead.</div>
-        </div>
-        <div class="layer-body">
-          <div class="il-grid">
-            <div class="il-section">
-              <div class="il-title">Held together by people today ({n_current_compositions})</div>
-              <div class="il-section-hint">The compositions the org already runs, paid for in meeting hours and hand-off attrition. Each one is a candidate to move into shared systems.</div>
-              {current_compositions_html}
-            </div>
-            <div class="il-section">
-              <div class="il-title">Could be held together by systems ({n_potential_compositions})</div>
-              <div class="il-section-hint">The compositions that would run automatically if the org's shared knowledge were richer. Long-term moves; each names the precondition that has to land first.</div>
-              {potential_compositions_html}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="stack-layer layer-worldmodel">
-        <div class="layer-head">
-          <div class="layer-name">World model</div>
-          <div class="layer-hint">What the organization knows about itself and the people it serves. The most honest signal is observed behaviour, not declared opinion.</div>
-        </div>
-        <div class="layer-body">
-          <div class="wm-grid">
-            <div class="wm-section">
-              <div class="wm-title">About itself — overall maturity: {company_maturity}</div>
-              {company_observations_html}
-            </div>
-            <div class="wm-section">
-              <div class="wm-title">About the people it serves — {customer_unified_label}</div>
-              {customer_observations_html}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="stack-layer layer-capabilities">
-        <div class="layer-head">
-          <div class="layer-name">Capabilities</div>
-          <div class="layer-hint">The atomic things the org can actually do. Each one is a function: declared input, structured output, service targets, an invocation pattern. Cards framed in <strong style="color: #c47558;">coral</strong> are differentiated for this org — hard to acquire, hard to copy. Cards in plain hairline are necessary but standard across the category.</div>
-        </div>
-        <div class="layer-body">
-          <div class="cap-grid">{capabilities_html}</div>
-        </div>
-      </div>
-
+  <section class="layer" id="layer-capabilities">
+    <div class="layer-head">
+      <p class="layer-name">Capabilities</p>
+      <p class="layer-hint">The things this studio can be asked to do, each with a contract: what goes in, what comes out, who runs it, when it falls short. Coral border marks differentiated craft: work this studio does that nobody else can replicate. Hairline border marks competent practice the category shares. The five dots under each card show how callable that function is today, from informal (a person you have to know) to fully wired (anyone or any system can ask for it).</p>
     </div>
+    <div class="cap-grid">{capability_cards}</div>
+  </section>
 
-    <div class="principle-block">
-      <div class="label">The shared principle</div>
-      <div class="text">Replace hierarchical information routing with a system that accumulates knowledge over time. Every call enriches the shared knowledge; richer knowledge composes better responses; better responses make the next call worth more. A loop that compounds.</div>
+  <p class="intelligence-annotation">Between the memory below and the functions above sits the layer that does the routing: it reads what the studio knows, picks which functions to put together for each request, and writes the outcome back into memory. <strong>AI is what makes this layer possible.</strong></p>
+
+  <section class="layer" id="layer-world-model">
+    <div class="layer-head">
+      <p class="layer-name">World models</p>
+      <p class="layer-hint">{world_model_hint}</p>
     </div>
-
-    <div class="signals-block">
-      <h2>What to build next</h2>
-      <p class="layer-explainer">Each card below names a request the organization would already try to handle, and where the response would fall short because one needed piece of the chain isn't there yet. Each one is a candidate to build. The list comes from the demand the structure already produces — not from a three-year plan made at the top.</p>
-      <div class="signals-grid">{signals_html}</div>
+    <div class="wm-two">
+      <div>
+        <h4>Organization side</h4>
+        <p class="col-hint">What the studio knows about itself: hours, profitability, win rates, how its own work is going. Click any item for where it lives today and what's still missing.</p>
+        {operational_html}
+      </div>
+      <div>
+        <h4>Stakeholder side</h4>
+        <p class="col-hint">What the studio knows about each kind of stakeholder it serves, built up in principle from every past interaction. Click any item for what they get, what they give back, and where the picture sits today.</p>
+        {customer_html}
+      </div>
     </div>
+  </section>
 
-    {decisions_section}
+</main>
 
-    {colophon_html}
-  </div>
+{about_modal_html}
 
-  <div class="popover" id="popover">
-    <button class="close" id="popover-close" aria-label="Close">×</button>
-    <div id="popover-body"></div>
-  </div>
+{decisions_modal_html}
+
+<div class="popover" id="popover" role="dialog" aria-modal="false">
+  <button class="pop-close" id="pop-close" aria-label="Close">×</button>
+  <div id="pop-body"></div>
+</div>
 
 <script>
-const CAPABILITIES = {capabilities_json};
-const STAKEHOLDERS_BY_TYPE = {stakeholders_index_json};
-const INTERFACES = {interfaces_json};
-const SIGNALS = {signals_json};
-const COMPOSITIONS_CURRENT = {current_compositions_json};
-const COMPOSITIONS_POTENTIAL = {potential_compositions_json};
-const COMPANY_OBSERVATIONS = {company_observations_json};
+{baseline_js}
+</script>
+
+<script>
+const NODES = {nodes_json};
 
 function escapeHtml(s) {{
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({{
@@ -294,475 +629,619 @@ function escapeHtml(s) {{
   }})[c]);
 }}
 
-function pillList(items, cls) {{
-  if (!items || !items.length) return '<span style="color: var(--fg-muted); font-size: 0.78rem;">none</span>';
-  return '<div class="pill-row">' + items.map(i => `<span class="pill ${{cls||''}}">${{escapeHtml(i)}}</span>`).join('') + '</div>';
+function _humanize(s) {{
+  // Title case (each word capitalized): for proper nouns like person names.
+  return (s || '').replace(/[-_]/g, ' ').trim().split(/\\s+/)
+    .map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : '').join(' ');
 }}
 
-function renderCapabilityPopover(c) {{
-  const eyebrow = c.moat_grade === 'moat'
-    ? '<div class="eyebrow moat">capability · differentiated</div>'
-    : '<div class="eyebrow">capability · standard</div>';
-  let html = eyebrow;
-  html += `<h3>${{escapeHtml(c.name)}}</h3>`;
-  if (c.description) html += `<div class="desc">${{escapeHtml(c.description)}}</div>`;
-  html += `<div class="section-label">Contract</div>`;
-  html += `<div class="contract"><dl>`;
-  if (c.input)              html += `<dt>Takes</dt><dd>${{escapeHtml(c.input)}}</dd>`;
-  if (c.output)             html += `<dt>Returns</dt><dd>${{escapeHtml(c.output)}}</dd>`;
-  if (c.invocation_modality) html += `<dt>How called</dt><dd>${{escapeHtml(c.invocation_modality)}}</dd>`;
-  html += `</dl></div>`;
-  if (c.is_callable_by && c.is_callable_by.length) {{
-    html += `<div class="section-label">Can be called by</div>`;
-    html += pillList(c.is_callable_by);
-  }}
-  if (c.current_owners && c.current_owners.length) {{
-    html += `<div class="section-label">Held today by</div>`;
-    html += pillList(c.current_owners);
-  }}
-  if (c.moat_rationale) {{
-    html += `<div class="section-label">${{c.moat_grade === 'moat' ? 'Why differentiated' : 'Why standard'}}</div>`;
-    html += `<div class="desc">${{escapeHtml(c.moat_rationale)}}</div>`;
-  }}
-  if (c._structure_id) {{
-    html += `<div class="citation">${{escapeHtml(c._structure_id)}}</div>`;
-  }}
-  return html;
-}}
-
-function renderStakeholderPopover(stype) {{
-  const data = STAKEHOLDERS_BY_TYPE[stype] || {{}};
-  let html = `<div class="eyebrow">stakeholder</div>`;
-  html += `<h3>${{escapeHtml(stype)}}</h3>`;
-  if (data.description) html += `<div class="desc">${{escapeHtml(data.description)}}</div>`;
-  if (data.what_they_get_from_org) {{
-    html += `<div class="section-label">What they get from the org</div>`;
-    html += `<div class="desc">${{escapeHtml(data.what_they_get_from_org)}}</div>`;
-  }}
-  if (data.what_they_contribute_back) {{
-    html += `<div class="section-label">What they give back</div>`;
-    html += `<div class="desc">${{escapeHtml(data.what_they_contribute_back)}}</div>`;
-  }}
-  if (data.honest_signal) {{
-    html += `<div class="section-label">Most honest signal observed</div>`;
-    html += `<div class="desc">${{escapeHtml(data.honest_signal)}}</div>`;
-  }}
-  if (data.fragmentation) {{
-    html += `<div class="section-label">Where the picture is fragmented</div>`;
-    html += `<div class="desc">${{escapeHtml(data.fragmentation)}}</div>`;
-  }}
-  const invoked = CAPABILITIES.filter(c => (c.is_callable_by || []).includes(stype));
-  if (invoked.length) {{
-    html += `<div class="section-label">What they can call</div>`;
-    html += pillList(invoked.map(c => c.name));
-  }}
-  return html;
-}}
-
-function renderInterfacePopover(idx) {{
-  const ifc = INTERFACES[idx];
-  if (!ifc) return '';
-  let html = `<div class="eyebrow">interface</div>`;
-  html += `<h3>${{escapeHtml(ifc.name)}}</h3>`;
-  if (ifc.description) html += `<div class="desc">${{escapeHtml(ifc.description)}}</div>`;
-  if (ifc.surfaces_capabilities && ifc.surfaces_capabilities.length) {{
-    html += `<div class="section-label">Capabilities it carries</div>`;
-    html += pillList(ifc.surfaces_capabilities);
-  }}
-  if (ifc._structure_id || ifc._structure) {{
-    html += `<div class="citation">${{escapeHtml(ifc._structure_id || ifc._structure)}}</div>`;
-  }}
-  return html;
-}}
-
-function renderSignalPopover(idx) {{
-  const s = SIGNALS[idx];
+function _sentence(s) {{
+  // Sentence case (first letter only): for verb-object capability names.
+  // define-positioning → Define positioning
   if (!s) return '';
-  let html = `<div class="eyebrow">a piece to build</div>`;
-  html += `<h3>${{escapeHtml(s.trigger || '')}}</h3>`;
-  html += `<div class="section-label">What's missing</div>`;
-  html += `<div class="desc">${{escapeHtml(s.missing_capability || '')}}</div>`;
-  if (s.composition_attempted) {{
-    html += `<div class="section-label">What the org would try to do</div>`;
-    if (Array.isArray(s.composition_attempted)) html += pillList(s.composition_attempted);
-    else html += `<div class="desc">${{escapeHtml(s.composition_attempted)}}</div>`;
-  }}
-  if (s.what_would_be_needed) {{
-    html += `<div class="section-label">What it would take to build it</div>`;
-    html += `<div class="desc">${{escapeHtml(s.what_would_be_needed)}}</div>`;
-  }}
-  if (s.structure_evidence) {{
-    html += `<div class="citation">${{escapeHtml(s.structure_evidence)}}</div>`;
-  }}
-  return html;
+  const cleaned = (s + '').replace(/[-_]/g, ' ').trim();
+  if (!cleaned) return '';
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }}
 
-function renderCompositionPopover(idx, kind) {{
-  const c = (kind === 'current' ? COMPOSITIONS_CURRENT : COMPOSITIONS_POTENTIAL)[idx];
-  if (!c) return '';
-  const eb = kind === 'current' ? 'held together by people today' : 'could be held together by systems';
-  let html = `<div class="eyebrow">${{eb}}</div>`;
-  html += `<h3>${{escapeHtml(c.trigger || '')}}</h3>`;
-  if (c.description) html += `<div class="desc">${{escapeHtml(c.description)}}</div>`;
-  const caps = c.capabilities_composed || c.capabilities || [];
-  if (caps.length) {{
-    html += `<div class="section-label">What gets composed</div>`;
-    html += pillList(caps);
-  }}
-  if (c.failure_modes) {{
-    html += `<div class="section-label">What breaks today</div>`;
-    html += `<div class="desc">${{escapeHtml(c.failure_modes)}}</div>`;
-  }}
-  if (c.precondition) {{
-    html += `<div class="section-label">What has to land first</div>`;
-    html += `<div class="desc">${{escapeHtml(c.precondition)}}</div>`;
-  }}
-  return html;
+function _list(arr, asSentence) {{
+  if (!arr || !arr.length) return '';
+  const fmt = asSentence ? _sentence : (x => x);
+  return '<ul>' + arr.map(x => `<li>${{escapeHtml(fmt(x))}}</li>`).join('') + '</ul>';
 }}
 
-function renderCompanyObservationPopover(idx) {{
-  const o = COMPANY_OBSERVATIONS[idx];
-  if (!o) return '';
-  let html = `<div class="eyebrow">what the org knows about itself</div>`;
-  html += `<h3>${{escapeHtml(o.dimension || '')}}</h3>`;
-  if (o.lives_in) {{
-    html += `<div class="section-label">Where this knowledge lives today</div>`;
-    html += `<div class="desc">${{escapeHtml(o.lives_in)}}</div>`;
+function renderCapabilityPopover(n) {{
+  const moat = n.moat_grade === 'moat';
+  const eyebrowCls = moat ? 'pop-eyebrow differentiated' : 'pop-eyebrow';
+  const eyebrowText = moat ? 'differentiated' : 'standard';
+  let h = `<p class="${{eyebrowCls}}">${{escapeHtml(eyebrowText)}}</p>`;
+  h += `<h3>${{escapeHtml(_sentence(n.name))}}</h3>`;
+  if (n.description) h += `<p class="desc">${{escapeHtml(n.description)}}</p>`;
+  if (n.input || n.output) {{
+    h += `<div class="section-label">Contract</div>`;
+    if (n.input)               h += `<p class="desc"><strong>Takes:</strong> ${{escapeHtml(n.input)}}</p>`;
+    if (n.output)              h += `<p class="desc"><strong>Returns:</strong> ${{escapeHtml(n.output)}}</p>`;
+    if (n.slo_targets)         h += `<p class="desc"><strong>Reliability target:</strong> ${{escapeHtml(n.slo_targets)}}</p>`;
+    if (n.regulatory_constraints && n.regulatory_constraints.toLowerCase() !== 'none') {{
+      h += `<p class="desc"><strong>Regulatory:</strong> ${{escapeHtml(n.regulatory_constraints)}}</p>`;
+    }}
+    if (n.invocation_modality) h += `<p class="desc"><strong>How called:</strong> ${{escapeHtml(n.invocation_modality)}}</p>`;
   }}
-  if (o.maturity) {{
-    html += `<div class="section-label">How mature the picture is</div>`;
-    html += `<div class="desc">${{escapeHtml(o.maturity)}}</div>`;
+  if (n.current_dri) {{
+    h += `<div class="section-label">Who's on the hook today</div>`;
+    h += `<p class="desc">${{escapeHtml(_humanize(n.current_dri))}}</p>`;
   }}
-  if (o.gaps) {{
-    html += `<div class="section-label">What's missing</div>`;
-    html += `<div class="desc">${{escapeHtml(o.gaps)}}</div>`;
+  if (n.is_callable_by && n.is_callable_by.length) {{
+    h += `<div class="section-label">Who can ask for it</div>`;
+    h += _list(n.is_callable_by.map(_humanize));
   }}
-  return html;
+  if (n.composes_with && n.composes_with.length) {{
+    h += `<div class="section-label">Used together with</div>`;
+    h += _list(n.composes_with, true);
+  }}
+  if (n.exposure_status) {{
+    const e = n.exposure_status;
+    const items = [
+      ['the promise to the customer is written down', e.contract_written],
+      ['one named person is accountable',             e.dri_named],
+      ['anyone in the org can find it',               e.discoverable],
+      ['anyone can ask for it through a known channel', e.invocable_channel],
+      ['the org records when it falls short',         e.failure_log],
+    ];
+    h += `<div class="section-label">How callable today</div>`;
+    h += '<ul>';
+    for (const [label, val] of items) {{
+      const v = (val === true) ? 'yes'
+              : (val === false) ? 'no'
+              : escapeHtml(String(val));
+      h += `<li>${{label}}: <em>${{v}}</em></li>`;
+    }}
+    h += '</ul>';
+  }}
+  if (moat && n.moat_rationale) {{
+    h += `<div class="section-label">Why differentiated</div>`;
+    h += `<p class="desc">${{escapeHtml(n.moat_rationale)}}</p>`;
+  }}
+  if (n._structure_evidence && n._structure_evidence.length) {{
+    for (const e of n._structure_evidence) h += `<div class="citation">${{escapeHtml(e)}}</div>`;
+  }}
+  return h;
 }}
 
-// Popover positioning + click handlers — same shape as value-map and ai-exposure.
-const popoverEl   = document.getElementById('popover');
-const popoverBody = document.getElementById('popover-body');
+function renderInterfacePopover(n) {{
+  let h = `<p class="pop-eyebrow">interface</p>`;
+  h += `<h3>${{escapeHtml(n.name)}}</h3>`;
+  if (n.description) h += `<p class="desc">${{escapeHtml(n.description)}}</p>`;
+  if (n.today_state) {{
+    h += `<div class="section-label">Today</div>`;
+    h += `<p class="desc">${{escapeHtml(n.today_state)}}</p>`;
+  }}
+  if (n.signals_lost_today) {{
+    h += `<div class="section-label">What passes through unrecorded today</div>`;
+    h += `<p class="desc">${{escapeHtml(n.signals_lost_today)}}</p>`;
+  }}
+  if (n.after_state_hint) {{
+    h += `<div class="section-label">After the move</div>`;
+    h += `<p class="desc">${{escapeHtml(n.after_state_hint)}}</p>`;
+  }}
+  if (n.surfaces_capabilities && n.surfaces_capabilities.length) {{
+    h += `<div class="section-label">Surfaces</div>`;
+    h += _list(n.surfaces_capabilities, true);
+  }}
+  return h;
+}}
+
+function renderRoadmapPopover(n) {{
+  let h = `<p class="pop-eyebrow differentiated">missing capability</p>`;
+  h += `<h3>${{escapeHtml(_sentence(n.missing_capability || '?'))}}</h3>`;
+  if (n.trigger) {{
+    h += `<div class="section-label">When this happens</div>`;
+    h += `<p class="desc">${{escapeHtml(n.trigger)}}</p>`;
+  }}
+  if (n.composition_attempted && n.composition_attempted.length) {{
+    h += `<div class="section-label">Composition the layer would attempt</div>`;
+    h += _list(n.composition_attempted, true);
+  }}
+  if (n.what_would_be_needed) {{
+    h += `<div class="section-label">What it would take to close</div>`;
+    h += `<p class="desc">${{escapeHtml(n.what_would_be_needed)}}</p>`;
+  }}
+  if (n.structure_evidence) h += `<div class="citation">${{escapeHtml(n.structure_evidence)}}</div>`;
+  return h;
+}}
+
+function renderOperationalPopover(n) {{
+  let h = `<p class="pop-eyebrow">what the org tracks about its own work</p>`;
+  h += `<h3>${{escapeHtml(n.dimension || '?')}}</h3>`;
+  if (n.lives_in) {{
+    h += `<div class="section-label">Where it lives today</div>`;
+    h += `<p class="desc">${{escapeHtml(n.lives_in)}}</p>`;
+  }}
+  if (n.maturity) {{
+    h += `<div class="section-label">How mature the picture is</div>`;
+    h += `<p class="desc"><strong>${{escapeHtml(n.maturity)}}.</strong></p>`;
+  }}
+  if (n.gaps) {{
+    h += `<div class="section-label">What's still missing</div>`;
+    h += `<p class="desc">${{escapeHtml(n.gaps)}}</p>`;
+  }}
+  return h;
+}}
+
+function renderPerCallerPopover(n) {{
+  let h = `<p class="pop-eyebrow">what the org tracks about this stakeholder</p>`;
+  h += `<h3>${{escapeHtml(_humanize(n.type || '?'))}}</h3>`;
+  if (n.description) h += `<p class="desc">${{escapeHtml(n.description)}}</p>`;
+  if (n.what_they_get_from_org) {{
+    h += `<div class="section-label">What they get from the org</div>`;
+    h += `<p class="desc">${{escapeHtml(n.what_they_get_from_org)}}</p>`;
+  }}
+  if (n.what_they_contribute_back) {{
+    h += `<div class="section-label">What they give back</div>`;
+    h += `<p class="desc">${{escapeHtml(n.what_they_contribute_back)}}</p>`;
+  }}
+  if (n.honest_signal) {{
+    h += `<div class="section-label">The metric to weigh first</div>`;
+    h += `<p class="desc">${{escapeHtml(n.honest_signal)}}</p>`;
+  }}
+  if (n.fragmentation) {{
+    h += `<div class="section-label">Where the picture currently sits</div>`;
+    h += `<p class="desc">${{escapeHtml(n.fragmentation)}}</p>`;
+  }}
+  if (n.current_maturity) {{
+    h += `<div class="section-label">How mature</div>`;
+    h += `<p class="desc"><strong>${{escapeHtml(n.current_maturity)}}.</strong></p>`;
+  }}
+  return h;
+}}
+
+const RENDERERS = {{
+  capability:  renderCapabilityPopover,
+  interface:   renderInterfacePopover,
+  roadmap:     renderRoadmapPopover,
+  operational: renderOperationalPopover,
+  per_caller:  renderPerCallerPopover,
+}};
+
+const popoverEl = document.getElementById('popover');
+const popoverBody = document.getElementById('pop-body');
 
 function showPopover(html, anchorRect) {{
-  // Open the popover BELOW the clicked element, centered horizontally
-  // on it. If there's not enough room below, flip to above. Always
-  // clamped inside the viewport. This keeps the popover predictably
-  // close to what was clicked, instead of jumping to the left or right
-  // margin depending on screen width.
   popoverBody.innerHTML = html;
   const margin = 12;
   popoverEl.style.left = '0px';
-  popoverEl.style.top  = '0px';
+  popoverEl.style.top = '0px';
   popoverEl.classList.add('open');
   const r = popoverEl.getBoundingClientRect();
   const anchorCenterX = (anchorRect.left + anchorRect.right) / 2;
-  const viewportRight  = window.scrollX + window.innerWidth;
+  const viewportRight = window.scrollX + window.innerWidth;
   const viewportBottom = window.scrollY + window.innerHeight;
-  // Horizontal: centered on anchor, clamped to viewport.
   let x = anchorCenterX - r.width / 2;
   if (x + r.width > viewportRight - margin) x = viewportRight - r.width - margin;
   if (x < window.scrollX + margin) x = window.scrollX + margin;
-  // Vertical: below the anchor by default; if no room, flip above.
   let y = anchorRect.bottom + margin;
   if (y + r.height > viewportBottom - margin) {{
     const above = anchorRect.top - margin - r.height;
     if (above >= window.scrollY + margin) y = above;
-    else y = viewportBottom - r.height - margin;  // last resort: bottom-clamp
+    else y = viewportBottom - r.height - margin;
   }}
   popoverEl.style.left = x + 'px';
-  popoverEl.style.top  = y + 'px';
+  popoverEl.style.top = y + 'px';
 }}
 
 function hidePopover() {{
   popoverEl.classList.remove('open');
+  document.querySelectorAll('.card.is-focused').forEach(el => el.classList.remove('is-focused'));
 }}
 
-function showFor(target, html) {{
-  const r = target.getBoundingClientRect();
-  showPopover(html, {{
-    left:   r.left   + window.scrollX,
-    right:  r.right  + window.scrollX,
-    top:    r.top    + window.scrollY,
-    bottom: r.bottom + window.scrollY,
+document.querySelectorAll('[data-id]').forEach(el => {{
+  el.addEventListener('click', (e) => {{
+    e.stopPropagation();
+    const id = el.dataset.id;
+    const node = NODES[id];
+    if (!node) return;
+    const renderer = RENDERERS[node._band];
+    if (!renderer) return;
+    hidePopover();
+    el.classList.add('is-focused');
+    const r = el.getBoundingClientRect();
+    showPopover(renderer(node), {{
+      left:   r.left + window.scrollX,
+      right:  r.right + window.scrollX,
+      top:    r.top + window.scrollY,
+      bottom: r.bottom + window.scrollY,
+    }});
   }});
-}}
+}});
 
 document.addEventListener('click', (e) => {{
-  let n = e.target;
-  while (n && n.nodeType === 1) {{
-    if (n.classList && n.classList.contains('cap-card')) {{
-      const c = CAPABILITIES.find(x => x.name === n.dataset.name);
-      if (c) showFor(n, renderCapabilityPopover(c));
-      return;
-    }}
-    if (n.classList && n.classList.contains('stakeholder')) {{
-      showFor(n, renderStakeholderPopover(n.dataset.type));
-      return;
-    }}
-    if (n.classList && n.classList.contains('interface')) {{
-      showFor(n, renderInterfacePopover(parseInt(n.dataset.idx, 10)));
-      return;
-    }}
-    if (n.classList && n.classList.contains('signal-card')) {{
-      showFor(n, renderSignalPopover(parseInt(n.dataset.idx, 10)));
-      return;
-    }}
-    if (n.classList && n.classList.contains('il-card')) {{
-      showFor(n, renderCompositionPopover(parseInt(n.dataset.idx, 10), n.dataset.kind));
-      return;
-    }}
-    if (n.classList && n.classList.contains('wm-card')) {{
-      if (n.dataset.wmKind === 'company') {{
-        showFor(n, renderCompanyObservationPopover(parseInt(n.dataset.idx, 10)));
-      }} else if (n.dataset.wmKind === 'customer') {{
-        // Customer-side wm-cards are stakeholder summaries — re-use the
-        // stakeholder popover so the leader sees the full picture.
-        showFor(n, renderStakeholderPopover(n.dataset.type));
-      }}
-      return;
-    }}
-    if (n.id === 'popover') return;  // click inside the popover, leave it open
-    n = n.parentNode;
-  }}
-  hidePopover();
-}}, true);
-
-document.getElementById('popover-close').addEventListener('click', hidePopover);
+  if (!e.target.closest('[data-id], #popover')) hidePopover();
+}});
+document.getElementById('pop-close').addEventListener('click', hidePopover);
 document.addEventListener('keydown', (e) => {{ if (e.key === 'Escape') hidePopover(); }});
 </script>
+
 </body>
 </html>"""
 
 
-def render_html(d: dict, title: str) -> str:
-    caps = d.get("capabilities", [])
-    interfaces = d.get("interfaces", [])
-    signals = d.get("failure_signals", [])
-    il = d.get("intelligence_layer", {}) or {}
-    cur_comp = il.get("current_human_compositions", []) or []
-    pot_comp = il.get("potential_compositions", []) or []
-    company = d.get("world_model_company", {}) or {}
-    customer = d.get("world_model_customer", {}) or {}
+# ── builders ─────────────────────────────────────────────────────
 
-    # Stakeholder set: union of is_callable_by across capabilities + customer side
-    stakeholder_types: list[str] = []
-    seen: set[str] = set()
-    for c in caps:
-        for t in c.get("is_callable_by", []) or []:
-            if t not in seen:
-                stakeholder_types.append(t)
-                seen.add(t)
-    for s in customer.get("by_stakeholder", []) or []:
-        t = s.get("type", "")
-        if t and t not in seen:
-            stakeholder_types.append(t)
-            seen.add(t)
 
-    # Stakeholder index for modal
-    stakeholders_index = {}
-    for s in customer.get("by_stakeholder", []) or []:
-        stakeholders_index[s.get("type", "")] = s
-
-    stakeholders_html = "\n".join(
-        f'<div class="stakeholder" data-type="{escape(t)}">{escape(t)}</div>'
-        for t in stakeholder_types
+def _interface_card(it: dict) -> str:
+    """Card for the Interfaces row, two states (today / after)."""
+    name = it.get("name", "?")
+    today = (it.get("today_state") or it.get("description") or "").strip()
+    after = (it.get("after_state_hint") or "").strip()
+    if_id = "if:" + (it.get("_structure_id") or name)
+    today_html = (
+        f'<p class="card-state"><span class="state-label">today</span>{escape(today[:120])}</p>'
+        if today else ""
+    )
+    after_html = (
+        f'<p class="card-state"><span class="state-label">after</span>{escape(after[:120])}</p>'
+        if after else ""
+    )
+    return (
+        f'<div class="card if-card" data-id="{escape(if_id)}">'
+        f'<h3 class="card-name">{escape(name)}</h3>'
+        f'{today_html}'
+        f'{after_html}'
+        f'</div>'
     )
 
-    empty_pill = '<span style="color: var(--fg-muted); font-size: 0.82rem;">— none mapped yet</span>'
 
-    interfaces_html = "\n".join(
-        f'<div class="interface" data-idx="{i}">{escape(ifc.get("name", ""))}</div>'
-        for i, ifc in enumerate(interfaces)
-    ) or empty_pill
+def _wrapper_dots(exposure: dict | None) -> str:
+    """Five dots showing how callable a capability is today.
 
-    def comp_card(c: dict, idx: int, kind: str) -> str:
-        trigger = c.get("trigger", "")
-        cls = "il-card" + (" potential" if kind == "potential" else "")
-        caps_list = c.get("capabilities_composed") or c.get("capabilities") or []
-        caps_meta = " · ".join(caps_list[:3]) + ("…" if len(caps_list) > 3 else "")
-        return (
-            f'<div class="{cls}" data-idx="{idx}" data-kind="{kind}">'
-            f'<div class="trigger">{escape(trigger)}</div>'
-            f'<div class="meta">{escape(caps_meta)}</div>'
-            f'</div>'
+    Each dot is one criterion. Filled = met, half-filled = partial, empty = no.
+    Hover any dot for the plain-language explanation of what that criterion
+    means. The label below counts how many of the five are met.
+    """
+    if not exposure:
+        return ""
+    plain = {
+        "contract_written":   "the promise to the customer is written down",
+        "dri_named":          "one named person is accountable",
+        "discoverable":       "anyone in the org can find it",
+        "invocable_channel":  "anyone can ask for it through a known channel",
+        "failure_log":        "the org records when it falls short",
+    }
+    keys = ["contract_written", "dri_named", "discoverable", "invocable_channel", "failure_log"]
+    dots = []
+    n_met = 0
+    for k in keys:
+        v = exposure.get(k)
+        if v is True:
+            cls = "ws-dot met"; state = "yes"; n_met += 1
+        elif v in ("implicit", "partial", "informal"):
+            cls = "ws-dot partial"; state = "partial"
+        else:
+            cls = "ws-dot"; state = "no"
+        dots.append(
+            f'<span class="{cls}" title="{escape(plain[k])}: {state}"></span>'
         )
+    label = f'<span class="ws-label">callable {n_met}/5</span>'
+    return '<div class="wrapper-status">' + "".join(dots) + label + '</div>'
 
-    current_compositions_html   = "\n".join(comp_card(c, i, "current")   for i, c in enumerate(cur_comp)) or empty_pill
-    potential_compositions_html = "\n".join(comp_card(c, i, "potential") for i, c in enumerate(pot_comp)) or empty_pill
 
-    company_observations_html = "\n".join(
-        f'<div class="wm-card" data-wm-kind="company" data-idx="{i}">'
-        f'<div class="label">{escape(o.get("dimension", ""))}</div>'
-        f'<div class="meta">lives in {escape(o.get("lives_in", "?"))} · {escape(o.get("maturity", "?"))} maturity</div></div>'
-        for i, o in enumerate(company.get("observations", []) or [])
-    ) or empty_pill
-
-    customer_observations_html = "\n".join(
-        f'<div class="wm-card" data-wm-kind="customer" data-type="{escape(s.get("type", ""))}">'
-        f'<div class="label">{escape(s.get("type", ""))}</div>'
-        f'<div class="meta">honest signal: {escape((s.get("honest_signal") or "?")[:70])}{"…" if len(s.get("honest_signal","")) > 70 else ""} · '
-        f'{escape(s.get("current_maturity", "?"))} maturity</div></div>'
-        for s in (customer.get("by_stakeholder", []) or [])
-    ) or empty_pill
-
-    company_maturity = company.get("overall_maturity", "?")
-    customer_unified = customer.get("is_unified", False)
-    customer_unified_label = "one unified picture" if customer_unified else "fragmented across teams"
-
-    def cap_card(c: dict) -> str:
-        moat = c.get("moat_grade", "")
-        cls = "cap-card" + (" moat" if moat == "moat" else "")
-        owners = c.get("current_owners") or []
-        owners_pill = f'<span class="pill">{escape(", ".join(owners[:2]))}{"…" if len(owners) > 2 else ""}</span>' if owners else ""
-        moat_label = "differentiated" if moat == "moat" else ("standard" if moat == "commodity" else "")
-        moat_pill = f'<span class="pill {moat}">{escape(moat_label)}</span>' if moat_label else ""
-        return (
-            f'<div class="{cls}" data-name="{escape(c.get("name", ""))}">'
-            f'<div class="name">{escape(c.get("name", ""))}</div>'
-            f'<div class="desc">{escape(c.get("description", ""))}</div>'
-            f'<div class="meta">{moat_pill}{owners_pill}</div>'
-            f'</div>'
+def _capability_card(c: dict) -> str:
+    moat = c.get("moat_grade") == "moat"
+    cls = "differentiated" if moat else "standard"
+    tag = "differentiated" if moat else "standard"
+    name = c.get("name", "?")
+    display_name = _sentence(name)  # define-positioning → Define positioning
+    dri = (c.get("current_dri") or (c.get("current_owners") or [""])[0] or "").strip()
+    in_ = (c.get("input") or "").strip()
+    out = (c.get("output") or "").strip()
+    contract_html = ""
+    if in_ or out:
+        contract_html = (
+            f'<p class="card-contract">'
+            f'{escape(in_[:48])}'
+            f'<span class="arrow">→</span>'
+            f'{escape(out[:48])}'
+            f'</p>'
         )
+    dri_html = (
+        f'<p class="card-meta">Run by {escape(_human(dri))}</p>'
+        if dri else ""
+    )
+    cap_id = "cap:" + (c.get("_structure_id") or name)
+    return (
+        f'<div class="card cap-card {cls}" data-id="{escape(cap_id)}">'
+        f'<p class="card-eyebrow">{tag}</p>'
+        f'<h3 class="card-name">{escape(display_name)}</h3>'
+        f'{dri_html}'
+        f'{contract_html}'
+        f'{_wrapper_dots(c.get("exposure_status"))}'
+        f'</div>'
+    )
 
-    capabilities_html = "\n".join(cap_card(c) for c in caps) or '<span style="color: var(--fg-muted);">— no capabilities identified yet</span>'
 
-    def signal_card(s: dict, idx: int) -> str:
-        return (
-            f'<div class="signal-card" data-idx="{idx}">'
-            f'<div class="trigger">{escape(s.get("trigger", ""))}</div>'
-            f'<div class="missing">missing: {escape(s.get("missing_capability", ""))}</div>'
-            f'</div>'
+def _operational_html(observations: list[dict]) -> str:
+    if not observations:
+        return '<p class="empty">Nothing recorded about its own work yet.</p>'
+    items = []
+    for i, o in enumerate(observations):
+        mat = (o.get("maturity") or "").lower()
+        cls = f"maturity-{mat}" if mat in ("low", "medium", "high") else ""
+        dim = o.get("dimension", "")
+        lives = o.get("lives_in", "")
+        obs_id = "obs:op:" + (o.get("dimension") or str(i)).lower().replace(" ", "-")
+        items.append(
+            f'<li class="{cls} clickable" data-id="{escape(obs_id)}">'
+            f'<strong>{escape(dim)}</strong>'
+            f' <em>{escape(mat)}</em>'
+            f'{f"<br><span class=\"where\">lives in {escape(lives)}</span>" if lives else ""}'
+            f'</li>'
         )
+    return "<ul>" + "".join(items) + "</ul>"
 
-    signals_html = "\n".join(signal_card(s, i) for i, s in enumerate(signals)) or '<span style="color: var(--fg-muted); font-size: 0.85rem;">— no failure-signals identified yet; the emerging roadmap is empty</span>'
 
-    # Decisions section — same shape as value-map and ai-exposure.
+def _customer_html(by_stakeholder: list[dict], is_unified: bool) -> str:
+    if not by_stakeholder:
+        return '<p class="empty">Nothing recorded about each stakeholder yet.</p>'
+    items = []
+    for i, s in enumerate(by_stakeholder):
+        mat = (s.get("current_maturity") or "").lower()
+        cls = f"maturity-{mat}" if mat in ("low", "medium", "high") else ""
+        name = _human(s.get("type", ""))
+        frag = "" if is_unified else " · fragmented"
+        sh_id = "obs:cu:" + (s.get("type") or str(i))
+        items.append(
+            f'<li class="{cls} clickable" data-id="{escape(sh_id)}">'
+            f'<strong>{escape(name)}</strong>'
+            f' <em>{escape(mat)}{frag}</em>'
+            f'</li>'
+        )
+    return "<ul>" + "".join(items) + "</ul>"
+
+
+def _roadmap_card(p: dict) -> str:
+    missing = p.get("missing_capability", "?")
+    display_missing = _sentence(missing)
+    trigger = (p.get("trigger") or "").strip()
+    needed = (p.get("what_would_be_needed") or "").strip()
+    rmp_id = "rmp:" + missing
+    trigger_html = (
+        f'<p class="card-trigger"><strong>When this happens:</strong> {escape(trigger)}</p>'
+        if trigger else ""
+    )
+    needed_html = (
+        f'<p class="card-needed">{escape(needed[:240])}</p>'
+        if needed else ""
+    )
+    return (
+        f'<div class="card roadmap-card" data-id="{escape(rmp_id)}">'
+        f'<p class="card-eyebrow">missing capability</p>'
+        f'<h3 class="card-name">{escape(display_missing)}</h3>'
+        f'{trigger_html}'
+        f'{needed_html}'
+        f'</div>'
+    )
+
+
+# ── render ───────────────────────────────────────────────────────
+
+
+def render_html(d: dict) -> str:
+    org_name = (d.get("_org") or "").strip() or "World model"
+    dated = d.get("_dated", "—")
+
+    capabilities = d.get("capabilities") or []
+    interfaces = d.get("interfaces") or []
+    pieces = d.get("pieces_to_build") or []
+    wmc = d.get("world_model_company") or {}
+    wmcust = d.get("world_model_customer") or {}
     decisions = d.get("decisions") or []
-    decisions_section = ""
-    if decisions:
+
+    # ── Cards ─────────────────────────────────────────────────
+    interface_cards = "\n".join(_interface_card(it) for it in interfaces)
+    capability_cards = "\n".join(_capability_card(c) for c in capabilities)
+    operational_html = _operational_html(wmc.get("observations") or [])
+    customer_html = _customer_html(
+        wmcust.get("by_stakeholder") or [], bool(wmcust.get("is_unified"))
+    )
+    roadmap_cards = (
+        "\n".join(_roadmap_card(p) for p in pieces)
+        if pieces
+        else '<p style="color: var(--ink-60); font-style: italic; font-size: 13px;">No roadmap entries surfaced yet.</p>'
+    )
+
+    # ── Header / intro / hint copy (plain language) ──────────
+    n_caps = len(capabilities)
+    n_moat = sum(1 for c in capabilities if c.get("moat_grade") == "moat")
+    n_std = n_caps - n_moat
+    n_pieces = len(pieces)
+
+    lead_text = (
+        "The studio mapped as a set of functions a customer could ask for, "
+        "with the memory and the AI layer that decide how to deliver each."
+    )
+    intro_text = (
+        "Every customer interaction follows the same shape. Someone reaches the studio "
+        "through an interface (a meeting, a call, a doc). The studio reads what it knows "
+        "and decides which of its functions to put together. The response goes back, and "
+        "the outcome (what worked, what didn't, what was asked but couldn't be done) "
+        "becomes new memory. The 'asked but couldn't be done' parts become the roadmap "
+        "of what to build next."
+    )
+
+    overall = (wmc.get("overall_maturity") or "").lower()
+    is_unified = bool(wmcust.get("is_unified"))
+    op_today = {
+        "low":    "thin",
+        "medium": "partial",
+        "high":   "structured",
+    }.get(overall, "still partial")
+    sh_today = (
+        "unified across the org"
+        if is_unified
+        else "fragmented across heads, CRMs, and delivered files"
+    )
+    world_model_hint = (
+        f"Two memories the AI layer reads. About the studio itself: operations, performance, "
+        f"priorities. About each kind of stakeholder it serves: what's known about them. "
+        f"Today the studio-side picture is {op_today}; the stakeholder-side picture is {sh_today}. "
+        f"Both should grow denser with every interaction."
+    )
+
+    # ── Analysis modal — what to do about it. Two sections:
+    # 1. The move, in three steps (the structural transformation).
+    # 2. Decisions (the leader-facing reading taken from the read).
+    # The "missing capabilities" list is deliberately not surfaced here:
+    # in the source's framework, the roadmap is what the loop produces
+    # once it's running, not a list compiled today. Showing it would
+    # invite planning-table thinking, the opposite of the move.
+    decisions_modal_html_str = ""
+    has_analysis = bool(decisions)
+    if has_analysis:
+        three_moves_html = (
+            '<div class="modal-moves">'
+            '<p class="modal-section-head">The move, in three steps</p>'
+            '<p class="modal-section-hint">What it would take to run the loop on the studio. The work is structural. It reshapes what the org is.</p>'
+            '<ol class="moves-list">'
+            '<li><strong>Make interfaces collect what comes back.</strong> '
+            'Today pitch, kickoff, weekly, handover hand finished work to the client and let what comes back disappear into people\'s heads. '
+            'The shift is to delivering tools the client uses. A brand system that lives with them as a queryable, extensible asset takes the place of the frozen PDF. '
+            'A structured weekly check-in takes the place of free-text notes. '
+            'A 12-month follow-up channel is built into the engagement from day one. '
+            'Every interaction becomes a place where the work is being used, and that use generates signal.</li>'
+            '<li><strong>Reorganize around the studio\'s invokable functions.</strong> '
+            'Today work lives inside named people: someone has to know who to ask. '
+            'Around each function above, put a wrapper. A written contract: what goes in, what comes back, what reliability the studio commits to. '
+            'A single person on the hook for that contract. Named specialists who execute it. A known channel anyone can use to request it. A log of when the contract isn\'t met. '
+            'The studio\'s structure reorganizes around the functions; units shrink to containers, and the unit chart stops being the operating model.</li>'
+            '<li><strong>Build the memory the studio uses to decide.</strong> '
+            'Every signal captured at an interface, every outcome of an invocation, every fall-short writes into the studio\'s memory. '
+            'The memory has two sides: about the studio itself (how its work is going, what\'s costing money, what\'s working) and about each kind of stakeholder (what they get, what they give back, how fragmented the current picture is). '
+            'AI in the middle reads this memory and decides what to put together for each new request. '
+            'The longer the loop runs, the deeper this memory grows, holding patterns no one else has because no one else has captured the signals.</li>'
+            '</ol>'
+            '</div>'
+        )
+
+        # Decisions list as decisions_html
         items = []
         for dec in decisions:
             q = escape(dec.get("question", ""))
-            ans_paragraphs = "".join(
-                f'<p class="answer">{escape(p)}</p>'
-                for p in (dec.get("answer", "") or "").split("\n\n") if p.strip()
+            ans = "".join(
+                f"<p>{escape(p)}</p>"
+                for p in (dec.get("answer", "") or "").split("\n\n")
+                if p.strip()
             )
             src = escape(dec.get("source", ""))
-            src_html = f'<div class="source">{src}</div>' if src else ""
-            items.append(f'<div class="decision"><div class="question">{q}</div>{ans_paragraphs}{src_html}</div>')
-        decisions_section = (
-            '<div class="section" id="decisions">'
-            '<h2>How to read this map</h2>'
-            '<p class="lead">The leader-facing reading of the map: what the layers say about what to build, what to reorganize, what to keep human, and what to let compound.</p>'
-            + "".join(items)
-            + '</div>'
+            src_html = f'<p class="source">{src}</p>' if src else ""
+            items.append(f"<li><h3>{q}</h3>{ans}{src_html}</li>")
+
+        modal_headline = "Running the loop on the studio."
+
+        body_with_intro = three_moves_html
+        if decisions:
+            body_with_intro += (
+                f'<p class="modal-section-head" style="margin-top: 36px;">'
+                f'{len(decisions)} decision{"s" if len(decisions) != 1 else ""} from this read of the studio'
+                f'</p>'
+            )
+
+        decisions_modal_html_str = app_pure_modal_html(
+            headline=modal_headline,
+            org_name=org_name,
+            dated=dated,
+            decisions_html="".join(items),
+            kicker="Reading the world model",
+            lede="",
+            body_html=body_with_intro,
         )
 
-    # Conceptual frame diagram, inline SVG, English plain-language labels.
-    frame_diagram_svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 540" style="font-family: ui-sans-serif, system-ui, sans-serif;">
-  <defs>
-    <marker id="arr-up" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="8" markerHeight="8" orient="auto">
-      <path d="M 0 0 L 5 9 L 10 0 Z" fill="#6b6b6b" transform="rotate(180 5 5)"/>
-    </marker>
-  </defs>
-  <text x="360" y="22" text-anchor="middle" font-size="11" fill="#6b6b6b" font-weight="600" letter-spacing="1.2px">FIVE LAYERS, BOTTOM-UP</text>
-  <rect x="160" y="48" width="400" height="56" rx="6" fill="#1a1a1a" stroke="#1a1a1a"/>
-  <text x="360" y="70" text-anchor="middle" font-size="14" fill="#FFFFFF" font-weight="600">Stakeholders</text>
-  <text x="360" y="90" text-anchor="middle" font-size="11" fill="#cccccc">who the org serves and who serves it back</text>
-  <line x1="360" y1="130" x2="360" y2="108" stroke="#6b6b6b" stroke-width="1.5" marker-end="url(#arr-up)"/>
-  <rect x="160" y="130" width="400" height="56" rx="6" fill="#dde7f8" stroke="#9ab1d8"/>
-  <text x="360" y="152" text-anchor="middle" font-size="14" fill="#1a1a1a" font-weight="600">Interfaces</text>
-  <text x="360" y="172" text-anchor="middle" font-size="11" fill="#5a5a5a">where the org meets people</text>
-  <line x1="360" y1="212" x2="360" y2="190" stroke="#6b6b6b" stroke-width="1.5" marker-end="url(#arr-up)"/>
-  <rect x="160" y="212" width="400" height="56" rx="6" fill="#e1ddec" stroke="#a59cc4"/>
-  <text x="360" y="234" text-anchor="middle" font-size="14" fill="#1a1a1a" font-weight="600">Intelligence layer</text>
-  <text x="360" y="254" text-anchor="middle" font-size="11" fill="#5a5a5a">how a request gets composed into a response</text>
-  <line x1="360" y1="294" x2="360" y2="272" stroke="#6b6b6b" stroke-width="1.5" marker-end="url(#arr-up)"/>
-  <rect x="160" y="294" width="400" height="56" rx="6" fill="#dee7d8" stroke="#a0bf95"/>
-  <text x="360" y="316" text-anchor="middle" font-size="14" fill="#1a1a1a" font-weight="600">World model</text>
-  <text x="360" y="336" text-anchor="middle" font-size="11" fill="#5a5a5a">what the org knows about itself and the people it serves</text>
-  <line x1="360" y1="376" x2="360" y2="354" stroke="#6b6b6b" stroke-width="1.5" marker-end="url(#arr-up)"/>
-  <rect x="160" y="376" width="400" height="56" rx="6" fill="#ede4ce" stroke="#c8b88a"/>
-  <text x="360" y="398" text-anchor="middle" font-size="14" fill="#1a1a1a" font-weight="600">Capabilities</text>
-  <text x="360" y="418" text-anchor="middle" font-size="11" fill="#5a5a5a">the atomic things the org can actually do</text>
-  <rect x="80" y="466" width="560" height="56" rx="6" fill="#fbe8dd" stroke="#c47558" stroke-width="1.5"/>
-  <text x="360" y="488" text-anchor="middle" font-size="11" fill="#8c4a30" font-weight="600" letter-spacing="0.6px">THE SHARED PRINCIPLE</text>
-  <text x="360" y="508" text-anchor="middle" font-size="12" fill="#1a1a1a">replace hierarchical routing with a system that accumulates knowledge over time</text>
-</svg>'''
+    # ── About modal — the loop tesi in plain language ────────
+    about_body = f"""
+  <p>The point of this page is one move. Today the studio has interfaces, capabilities, and a world model, but in a primitive form. Interfaces are mostly delivery surfaces; signals that come back through them get lost. Capabilities live inside named people, callable through availability rather than contract. The world model is implicit, scattered across heads and delivered files.</p>
 
-    # --- editorial chrome (Italianate masthead + magazine colophon) ---
-    moat_count = sum(1 for c in caps if c.get("moat_grade") == "moat")
-    n_stakeholder_types = len(d.get("world_model_customer", {}).get("by_stakeholder", []) or [])
-    masthead_html = masthead(
-        kicker_left="world model",
-        kicker_num=f"№ {len(caps):02d}",
-        kicker_right=f"scope · {d.get('_scope', 'whole-org')}",
-        title=f"<em>{escape(title)}</em>",
-        lede=(
-            "A read of how this organization is structured underneath the org-chart — "
-            "the people it serves, where it meets them, how it composes a response, "
-            "what it knows, and what it can actually do."
-        ),
-        dateline="dated " + (d.get("_dated") or ""),
-        tags=[
-            f"{len(caps)} capabilities ({moat_count} differentiated)",
-            f"{n_stakeholder_types} stakeholder types",
-            f"{len(signals)} pieces to build",
-        ],
+  <p>The move described in <em>From Hierarchy to Intelligence</em> (Jack Dorsey + Roelof Botha, Block, March 2026) is to insert intelligence, typically AI-mediated, that transforms the three. Interfaces start catching signal in addition to delivering outcomes. Capabilities become invokable systems: the same person stays accountable, and a wrapper makes the function callable from outside their availability. The world model becomes a memory that auto-updates from the signals.</p>
+
+  <h2>The loop</h2>
+  <p>A request arrives via an interface. The middle layer reads the world model and decides. If a function matches, it is invoked; the response goes back via the interface; the outcome is captured into the world model. If no function matches, the unanswered request is itself captured. That captured signal becomes the future roadmap. The loop surfaces it. A planning meeting does not.</p>
+
+  <h2>The three layers, top to bottom on the page</h2>
+  <p><strong>Interfaces</strong>. Where stakeholders arrive. Each card shows two states: today (mostly delivery) and after (also signal collection).</p>
+  <p><strong>Capabilities</strong>. The invokable functions of the studio. Coral border marks differentiated craft this studio does that nobody else can replicate. Hairline border marks standard practice the category shares. Each card shows the contract (input → output), who runs it today, and a row of five dots showing how callable the function is right now: whether the promise is written down, whether one person is accountable, whether anyone in the org can find it, whether anyone can ask for it through a known channel, whether the org records when it falls short. Filled dots mean yes; outlined mean not yet.</p>
+  <p><strong>World model</strong>. The memory the middle layer reads, in two halves: about the studio itself (its operations, performance, priorities) and about each kind of stakeholder it serves (what it knows of them, how fragmented that picture is today).</p>
+  <p>Between the functions and the memory, a thin annotation names the middle layer: where AI lives.</p>
+
+  <h2>What to do about it</h2>
+  <p>Open <strong>Analysis</strong> at top-right. It names the three structural moves the studio would make to actually run this: turn interfaces into signal collection, reorganize around the functions, build the memory that decides. Plus the leader-facing decisions taken from this read.</p>
+
+  <p>This particular reading covers <strong>{n_caps} {'function' if n_caps == 1 else 'functions'}</strong> ({n_moat} differentiated, {n_std} standard). Click any card on the page for its full content.</p>
+"""
+    about_modal_html_str = app_pure_about_modal_html(
+        kicker=f"№ {n_caps:02d} · world-model",
+        headline=org_name,
+        lede="An operating-model read of the studio: capabilities, interfaces, world model, plus the runtime that connects them.",
+        body_html=about_body,
     )
-    colophon_html = colophon(
-        citations=None, sources=None,
-        generator="skills/playbooks/world-model",
-        generated_on=d.get("_dated", ""),
-        audit="pass",
-        autoresearch="4 / 4 deterministic dimensions pass",
-        extra_lines=[
-            "Click any card on the stack — capability, stakeholder, composition — for the underlying contract and citations.",
-        ],
-    )
+
+    # ── NODES dict for popover lookup ────────────────────────
+    nodes: dict[str, dict] = {}
+    for c in capabilities:
+        n = dict(c)
+        n["_band"] = "capability"
+        nodes[f"cap:{c.get('_structure_id') or c['name']}"] = n
+    for it in interfaces:
+        n = dict(it)
+        n["_band"] = "interface"
+        nodes[f"if:{it.get('_structure_id') or it['name']}"] = n
+    for p in pieces:
+        n = dict(p)
+        n["_band"] = "roadmap"
+        nodes[f"rmp:{p.get('missing_capability')}"] = n
+    # World-model band entries: operational observations and per-stakeholder
+    # representations are clickable too, with their own popovers.
+    for i, o in enumerate(wmc.get("observations") or []):
+        n = dict(o)
+        n["_band"] = "operational"
+        oid = "obs:op:" + (o.get("dimension") or str(i)).lower().replace(" ", "-")
+        nodes[oid] = n
+    for i, s in enumerate(wmcust.get("by_stakeholder") or []):
+        n = dict(s)
+        n["_band"] = "per_caller"
+        n["_unified"] = bool(wmcust.get("is_unified"))
+        sid = "obs:cu:" + (s.get("type") or str(i))
+        nodes[sid] = n
+
+    nodes_json = json.dumps(nodes, ensure_ascii=False).replace("</", "<\\/")
 
     return HTML_TEMPLATE.format(
-        css=base_css() + EXTRA_CSS,
-        title=escape(title),
-        masthead_html=masthead_html,
-        colophon_html=colophon_html,
-        n_caps=len(caps),
-        n_signals=len(signals),
-        frame_diagram_svg=frame_diagram_svg,
-        decisions_section=decisions_section,
-        stakeholders_html=stakeholders_html,
-        interfaces_html=interfaces_html,
-        n_current_compositions=len(cur_comp),
-        n_potential_compositions=len(pot_comp),
-        current_compositions_html=current_compositions_html,
-        potential_compositions_html=potential_compositions_html,
-        company_observations_html=company_observations_html,
-        customer_observations_html=customer_observations_html,
-        company_maturity=escape(company_maturity),
-        customer_unified_label=escape(customer_unified_label),
-        capabilities_html=capabilities_html,
-        signals_html=signals_html,
-        capabilities_json=json.dumps(caps, ensure_ascii=False),
-        stakeholders_index_json=json.dumps(stakeholders_index, ensure_ascii=False),
-        interfaces_json=json.dumps(interfaces, ensure_ascii=False),
-        signals_json=json.dumps(signals, ensure_ascii=False),
-        current_compositions_json=json.dumps(cur_comp, ensure_ascii=False),
-        company_observations_json=json.dumps(company.get("observations", []) or [], ensure_ascii=False),
-        potential_compositions_json=json.dumps(pot_comp, ensure_ascii=False),
+        head_meta=app_pure_head_meta(f"{org_name} — world model"),
+        css=app_pure_css(layout="scroll") + EXTRA_CSS,
+        baseline_js=app_pure_baseline_js(),
+        dateline=app_pure_dateline_html(org_name, what="world model"),
+        top_right=app_pure_top_right_html(
+            dated, show_analysis=has_analysis, show_help=True
+        ),
+        about_modal_html=about_modal_html_str,
+        decisions_modal_html=decisions_modal_html_str,
+        org_name=escape(org_name),
+        lead_text=escape(lead_text),
+        intro_text=escape(intro_text),
+        interface_cards=interface_cards,
+        capability_cards=capability_cards,
+        world_model_hint=escape(world_model_hint),
+        operational_html=operational_html,
+        customer_html=customer_html,
+        nodes_json=nodes_json,
     )
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Render world-model JSON as interactive HTML.")
+    parser = argparse.ArgumentParser(description="Render world-model JSON as editorial-column page.")
     parser.add_argument("--map", required=True, help="World-model JSON path")
     parser.add_argument("--html", required=True, help="Output HTML path")
-    parser.add_argument("--title", default="World-model snapshot", help="Page title")
     parser.add_argument(
         "--decisions",
         help="Optional JSON list of {question, answer, source} merged into the map under top-level "
-             "'decisions[]'. Renders the 'How to read this map' section. Required for a shippable "
-             "play — autoresearch fails without it.",
+             "'decisions[]'. Renders the 'How to read this map' section. Required for a shippable play.",
     )
     args = parser.parse_args()
 
@@ -774,7 +1253,7 @@ def main() -> int:
             return 1
         d["decisions"] = decisions
 
-    html = render_html(d, args.title)
+    html = render_html(d)
     Path(args.html).write_text(html, encoding="utf-8")
     print(f"Wrote {Path(args.html).resolve()} ({len(html):,} bytes)")
     return 0

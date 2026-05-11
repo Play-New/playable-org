@@ -308,6 +308,28 @@ def topology_summary(nodes: list[dict], edges: list[dict]) -> dict[str, Any]:
     }
 
 
+def _read_org_name(org_dir: Path) -> str:
+    """Pull the organisation's display name from `identity/mission.md`
+    frontmatter (key: `org_name`). The viewer's dateline reads this.
+
+    Looks at all `identity/*.md` files in case the convention drifts;
+    the first `org_name` value wins. Falls back to a title-cased
+    version of the org-dir basename when no frontmatter key is found
+    so the chrome never collapses to a generic placeholder."""
+    identity_dir = org_dir / "identity"
+    if identity_dir.is_dir():
+        for f in sorted(identity_dir.glob("*.md")):
+            try:
+                fm = parse_frontmatter(f.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            name = (fm.get("org_name") or "").strip()
+            if name:
+                return name
+    # Fallback: directory name, "kebab-case" → "Title Case".
+    return org_dir.name.replace("-", " ").replace("_", " ").title()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Walk org/ and emit the whole graph.")
     parser.add_argument("--org-dir", required=True, help="Path to org/")
@@ -324,9 +346,16 @@ def main() -> int:
     edges = collect_edges(org_dir, nodes, path_to_id)
     summary = topology_summary(nodes, edges)
 
+    # Pull the org's display name out of identity/mission.md frontmatter
+    # (key: `org_name`). Used by the viewer's dateline. Falls back to
+    # the dataDir's basename, lightly cleaned, so the chrome never
+    # collapses to "Value map" or similar generic placeholder.
+    org_name = _read_org_name(org_dir)
+
     skeleton = {
         "_scope": args.scope or "whole-org",
         "_dated": date.today().isoformat(),
+        "_org": org_name,
         "_topology": summary,
         "nodes": nodes,
         "edges": edges,

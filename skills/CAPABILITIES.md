@@ -1,28 +1,42 @@
 # Capabilities, what they are and how to expose them
 
-Methodology document, applicable to any organization. Defines what a capability is in the operational sense, how it differs from things that are not capabilities, and what exposing it means so that it becomes a composable building block instead of an internal practice.
+Methodology document, applicable to any organization. Defines what a capability is in the operational sense, how it differs from things that are not capabilities, and what it takes to make a craft invocable from outside the person who runs it today.
 
-References: Jack Dorsey + Roelof Botha, "From Hierarchy to Intelligence" (Block, March 2026); Sangeet Choudary, "Reshuffle" (2025). Concepts are distilled from the sources, not reproduced.
+References: Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence*, original at Block ([block.xyz/inside/from-hierarchy-to-intelligence](https://block.xyz/inside/from-hierarchy-to-intelligence)) and at Sequoia Capital ([sequoiacap.com/article/from-hierarchy-to-intelligence](https://sequoiacap.com/article/from-hierarchy-to-intelligence/)), March 2026; Sangeet Choudary, *Reshuffle* (2025). Concepts are distilled from the sources, not reproduced.
 
 This document governs the methodology behind any skill that touches capability analysis (currently `world-model`, partially `reshuffle`). For the writing rules that govern consumer-facing output, see [STYLE.md](STYLE.md).
 
 ---
 
-## The frame, in one diagram
+## The move
 
-![The four-part operating model](capability-stack.svg)
+Today an organization already has interfaces, capabilities, and a world model. Interfaces deliver outputs but don't capture the signals that come back through them. Capabilities are crafts embedded in named people. The world model lives implicit in heads and in delivered files nobody can query.
 
-The four layers stack from the bottom up. Capabilities at the base are atomic invocable primitives. The world model is the shared knowledge of operations and stakeholder signal that capabilities feed into and read from. The intelligence layer reads the world model and composes capabilities into solutions for specific stakeholders. Interfaces deliver those solutions where stakeholders are.
+The move described in the source is to insert intelligence, typically AI-mediated, that transforms each. Interfaces become signal collection points in addition to delivery. Capabilities become invocable systems: the person stays as DRI, a wrapper exposes them so anyone (or any agent) who knows the contract can call them. The world model becomes a system that auto-updates from the signals.
 
-The shared principle below is what justifies the whole stack: replace hierarchical information routing (the middle-management layer) with a system that compounds intelligence over time. Each call to a capability adds to the world model, which improves future compositions, which makes capabilities more valuable, which compounds.
+It runs as a closed loop:
 
-The rest of this document defines each layer rigorously, gives a practical test for what counts as a capability, lists the rules of exposing them, and describes the organizational consequences. Skip to the section relevant to your question.
+1. A request arrives via an interface.
+2. Intelligence reads the world model and decides how to respond.
+3. If a capability matches, it is invoked, the response goes back via the interface, the outcome is captured into the world model.
+4. If no capability matches, the unanswered request is itself captured into the world model. That captured signal is the future roadmap.
+5. The organization reviews accumulated unanswered signals and decides which to turn into new capabilities. The new capability enters the loop.
+
+## What's from the source vs operational extensions
+
+The four-part frame (capabilities, world model, intelligence layer, interfaces), the role of intelligence as composer (not decomposer), the world-model split between operational and customer side, the failure-signal-as-roadmap claim, and the three roles (DRI, IC, player-coach) come directly from Dorsey/Botha. The term "failure signal" itself is the source's, used verbatim in the Block piece.
+
+The before/after framing of the move (interfaces in delivery-only form vs as signal collection points, capabilities embedded in people vs invocable, world model implicit vs auto-updating) and the closed-loop formulation of the five steps above are an **operational synthesis** of source claims into an actionable view. The source describes the after state at Block; running the move on organizations that aren't Block requires naming the before state and the path between them.
+
+The rest of this document is **operational tools developed for this template**: the five-property test, the four-question pragmatic test, the three-actors rule, the bidirectional users-and-contributors framing, the seven-step transition sequence, and the five wrapper criteria for making a capability invocable. Consistent with the source but not in it verbatim. Marked as such where they appear.
 
 ---
 
 ## Definition
 
 A capability is an **invocable function** of the organization. Anyone, inside or outside, can call it and obtain an execution.
+
+The source says capabilities are "atomic financial primitives... building blocks that are hard to acquire and maintain (some have network effects and regulatory permission). They have no UIs of their own. They have reliability, compliance, and performance targets." The five-property formalization below is **ours**: an operational unpacking that helps an analyst using this template recognize capabilities reliably. Individual properties (atomic, hard to acquire) are in the source verbatim; the structured five-item test is ours.
 
 Five properties define it. All five must hold.
 
@@ -37,6 +51,8 @@ If one or more of these is missing, it is not a capability. It is an asset, a pr
 ---
 
 ## The practical test
+
+*Operational extension; the four-question test is a tool for analysts using this template, not in the source.*
 
 For each capability candidate, four questions:
 
@@ -69,6 +85,8 @@ Working with large organizations, candidates that look like capabilities and are
 
 ## The three-actors rule
 
+*Operational extension; this rule is ours, derived from but not stated in the source.*
+
 Each capability must be callable by at least three different types of actor. If only one type uses it, it is probably too specific to that channel and should be decomposed or reformulated.
 
 The three typical types:
@@ -82,6 +100,8 @@ If the capability is callable by all three, it is correctly exposed. If only one
 
 ## The "users and contributors" rule
 
+*Operational extension; the bidirectional contract framing is ours. The source mentions transaction data feeding the customer-side world model but does not state a general rule that every actor is both user and contributor.*
+
 In the old framing, an organization has customers who receive and employees who produce. In the exposed organization, every actor is both: uses capabilities of the organization and contributes through others.
 
 Example: in a payments system, the merchant who receives revenue is a user of payment-processing capabilities and a contributor through transactional data (which feeds the world model). The consumer who pays is a user of transfer capabilities and a contributor through spending signal.
@@ -92,9 +112,11 @@ The consequence for capability design: the contract must be bidirectional by des
 
 ---
 
-## What "exposing" a capability means
+## Making capabilities invocable
 
-Exposing means five things. All five together.
+*Operational extension. The source says capabilities have "reliability, compliance, and performance targets" but does not enumerate the five criteria below. They are a checklist for turning a craft embedded in a person into a capability the intelligence layer can compose.*
+
+A craft becomes invocable when five things are in place. All five together.
 
 ### 1. Public contract
 
@@ -142,21 +164,24 @@ For inherently human-mediated capabilities (example: cultivate-major-relationshi
 
 The crucial point: human capabilities are also exposed as functions. The difference between an exposed capability and a practice is that the first can be invoked by the intelligence layer when the world model detects a signal, while the second requires a human to notice and activate the human cycle.
 
-### 5. Logged failures
+### 5. Captured signals
 
-When a capability is called and cannot fulfill the request, because a sub-piece is missing, because a regulatory constraint prevents it, because the world model does not have enough data to respond, the failure is logged.
+Every invocation produces a signal that goes back into the world model. Two cases:
 
-The failure log contains: what was requested, what the capability could not do, what would be needed for it to do so.
+- **The capability fulfils the request.** The outcome is captured: what was asked, what was returned, against which SLO, with what side-effects. That captured outcome enriches the operational and per-caller world model. Every future invocation reads from a denser memory.
+- **The capability cannot fulfil the request.** Could be because a sub-piece is missing, a regulatory constraint prevents it, or the world model does not have enough data to respond. The unanswered request is itself captured: what was asked, what would have been needed.
 
-That log is the **future roadmap of the organization**. Not the three-year plan that top management decides at a table. Missed compositions are missed opportunities; logging them is the organization's version of market feedback.
+The accumulation of unanswered requests is the **future roadmap**. Dorsey's wording in the source: *"When the intelligence layer tries to compose a solution and can't because the capability doesn't exist, that failure signal is the future roadmap."* The roadmap is not the three-year plan that top management decides at a table. It surfaces from running the loop.
 
-Example: the "execute-testamentary-succession" capability receives a request to handle a complex asset (real estate with condominium difficulties, anomalous lease). The capability today does not have the sub-capability "transform-complex-real-estate-asset" and falls back on quick sale below value. The log says: "real-estate transformation request, missing capability". That log line is the first specification of the future capability `transform-complex-real-estate-asset`.
+Example: the `execute-testamentary-succession` capability receives a request to handle a complex asset (real estate with condominium difficulties, anomalous lease). The capability today does not have the sub-capability `transform-complex-real-estate-asset` and falls back on quick sale below value. The signal captured: "real-estate transformation request, no capability matched". That signal is the first specification of the future capability `transform-complex-real-estate-asset`. The org reviews accumulated signals like this one and decides which to invest in.
 
-Without a failure log, the roadmap comes from whoever has more authority in the planning process, not from whoever is closest to the signal.
+Without signal capture, the roadmap comes from whoever has more authority in the planning process, not from whoever is closest to the signal.
 
 ---
 
 ## The three roles that emerge
+
+*From the source verbatim. Dorsey introduces these three roles in the Block piece.*
 
 Once capabilities are exposed, the organization no longer needs a permanent middle-management layer. The structure reduces to three roles:
 
@@ -196,6 +221,8 @@ The fix: in the capability registry, declare explicitly which capabilities inclu
 
 ## The transition, sequenced
 
+*Operational extension. The Block piece "does not specify an implementation sequence" (per its own text). The seven-step ordering below is ours, derived from running the move on real organizations.*
+
 For an organization starting from zero or near zero, the practical sequence:
 
 1. **Identify capabilities.** Apply the test (five properties, four questions). Distinguish from assets, properties, governance organs, infrastructure, staff functions. Expect to find between 5 and 15 in a medium organization. If you find 50, you are calling capabilities things that are not capabilities.
@@ -216,7 +243,7 @@ The first six are organizational. Possible in 12 to 24 months for a medium-sized
 
 ---
 
-## When the frame applies and when it does not
+## When the framework applies and when it does not
 
 **Applies well** when:
 - The organization has multiple functional areas with stakeholders that cross boundaries.
@@ -225,7 +252,7 @@ The first six are organizational. Possible in 12 to 24 months for a medium-sized
 - There is willingness to question the existing organizational structure.
 
 **Does not apply well** when:
-- The organization does one thing with one stakeholder type. The frame is overkill.
+- The organization does one thing with one stakeholder type. The framework is overkill.
 - Stakeholder signals are too thin to feed meaningful compositions.
 - Regulatory boundaries make capability decoupling from areas impossible.
 - The organization is not ready for the structural conversation and would treat the approach as a theoretical exercise.
@@ -234,15 +261,15 @@ The first six are organizational. Possible in 12 to 24 months for a medium-sized
 
 ## The honest test before starting
 
-Before applying the frame to an organization, a calibration question:
+Before applying the framework to an organization, a calibration question:
 
 > What can any stakeholder invoke today, by name, and receive a structured response from?
 
-If the answer is "depends on who you ask, depends on which area you reach", capabilities exist as practices, not as exposed functions. The frame applies and has value.
+If the answer is "depends on who you ask, depends on which area you reach", capabilities exist as practices, not as exposed functions. The framework applies and has value.
 
-If the answer is "this, this and this, each with a known contract, accessible to anyone who knows how to call it", the organization has already done the exposing work. The frame applies as a tool of maintenance and discovery of missing capabilities, not as structural reform.
+If the answer is "this, this and this, each with a known contract, accessible to anyone who knows how to call it", the organization has already done the exposing work. The framework applies as a tool of maintenance and discovery of missing capabilities, not as structural reform.
 
-## Side note: are playable-org's skills "capabilities" by this frame?
+## Side note: are playable-org's skills "capabilities" by this framework?
 
 Partially. They meet four of the five properties (invocable, structured output, atomic, composable) and split the fifth (the file is easy to acquire; the practice around it isn't). They miss the ownership layer entirely — there is no DRI for `value-map` in the public template, only a maintainer of the codification.
 

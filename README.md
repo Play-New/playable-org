@@ -14,7 +14,7 @@ This is the lineage of Andrej Karpathy's [*Building an LLM Wiki*](https://gist.g
 
 ## What it is, in one paragraph
 
-`org/` is a directory of markdown files. Each file is one node — a unit, an activity, a person, a role, a stakeholder, a commitment, a source, an identity declaration, a glossary term, a financial summary. The frontmatter is typed YAML; the body is prose. Every claim in the body cites a `(source-id)`. The mcp server (in `mcp-server/`) exposes thirteen typed primitives that an agent uses to read, write, and lint the corpus. On top, `skills/` holds recipes the agent follows: three for keeping the corpus honest (`init`, `ingest`, `lint`), five **playbooks** that produce frozen analyses (`graph`, `ai-exposure`, `value-map`, `reshuffle`, `world-model`), and a few helpers for deploying an agent against a specific scope. Each playbook produces an HTML + JSON pair under `org/plays/data/` that you open in a browser. The artefacts you see in this README are real — they come from a fictional sample organization (Outline & Co., a creative studio) that ships with the public template.
+`org/` is a directory of markdown files. Each file is one node — a unit, an activity, a person, a role, a stakeholder, a commitment, a source, an identity declaration, a glossary term, a financial summary. The frontmatter is typed YAML; the body is prose. Every claim in the body cites a `(source-id)`. The mcp server (in `mcp-server/`) exposes thirteen typed primitives that an agent uses to read, write, and lint the corpus. On top, `skills/` holds recipes the agent follows: three for keeping the corpus honest (`init`, `ingest`, `lint`), a **starter kit of playbooks** (`graph`, `ai-exposure`, `value-map`, `reshuffle`, `world-model`) that produce frozen analyses on top of the graph, a `new-playbook` meta-skill that scaffolds your own, and a few helpers for deploying an agent against a specific scope. Each playbook produces an HTML + JSON pair under `org/plays/data/` that you open in a browser. The artefacts you see in this README are real — they come from a fictional sample organization (Outline & Co., a creative studio) that ships with the public template.
 
 ## The four layers
 
@@ -53,20 +53,22 @@ LAYER 1 │ org/  — cited structure                          │
 
 Two invariants hold across all four:
 
-- **Every claim in `org/` cites a source under `sources/`.** No exceptions. The lint script refuses commits that violate this. This is the citation invariant — the moat against agent hallucination. Without it, the agent makes things up; with it, every answer points back to a real document.
+- **Every claim in `org/` cites a source under `sources/`.** No exceptions. The lint script refuses commits that violate this. This is the citation invariant — the defence against agent hallucination. Without it, the agent makes things up; with it, every answer points back to a real document.
 - **Plays are frozen at creation.** A play asserts the world at time T. Re-running the same playbook at T+N produces a new play; the old one stays as the historical reading. No mutation in place. "What did we conclude in May" keeps meaning that way.
 
 If you read [Simone Cicero's *Through The Boundary*](https://through-the-boundary.simonecicero.com/) you'll recognise the *structure* / *superstructure* distinction we lifted from his April 2026 essay. The structure is what AI makes more necessary: topology, taxonomy, shared context, promise chains. The superstructure is what AI eliminates: hierarchical management, bureaucracy. `org/` is structure-level on purpose; we don't try to model the superstructure at all.
 
-## The five playbooks
+## The bundled playbooks
 
-Each playbook produces an interactive HTML + the JSON that backed it, frozen under `org/plays/data/<name>-<scope>-<date>.{json,html}`. Same editorial chrome across all five (Italianate masthead at the top, popover on click, decisions section, magazine-grade colophon at the bottom) so once you've read one you know how to read them all. Different question being asked, different chart shape, same way of holding the work.
+Five playbooks ship with the template — a starter kit, not a sequence. Each asks a different question of the same corpus and produces an interactive HTML + the JSON that backed it, frozen under `org/plays/data/<name>-<scope>-<date>.{json,html}`. You pick which ones to run, in any order. When none of them fits the question you have, the `new-playbook` meta-skill scaffolds a new one (a five-question interview that emits the `build.py` / `audit.py` / `viewer.py` / `autoresearch.py` quartet ready to fill in).
 
-### graph — the operational graph
+### graph — operational dependencies
 
-> *What does the whole organization look like as one connected drawing? Which nodes carry the structure's weight? Where is the writing thin?*
+> *Where does the load sit in this organization? Which nodes carry weight, and which are thin?*
 
-The lightest of the playbooks. No interpretive frame, no AEI dependency, no source theory beyond *"render the structure as the structure declares itself"*. Walks every node and every typed relation declared in the frontmatter (or in body markdown links and `(source-id)` citations) and lays it out as a force-directed picture. Click a node, the side panel fills with its incoming and outgoing relations. Toggle node-kinds and edge-kinds from the legend; the layout repacks. The dark inset console is intentional — it reads as exploration surface, distinct from the editorial chrome around it.
+Walks every node under `org/` and emits a force-directed picture of the typed dependencies between them — who is in which unit, which person performs which activity, which role covers what, who is bound by which commitment, which stakeholder is touched by which work. Click a node to focus on it; the side panel fills with its incoming and outgoing dependencies, grouped by relation. Source nodes, identity, glossary, and financial summaries stay in the JSON for other tools but are stripped from this viewer — the picture is operational, not corpus.
+
+![Graph viewer — Outline & Co. with the Enterprise clients stakeholder in focus, showing the thirteen activities and commitments that involve them](docs/_assets/graph-viewer.png)
 
 ### ai-exposure — where AI is showing up in this org
 
@@ -92,7 +94,7 @@ Source: Sangeet Paul Choudary, *Reshuffle* (2024). The big idea is that AI does 
 
 Source: Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026). Reads the organization as a stack — capabilities at the bottom (atomic invocable functions with a contract), a world model in the middle (what the org knows about itself and its stakeholders), an intelligence layer that composes capabilities into responses to stakeholder signals, interfaces that deliver. The "what to build next" section names compositions the layer would attempt today and where the response would fall short because one needed piece of the chain isn't there yet. Each missing piece is a candidate to build, in plain language.
 
-The five playbooks compose. The natural order is: `graph` after the first ingest (the lightest, gives the leader a first picture), then `ai-exposure` (broadest analytical survey), then `value-map` (each activity placed on the evolution curve), then `reshuffle` (constraint analysis on a slice), then `world-model` (capability-level overlay). Each builds on the priors of the previous one. The order is documented in `skills/ROADMAP.md`; pragmatic deployments often pick two or three depending on the question to answer first.
+The bundled playbooks are independent. You pick the one that fits the question you have, in any order. They do compose where it makes sense — `world-model` reads outputs of `value-map` and `reshuffle` if they exist in the same slice, `value-map` overlays AI pressure when an `ai-exposure` play is present — but no playbook depends on another being run first. `graph` is usually the lightest first move after the initial `ingest` (it just renders what's there), and `ai-exposure` works as a broad survey, but a deployment that only needs one of the five is a fully valid use of the template.
 
 ## The agent has to keep itself honest
 
@@ -110,13 +112,13 @@ The autoresearch loop is not optional polish. It's the difference between a play
 
 | Compared to | Playable Org is | Playable Org is not |
 |---|---|---|
-| Wiki (Confluence, Notion) | agent-maintained markdown under an `AGENTS.md` contract | not human-editable in a UI; the agent is the editor, with diffs confirmed by a human |
+| Hosted markdown docs (Confluence, Notion) | agent-maintained markdown under an `AGENTS.md` contract | not human-editable in a UI; the agent is the editor, with diffs confirmed by a human |
 | Knowledge graph (RDF / Neo4j) | typed YAML frontmatter on every node, structured cross-references | not triples; markdown is the storage, the agent + lint script are the query engine; humans read the graph as prose |
 | BPM tool (Camunda, BPMN) | activities have performers, inputs, outputs, frequency, and (optional) trigger / quality_gates / decision_criteria / output_format / fallback / handoff | not executable; the structure documents the work; the agent runs it via composed `skills/` |
-| LLM-wrapper / RAG over docs | the agent reads `org/` to answer | not raw RAG; the cited structure is the moat. Without `(source-id)` citations on every claim, agents hallucinate; with them, every answer points back to a real document |
+| LLM-wrapper / RAG over docs | the agent reads `org/` to answer | not raw RAG; the cited structure is what makes it defensible. Without `(source-id)` citations on every claim, agents hallucinate; with them, every answer points back to a real document |
 | Org chart | five node types (unit, person, role, activity, stakeholder) plus commitments | not a hierarchy; commitments are richer than reporting lines (level × direction × explicit × state × fallback) |
 
-The thing the artefact aims to be is a **substrate**: enough cited structure for an agent to act on, minus the bureaucracy of formal ontologies, plus the editorial discipline that keeps the prose readable.
+The thing the artefact aims to be is a **structure**: enough cited topology for an agent to act on, minus the bureaucracy of formal ontologies, plus the editorial discipline that keeps the prose readable. (The term comes from Simone Cicero, *[What is an organization today?](https://through-the-boundary.simonecicero.com/p/ttb-1-what-is-an-organization-today)*, April 2026 — the *structure* is what AI makes more necessary; the *superstructure* is what AI eliminates.)
 
 ## Opinionated choices
 
@@ -132,8 +134,6 @@ Each is a non-default decision; each has a rationale.
 
 - **Plain-language jargon discipline in user-facing prose.** Framework primitive names are fine as labels (Stakeholders, Capabilities, Genesis/Custom/Product/Commodity); paraphrased into running prose they become jargon and the leader stops on them. Avoid-list (lives in `STYLE.md`): *moat*, *commodity* in body, *commoditize*, *judgment density*, *capability stack*, *coordination tax*, *failure-signal*, *thin* (metaphor), *see-saw*, *flywheel*, *engine candidate*, *rebundle*, *production-tier*, *rich subset*, *O\*NET*, *AEI*, *embedding*, *cosine similarity*, *top-K*, *p25*/*p75*, JSON field names. The autoresearch jargon dimension catches deterministic violations; the editorial pass catches paraphrased ones.
 
-- **Editorial chrome at the playbook level.** Every viewer opens with a kicker / title / lede masthead and closes with a magazine-grade colophon (provenance, audit status, autoresearch summary). Same chrome across all five so the artefacts read as parts of the same long-form essay.
-
 - **Activity density layer is opt-in per activity.** A first-install activity has the structural floor (description, performer, unit, inputs/outputs, frequency, sources). The density ceiling — `trigger` / `quality_gates` / `decision_criteria` / `output_format` / `fallback` / `handoff` — gets filled only when the org wants to compile that activity into a Claude skill. Cost: two registers in the same schema. Gain: the floor stays low (every activity has structural facts); the ceiling opens for the activities that need to become agent-runnable. Documented in `org/AGENTS.md`.
 
 ## Quick start
@@ -148,7 +148,7 @@ Detailed: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/ar
 
 ## What ships in the public template
 
-- **mcp-server/** — TypeScript stdio mcp server. Thirteen tools, full e2e suite at `mcp-server/test-e2e.py` (88/88 pass), ~30KB compiled.
+- **mcp-server/** — TypeScript stdio mcp server. Thirteen tools, full e2e suite at `mcp-server/test-e2e.py` (116/116 pass — 88 pipeline + 28 graph-viewer design-regression checks), ~30KB compiled.
 - **skills/** — eleven recipes. Three operational (`init`, `ingest`, `lint`); five playbooks (`graph`, `ai-exposure`, `value-map`, `reshuffle`, `world-model`); two deployment skills (`compile-agent` for scope-limited agents, `interview-activity` for filling the activity density layer); one meta-skill (`new-playbook`).
 - **mcp-server/test-fixtures/sample-org/** — a fully populated test fixture: Outline & Co., a fictional creative studio (5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources). Ships with the five canonical playbook artefacts (HTML + JSON + judge verdicts). Open `plays/data/*.html` in a browser to see exactly what each playbook produces.
 - **install.command** / **install.bat** — clickable installers (no admin required). Build the mcp server, register it in Claude Desktop's config.
@@ -159,7 +159,7 @@ Detailed: [`SETUP.md`](SETUP.md). Architecture: [`docs/architecture.md`](docs/ar
 
 Built and shipped:
 
-- The five playbooks with the unified editorial chrome (Italianate masthead, decisions section, magazine colophon, popover on click) — a single visual language across all five so the artefacts read as parts of the same long-form essay.
+- The five playbooks (`graph`, `ai-exposure`, `value-map`, `reshuffle`, `world-model`), each producing a frozen HTML + JSON pair under `org/plays/data/`.
 - The five-dimension autoresearch loop, with subscription mode (agent-as-judge in-context, no API key) as the default and API mode (`autoresearch.py --llm` against Claude Sonnet 4.6) as the CI fallback. Verdicts produced for every interpretive sample-org play.
 - `compile-agent` skill — given a scope (`org` / `unit:<id>` / `person:<id>` / `commitment:<id>`), emit a `CLAUDE.md` that turns a Claude Code session into an agent that knows that scope. Today a recipe-an-agent-follows-by-hand via the existing read tools; the mechanised compiler is the next iteration.
 - `interview-activity` skill — the eight-question Q&A flow that fills the density layer for one activity (interviewing the performer, saving the transcript verbatim as a source, structure-extracting the six fields). Demonstrated on two sample-org activities.
@@ -170,7 +170,7 @@ On the roadmap, with explicit composition with adjacent work:
 
 - **`context-bundle` playbook** — formal export of the structure as Cicero's three-layer context bundle: data model (RDF triples derived from the YAML frontmatter), business logic (capability×role matrix + Gherkin scenarios derived from the activity density layer), UX (User Postures derived from the stakeholder side of `world-model`). Composes with [Cicero's context-bundling thread](https://through-the-boundary.simonecicero.com/) directly.
 
-- **`autoresearch` as wiki feature** — the `org_autoresearch_run` mcp tool ships today; the next iteration makes autoresearch a *property* of every play (and, eventually, every node), not an external command.
+- **`autoresearch` as a property of the structure itself** — the `org_autoresearch_run` mcp tool ships today; the next iteration makes autoresearch a *property* of every play (and, eventually, every node), not an external command.
 
 ## Honest limits
 
@@ -186,7 +186,7 @@ The pattern — an LLM-maintained markdown corpus governed by a `CLAUDE.md` / `A
 
 The term **structure** for the cited-graph layer comes from Simone Cicero, *[What is an organization today?](https://through-the-boundary.simonecicero.com/p/ttb-1-what-is-an-organization-today)* (Through The Boundary, April 2026), which contrasts the *structure* of an organization (topology, taxonomy, shared context, promise chains) — what AI makes more necessary — with the *superstructure* (hierarchical management, bureaucracy) — what AI eliminates.
 
-The five playbooks compose established frames:
+The five playbooks compose established analytical frameworks:
 
 - **ai-exposure** — Anthropic Economic Index v1, March 2026 release.
 - **value-map** — Simon Wardley, value-mapping.
@@ -204,7 +204,7 @@ PRs welcome. The contribution guide is in [`CONTRIBUTING.md`](CONTRIBUTING.md). 
 - Adding a new mcp tool means: `mcp-server/src/tools/<name>.ts`, register in `mcp-server/src/server.ts`, e2e test, doc update in `docs/architecture.md` if the surface area changes.
 - Adding to the schema (a new node kind, a new YAML field, a new edge type in the graph) is a heavier change because it cascades through `org/AGENTS.md`, `lint.py`, the relevant `build.py` files, and the graph's edge label set. Open an issue first so we can think it through together.
 
-The intentional abstraction: this project codifies *the pattern* — cited structure, agent maintainer, frozen plays, deterministic gates, editorial chrome. Each fork instantiates the pattern with its own organization, its own working language, its own brand font, its own playbooks. We don't ship the operational layer (DRIs, cadence, named accountability for each playbook on a deployment) — that's per-fork, per-org, per-deployment, and trying to ship it would defeat the point. See [`docs/skills-as-capabilities.md`](docs/skills-as-capabilities.md) for the longer thought.
+The intentional abstraction: this project codifies *the pattern* — cited structure, agent maintainer, frozen plays, deterministic gates. Each fork instantiates the pattern with its own organization, its own working language, its own brand font, its own playbooks. We don't ship the operational layer (DRIs, cadence, named accountability for each playbook on a deployment) — that's per-fork, per-org, per-deployment, and trying to ship it would defeat the point. See [`docs/skills-as-capabilities.md`](docs/skills-as-capabilities.md) for the longer thought.
 
 ## License
 

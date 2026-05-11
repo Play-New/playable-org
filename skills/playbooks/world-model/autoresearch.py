@@ -4,7 +4,7 @@ world-model / autoresearch.py — Score a world-model play on five dimensions.
 
 Four are deterministic gates: jargon density (capability-stack vocabulary
 should not leak), decisions present and substantive, every cited
-capability / interface / failure-signal grounded in the structure, and
+capability / interface / piece to build grounded in the structure, and
 the play's interpretation actually mentions named units / activities /
 stakeholders of the org.
 
@@ -53,7 +53,7 @@ WORLD_MODEL_JARGON = re.compile(
 
 
 def score_audit_grounded(map_data: dict, org_dir: Path | None) -> tuple[bool, str]:
-    """Every named capability / interface / failure-signal that claims a
+    """Every named capability / interface / piece to build that claims a
     structure id resolves to a real file under org/."""
     if org_dir is None:
         return True, "skipped (no --org-dir provided)"
@@ -79,12 +79,12 @@ def score_audit_grounded(map_data: dict, org_dir: Path | None) -> tuple[bool, st
         _check(c, "capability", i)
     for i, iface in enumerate(map_data.get("interfaces") or []):
         _check(iface, "interface", i)
-    for i, s in enumerate(map_data.get("failure_signals") or []):
-        _check(s, "failure-signal", i)
+    for i, s in enumerate(map_data.get("pieces_to_build") or []):
+        _check(s, "piece to build", i)
 
     grounded = (len(map_data.get("capabilities") or [])
                 + len(map_data.get("interfaces") or [])
-                + len(map_data.get("failure_signals") or []))
+                + len(map_data.get("pieces_to_build") or []))
 
     if issues:
         return False, "issues:\n" + "\n".join(issues[:10])
@@ -93,10 +93,10 @@ def score_audit_grounded(map_data: dict, org_dir: Path | None) -> tuple[bool, st
 
 JUDGE_CONTEXT = """\
 A world-model artefact maps an organization as a layered stack — stakeholders, interfaces,
-intelligence layer, world model, capabilities — and a list of failure-signals that name
+intelligence layer, world model, capabilities — and a list of pieces to build that name
 where today's composition breaks. The decisions are the leader-facing reading of this
 stack: which capabilities are moat vs. commodity, which interfaces are real vs.
-aspirational, which failure-signals indicate a missing capability the org should build."""
+aspirational, which pieces to build indicate a missing capability the org should build."""
 
 
 def score_llm_judge(map_data: dict) -> tuple[bool, str]:
@@ -108,9 +108,9 @@ def score_llm_judge(map_data: dict) -> tuple[bool, str]:
             {"name": c.get("name"), "kind": c.get("kind"), "moat": c.get("moat")}
             for c in (map_data.get("capabilities") or [])
         ],
-        "failure_signals": [
+        "pieces_to_build": [
             {"trigger": s.get("trigger"), "missing_capability": s.get("missing_capability")}
-            for s in (map_data.get("failure_signals") or [])
+            for s in (map_data.get("pieces_to_build") or [])
         ],
     }
     return llm_judge(

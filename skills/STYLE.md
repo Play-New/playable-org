@@ -74,7 +74,7 @@ Words that must not appear in user-facing prose (chat replies, play body, viewer
 - *moat* (replace with "differentiated"); *commodity* in body prose (replace with "standard" or "market-standard"); *commoditize* (replace with "standardise" / "level the field")
 - *judgment density*, *capability stack*, *capability bundle* (paraphrase or drop — replace with "how much expert judgment is needed" / "the things the org can actually do")
 - *coordination tax* (replace with "the cost of keeping everyone aligned" / "alignment cost")
-- *failure-signal* (replace with "a piece to build" / "a place where the response would fall short" / "a missing piece of the chain")
+- *failure-signal* — Dorsey's term in the Block source, but **not used in user-facing prose**. The roadmap is not a pile of failures: it's the subset of captured signals from the loop that no current composition can fulfil. In prose write "what the loop surfaces as roadmap" / "a request the structure would already receive that no composition can fulfil today" / "a missing capability". The world-model JSON field is `pieces_to_build[]` (renamed in May 2026 from `failure_signals[]`; a further rename to `roadmap[]` is on the table).
 - *thin* as architectural metaphor (replace with "what to build next" / "the pieces that aren't there yet" — `thin` reads as critique and the reader stops on it)
 - *see-saw*, *flywheel* as standalone labels (replace with "old rule: more autonomy means less alignment" / "new rule: more autonomy and more alignment together")
 - *engine candidate*, *rebundle*, *bundle state*, *constraint distribution* in body prose (paraphrase or drop)
@@ -195,7 +195,7 @@ The default failure mode of AI writing: uniform medium-short sentences (10–15 
 ### Transitions
 
 - Connect through causation or contrast in content, not filler words.
-- Shift between micro (individual) and macro (system) views.
+- Shift between micro (individual) and macro (system) perspectives.
 
 ### Conclusions
 

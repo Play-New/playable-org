@@ -3,19 +3,24 @@
 value-map / viewer.py — Render a value-map JSON as an interactive HTML
 (with companion static SVG for markdown embedding).
 
-The HTML is the primary consumer artefact: top section explains how to read
-the map, the SVG below has clickable nodes that open a modal with full info
-(label, description, current/target evolution, AI effect, AEI evidence).
+App-pure layout (canvas-first, shared with graph): the SVG Wardley map
+is the page (`100vw × 100vh`), with floating editorial chrome on the
+*Carta sbiadita* paper — dateline + Analysis CTA + bottom-left stage
+legend. Clicking a component slides the Inspect card in from the
+right with the component's label, kind, placement, AI effect, and
+(for emerging items) the rationale. Decisions live in the Analysis
+modal; "show on canvas →" anchors close the modal and focus the
+referenced component.
 
-The standalone SVG is the secondary artefact for markdown plays (embedded via
-![](data/...svg)) — labels are truncated at ~22 chars to keep the static
-view readable.
+The standalone SVG (--svg) is the secondary artefact for markdown
+plays (embedded via `![](data/...svg)`) — labels truncated at ~22
+chars to keep the static view readable.
 
 Usage:
     python3 viewer.py --map <chain.json> --html <chain.html> [--svg <chain.svg>]
 
 Internal fields prefixed with `_` (e.g., `_aei`, `_structure_id`) are
-consumed by the modal but stripped from the visible SVG.
+consumed by the inspect card but stripped from the visible SVG.
 """
 
 from __future__ import annotations
@@ -27,34 +32,45 @@ import sys
 from html import escape
 from pathlib import Path
 
-# Import the shared Play New design system
+# Shared App-pure shell — palette, body, mobile baseline, chrome
+# helpers, modal, favicon, font. The viewer composes on top.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from design import base_css, masthead, colophon  # noqa: E402
+from design import (  # noqa: E402
+    app_pure_about_modal_html,
+    app_pure_baseline_js,
+    app_pure_css,
+    app_pure_dateline_html,
+    app_pure_head_meta,
+    app_pure_inspect_aside_html,
+    app_pure_modal_html,
+    app_pure_top_right_html,
+)
+
 
 # Layout constants
 W = 1400
-PAD = {"top": 130, "right": 80, "bottom": 70, "left": 120}
-MIN_DIST_COMPONENT = 110     # bumped from 70 for better spread / no overlap
-MIN_DIST_ANCHOR    = 260     # anchors need horizontal room for labels
-NUDGE_PASSES       = 14      # bumped from 5 — more passes converge to clean layout
-USER_NODE_Y        = 56      # bumped down so label isn't clipped
+# Bottom pad bumped from 90 to 130 so the two-line stage labels
+# (Genesis / new territory) don't run into the "evolution →" hint.
+PAD = {"top": 130, "right": 80, "bottom": 130, "left": 110}
+MIN_DIST_COMPONENT = 110
+MIN_DIST_ANCHOR    = 260
+NUDGE_PASSES       = 14
+USER_NODE_Y        = 56
 LABEL_TRUNCATE     = 22
 
-# Colors — these are SVG-attribute-injected hex values, kept in sync
-# with the data-viz palette declared in skills/design.py (--ds-*).
-# CSS in design.py owns the truth; these mirrors exist because SVG
-# `fill="..."` attributes don't reliably resolve `var(--ds-sage)`
-# across renderers (Chrome OK, Safari & static viewers patchy). When
-# you edit the palette in design.py, copy the hex values across here.
-FG = "#1a1a1a"        # foreground (rgba(0,0,0,0.9) on white in CSS)
-MUTED = "#6b6b6b"     # legacy --muted; design.py uses rgba(0,0,0,0.5)
-BG = "#faf9f6"        # paper-white surface
-LINE = "#e6e3dd"      # legacy --line; design.py uses rgba(0,0,0,0.1)
-ACCENT = "#c47558"    # = --ds-coral
-GENESIS = "#88a884"   # = --ds-sage
-CUSTOM = "#a5a3c8"    # = --ds-lilac
-PRODUCT = "#99b3d4"   # = --ds-slate (was #c8d4e5; unified for consistency)
-COMMODITY = "#d8cfb6" # = --ds-sand (was #e8dfc9; unified for consistency)
+# Colors — Carta sbiadita palette (v5). SVG-attribute hex values
+# mirror the CSS tokens declared by skills/design.py app_pure_css().
+# When the palette moves there, copy the hex values across here so
+# the static SVG (-svg flag) stays in sync.
+FG        = "#1c1a16"          # ink
+MUTED     = "rgba(28,26,22,0.6)"   # ink-60 (SVG `fill` accepts rgba)
+LINE      = "rgba(28,26,22,0.14)"  # hairline
+PAPER     = "#f4eee2"
+ACCENT    = "#b87b5e"          # commitment terracotta (emerging marker)
+GENESIS   = "#8a9d6b"          # activity sage
+CUSTOM    = "#9b8aa3"          # stakeholder lilac
+PRODUCT   = "#6b7d8c"          # unit slate
+COMMODITY = "#bca787"          # role sand
 
 
 def truncate(s: str, n: int = LABEL_TRUNCATE) -> str:
@@ -88,115 +104,106 @@ def build_positions(map_data: dict) -> tuple[dict[str, dict], list[str], int]:
     plot_w = W - PAD["left"] - PAD["right"]
     plot_h = H - PAD["top"] - PAD["bottom"]
 
-    def xpos(ev: float) -> float:
-        return PAD["left"] + max(0.0, min(1.0, ev)) * plot_w
-
-    def ypos(vis: float) -> float:
-        return PAD["top"] + (1 - max(0.0, min(1.0, vis))) * plot_h
-
     positions: dict[str, dict] = {}
 
-    # End-user nodes spread across top.
-    if len(end_users) == 1:
-        eu_xs = [PAD["left"] + plot_w * 0.5]
-    else:
-        spacing = min(300, plot_w / (len(end_users) + 1))
-        total = spacing * (len(end_users) - 1)
-        start = PAD["left"] + plot_w * 0.5 - total / 2
-        eu_xs = [start + i * spacing for i in range(len(end_users))]
+    # End user(s) at the top, evenly spread
     user_ids: list[str] = []
     for i, label in enumerate(end_users):
         uid = f"__user_{i}__"
+        x = PAD["left"] + plot_w * (0.5 if len(end_users) == 1 else i / max(1, len(end_users) - 1) * 0.8 + 0.1)
+        positions[uid] = {"label": label, "px": x, "py": USER_NODE_Y, "_kind": "user"}
         user_ids.append(uid)
-        positions[uid] = {
-            "px": eu_xs[i], "py": USER_NODE_Y,
-            "label": label, "kind": "user", "is_new": False,
+
+    # New end users — extra circles, coral filled, placed slightly
+    # below the existing end-users to avoid collision.
+    for j, eu in enumerate(map_data.get("new_end_users") or []):
+        label = eu.get("label", "") if isinstance(eu, dict) else str(eu)
+        nuid = f"__new_user_{j}__"
+        positions[nuid] = {
+            "label": label, "px": PAD["left"] + plot_w * (0.78 + 0.05 * j),
+            "py": USER_NODE_Y + 26, "_kind": "user", "is_new": True,
+            "rationale": eu.get("rationale", "") if isinstance(eu, dict) else "",
         }
 
-    new_users = map_data.get("new_end_users") or []
-    # New end users sit 200px to the right of the last existing user so
-    # their labels don't collide horizontally with the existing user labels.
-    for j, eu in enumerate(new_users):
-        uid = f"__new_user_{j}__"
-        positions[uid] = {
-            "px": eu_xs[-1] + 220 + j * 200, "py": USER_NODE_Y,
-            "label": eu.get("label", ""), "kind": "user", "is_new": True,
-        }
-
-    for a in anchors:
+    # Anchors — centered horizontally, just below the user nodes.
+    anchor_y = USER_NODE_Y + 100
+    for i, a in enumerate(anchors):
+        x = PAD["left"] + plot_w * (
+            0.5 if len(anchors) == 1 else i / max(1, len(anchors) - 1) * 0.8 + 0.1
+        )
         positions[a["id"]] = {
-            "px": xpos(a.get("evolution", 0.5)),
-            "py": ypos(1.0),
-            "label": a.get("label", ""), "kind": "anchor",
+            "label": a.get("label", ""),
+            "px": x, "py": anchor_y,
+            "_kind": "anchor",
             "is_new": bool(a.get("is_new")),
-            "evolution_target": a.get("evolution_target"),
-            "description": a.get("description", ""),
-            "node": a,
         }
 
+    # Components — positioned by evolution × visibility on the plot.
     for c in components:
+        ev = c.get("evolution", 0.5)
+        vis = c.get("visibility", 0.5)
+        # x: evolution. y: 1-visibility (visibility 1.0 = top, near user).
+        px = PAD["left"] + ev * plot_w
+        # Visibility band is from anchor_y + 60 down to plot_y1 - 30 to
+        # avoid overlapping anchors and the X axis.
+        band_top = anchor_y + 60
+        band_bot = PAD["top"] + plot_h - 30
+        py = band_top + (1 - vis) * (band_bot - band_top)
         positions[c["id"]] = {
-            "px": xpos(c.get("evolution", 0.5)),
-            "py": ypos(c.get("visibility", 0.5)),
-            "label": c.get("label", ""), "kind": "component",
+            "label": c.get("label", ""),
+            "px": px, "py": py,
+            "_kind": c.get("_kind", ""),
             "is_new": bool(c.get("is_new")),
-            "evolution_target": c.get("evolution_target"),
-            "ai_effect": c.get("ai_effect", ""),
-            "description": c.get("_description", ""),
-            "node": c,
         }
 
-    # Collision nudging — anchors get larger MIN_DIST.
-    real_ids = [a["id"] for a in anchors] + [c["id"] for c in components]
-
-    def dist_for(id_a: str, id_b: str) -> float:
-        ka = positions[id_a]["kind"]
-        kb = positions[id_b]["kind"]
-        if ka == "anchor" or kb == "anchor":
-            return MIN_DIST_ANCHOR
-        return MIN_DIST_COMPONENT
-
+    # Anti-overlap nudge passes — push components apart if they're closer
+    # than MIN_DIST_COMPONENT, push anchors apart MIN_DIST_ANCHOR.
     for _ in range(NUDGE_PASSES):
-        for i in range(len(real_ids)):
-            for j in range(i + 1, len(real_ids)):
-                pa = positions[real_ids[i]]
-                pb = positions[real_ids[j]]
-                dx = pb["px"] - pa["px"]
-                dy = pb["py"] - pa["py"]
-                dist = math.sqrt(dx * dx + dy * dy)
-                min_d = dist_for(real_ids[i], real_ids[j])
-                if 0 < dist < min_d:
-                    push = (min_d - dist) / 2
-                    ux, uy = dx / dist, dy / dist
-                    pa["px"] -= ux * push
-                    pa["py"] -= uy * push
-                    pb["px"] += ux * push
-                    pb["py"] += uy * push
-
-    # Clamp inside plot.
-    for pid, p in positions.items():
-        if p["kind"] == "user":
-            continue
-        p["px"] = max(PAD["left"] + 20, min(W - PAD["right"] - 20, p["px"]))
-        p["py"] = max(PAD["top"] + 5, min(H - PAD["bottom"] - 5, p["py"]))
+        ids = list(positions.keys())
+        for i in range(len(ids)):
+            a = positions[ids[i]]
+            for j in range(i + 1, len(ids)):
+                b = positions[ids[j]]
+                dx = b["px"] - a["px"]
+                dy = b["py"] - a["py"]
+                d = math.hypot(dx, dy) or 1
+                ka = a.get("_kind") == "anchor"
+                kb = b.get("_kind") == "anchor"
+                ua = a.get("_kind") == "user"
+                ub = b.get("_kind") == "user"
+                if ua or ub:
+                    continue  # users stay put at the top
+                min_d = MIN_DIST_ANCHOR if (ka or kb) else MIN_DIST_COMPONENT
+                if d < min_d:
+                    push = (min_d - d) / 2
+                    ux, uy = dx / d, dy / d
+                    # Don't move users or anchors via this pass either.
+                    if not ka:
+                        a["px"] -= ux * push * 0.5
+                        a["py"] -= uy * push * 0.5
+                    if not kb:
+                        b["px"] += ux * push * 0.5
+                        b["py"] += uy * push * 0.5
 
     return positions, user_ids, H
 
 
 def arc_path(x1: float, y1: float, x2: float, y2: float) -> str:
-    mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-    dx, dy = x2 - x1, y2 - y1
-    length = math.sqrt(dx * dx + dy * dy)
-    if length == 0:
-        return f"M{x1},{y1} L{x2},{y2}"
-    bulge = min(length * 0.12, 40)
-    nx = -dy / length * bulge
-    ny = dx / length * bulge
-    return f"M{x1:.1f},{y1:.1f} Q{mx + nx:.1f},{my + ny:.1f} {x2:.1f},{y2:.1f}"
+    """Quadratic bezier with a small bow so parallel edges separate."""
+    mx = (x1 + x2) / 2
+    my = (y1 + y2) / 2
+    dx = x2 - x1
+    dy = y2 - y1
+    length = math.hypot(dx, dy) or 1
+    nx = -dy / length
+    ny = dx / length
+    bow = min(40, length * 0.08)
+    cx = mx + nx * bow
+    cy = my + ny * bow
+    return f"M{x1:.1f},{y1:.1f} Q{cx:.1f},{cy:.1f} {x2:.1f},{y2:.1f}"
 
 
-def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, int]:
-    """Return (svg_inner_xml, H). When interactive=True, nodes have data-node-id attrs."""
+def render_svg_inner(map_data: dict, interactive: bool) -> tuple[str, int]:
     positions, user_ids, H = build_positions(map_data)
     plot_w = W - PAD["left"] - PAD["right"]
     plot_h = H - PAD["top"] - PAD["bottom"]
@@ -208,7 +215,6 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
     parts: list[str] = []
 
     # Plot axes — only the left (Y) and bottom (X) edges, no full rectangle.
-    # Play New convention: hairlines, white space, no boxes around boxes.
     parts.append(
         f'<line x1="{plot_x0}" y1="{plot_y0}" x2="{plot_x0}" y2="{plot_y1}" '
         f'stroke="{LINE}" stroke-width="1"/>'
@@ -219,7 +225,6 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
     )
 
     # Stage divisions — tiny tick marks on the X axis at the boundaries
-    # (no full vertical lines, no fills behind).
     band_x = lambda ev: plot_x0 + ev * plot_w
     for boundary in (0.17, 0.40, 0.70):
         x = band_x(boundary)
@@ -228,24 +233,42 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
             f'stroke="{LINE}" stroke-width="1"/>'
         )
 
-    # X axis stage labels
-    stages = [("Genesis", 0.085), ("Custom", 0.285), ("Product", 0.55), ("Commodity", 0.85)]
-    for label, x_frac in stages:
+    # X axis stage labels — bigger now so they read at a glance.
+    # Plain-language second line ("new territory" / "built in-house"
+    # / "buyable" / "market standard") explains each stage in chiaro.
+    stages = [
+        ("Genesis", "new territory", 0.085),
+        ("Custom", "built in-house", 0.285),
+        ("Product", "buyable", 0.55),
+        ("Commodity", "market standard", 0.85),
+    ]
+    for label, sub, x_frac in stages:
         x = plot_x0 + x_frac * plot_w
         parts.append(
-            f'<text x="{x:.1f}" y="{plot_y1 + 28}" text-anchor="middle" '
-            f'font-size="13" fill="{MUTED}">{escape(label)}</text>'
+            f'<text x="{x:.1f}" y="{plot_y1 + 34}" text-anchor="middle" '
+            f'font-size="19" fill="{FG}" font-weight="540" letter-spacing="-0.012em">{escape(label)}</text>'
+        )
+        parts.append(
+            f'<text x="{x:.1f}" y="{plot_y1 + 56}" text-anchor="middle" '
+            f'font-size="14" fill="{MUTED}" font-style="italic">{escape(sub)}</text>'
         )
     parts.append(
         f'<text x="{(plot_x0 + plot_x1) / 2:.1f}" y="{H - 14}" text-anchor="middle" '
-        f'font-size="11" fill="{MUTED}" font-style="italic">evolution →</text>'
+        f'font-size="14" fill="{MUTED}" font-style="italic">evolution →</text>'
     )
 
-    # Y axis label
+    # Y axis labels — split into two separate strings, top and bottom
+    # of the axis, so the reading is "visible up here, invisible down
+    # there" rather than one rotated phrase to parse. Anchored at the
+    # axis line (end-aligned just to its left) and short enough to fit
+    # within the left margin of the viewBox at any viewport width.
     parts.append(
-        f'<text x="{30}" y="{plot_y0 + plot_h / 2}" text-anchor="middle" '
-        f'transform="rotate(-90 30 {plot_y0 + plot_h / 2})" '
-        f'font-size="11" fill="{MUTED}" font-style="italic">visibility ↑ (closer to user) — invisible ↓</text>'
+        f'<text x="{plot_x0 - 10:.1f}" y="{plot_y0 - 6:.1f}" text-anchor="end" '
+        f'font-size="14" fill="{FG}" font-weight="540" letter-spacing="-0.008em">visible ↑</text>'
+    )
+    parts.append(
+        f'<text x="{plot_x0 - 10:.1f}" y="{plot_y1 + 18:.1f}" text-anchor="end" '
+        f'font-size="14" fill="{MUTED}" font-style="italic">↓ invisible</text>'
     )
 
     # Arrow marker definition
@@ -267,20 +290,15 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
     components = map_data.get("components") or []
     anchors = map_data.get("anchors") or []
 
-    # Implicit user → anchor edges: every end-user (existing and new)
-    # connects to every anchor (the user need the org promises to
-    # fulfill). Without this, new stakeholders would float disconnected.
+    # Implicit user → anchor edges
     new_user_ids = [f"__new_user_{j}__" for j in range(len(map_data.get("new_end_users") or []))]
     for uid in list(user_ids) + new_user_ids:
         for a in anchors:
             edges.append({"from": uid, "to": a["id"], "_implicit": True})
 
-    # Implicit anchor → unit-level component edges. Top-level components
-    # are anything with `_kind: "unit"` — these are the entry points of
-    # the chain that delivers the user need. (Activities sit under units.)
+    # Implicit anchor → top-level-component edges
     unit_ids = [c["id"] for c in components if c.get("_kind") == "unit"]
     if not unit_ids:
-        # Fallback: components with no incoming dependency edges.
         incoming = {e.get("to") for e in (map_data.get("edges") or [])}
         unit_ids = [c["id"] for c in components if c["id"] not in incoming]
     for a in anchors:
@@ -303,40 +321,42 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
             f'<path d="{d}" stroke="{MUTED}" stroke-opacity="0.4" stroke-width="1" fill="none"/>'
         )
 
+    on_click = ' onclick="pnNodeClick(this)"' if interactive else ""
+    cursor = ' style="cursor:pointer"' if interactive else ""
+
     # End-user nodes
     for uid in user_ids:
         p = positions[uid]
         parts.append(
-            f'<g class="node node-user" data-node-id="{uid}" onclick="pnNodeClick(this)">'
+            f'<g class="node node-user" data-node-id="{uid}"{on_click}{cursor}>'
             f'<title>{escape(p["label"])}</title>'
-            f'<circle cx="{p["px"]:.1f}" cy="{p["py"]:.1f}" r="14" fill="{FG}"/>'
-            f'<text x="{p["px"]:.1f}" y="{p["py"] - 26:.1f}" text-anchor="middle" '
-            f'font-size="14" fill="{FG}" font-weight="600">{escape(truncate(p["label"]))}</text>'
+            f'<circle cx="{p["px"]:.1f}" cy="{p["py"]:.1f}" r="16" fill="{FG}"/>'
+            f'<text x="{p["px"]:.1f}" y="{p["py"] - 28:.1f}" text-anchor="middle" '
+            f'font-size="16" fill="{FG}" font-weight="540" letter-spacing="-0.012em">{escape(truncate(p["label"]))}</text>'
             f'</g>'
         )
 
-    # New end users — same circle shape as existing end-users (kind =
-    # stakeholder, shape stays a circle), coral fill to mark "new".
+    # New end users
     for j, _ in enumerate(map_data.get("new_end_users") or []):
         p = positions.get(f"__new_user_{j}__")
         if not p:
             continue
         parts.append(
-            f'<g class="node node-user node-new" data-node-id="__new_user_{j}__" onclick="pnNodeClick(this)">'
+            f'<g class="node node-user node-new" data-node-id="__new_user_{j}__"{on_click}{cursor}>'
             f'<title>{escape(p["label"])}</title>'
-            f'<circle cx="{p["px"]:.1f}" cy="{p["py"]:.1f}" r="14" fill="{ACCENT}"/>'
-            f'<text x="{p["px"]:.1f}" y="{p["py"] - 26:.1f}" text-anchor="middle" '
-            f'font-size="14" fill="{ACCENT}" font-weight="600">{escape(truncate(p["label"]))} ★</text>'
+            f'<circle cx="{p["px"]:.1f}" cy="{p["py"]:.1f}" r="16" fill="{ACCENT}"/>'
+            f'<text x="{p["px"]:.1f}" y="{p["py"] - 28:.1f}" text-anchor="middle" '
+            f'font-size="16" fill="{ACCENT}" font-weight="540" letter-spacing="-0.012em">{escape(truncate(p["label"]))} ★</text>'
             f'</g>'
         )
 
-    # Anchors (diamonds)
+    # Anchors (diamonds) — larger so they read at a distance.
     for a in map_data["anchors"]:
         p = positions[a["id"]]
         cx, cy = p["px"], p["py"]
-        size = 12
+        size = 16
         diamond = f"{cx},{cy - size} {cx + size},{cy} {cx},{cy + size} {cx - size},{cy}"
-        fill = ACCENT if p["is_new"] else "#ffffff"
+        fill = ACCENT if p["is_new"] else PAPER
         stroke = ACCENT if p["is_new"] else FG
         et = a.get("evolution_target")
         et_arrow = ""
@@ -347,30 +367,29 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
                 f'stroke="{ACCENT}" stroke-width="1.2" stroke-dasharray="3,3" '
                 f'marker-end="url(#arrow-accent)"/>'
             )
-        # Label below diamond to avoid colliding with end-user labels above.
-        label_y = cy + size + 18
+        label_y = cy + size + 20
         parts.append(
-            f'<g class="node node-anchor" data-node-id="{a["id"]}" onclick="pnNodeClick(this)" style="cursor:pointer">'
+            f'<g class="node node-anchor" data-node-id="{a["id"]}"{on_click}{cursor}>'
             f'<title>{escape(a.get("label", ""))}</title>'
-            f'<polygon points="{diamond}" fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>'
+            f'<polygon points="{diamond}" fill="{fill}" stroke="{stroke}" stroke-width="1.8"/>'
             f'{et_arrow}'
             f'<text x="{cx:.1f}" y="{label_y:.1f}" text-anchor="middle" '
-            f'font-size="12" fill="{FG}" font-weight="500">{escape(truncate(p["label"], 26))}</text>'
+            f'font-size="14" fill="{FG}" font-weight="540" letter-spacing="-0.012em">{escape(truncate(p["label"], 26))}</text>'
             f'</g>'
         )
 
-    # Components — always circles. Coral fill marks emerging items.
-    # Rule: shape = kind (circle = component/stakeholder, diamond =
-    # anchor/value), colour = state (white = exists, coral = new).
+    # Components — circles. Stage colour as fill, ACCENT for emerging.
+    # Larger radius (10 from 7) so the swatches read at typical
+    # screen distance and don't disappear against the labels.
     for c in map_data["components"]:
         p = positions[c["id"]]
         cx, cy = p["px"], p["py"]
-        r = 7
-        fill = ACCENT if p["is_new"] else "#ffffff"
+        r = 10
+        fill = ACCENT if p["is_new"] else stage_color(c.get("evolution", 0.5))
         stroke = ACCENT if p["is_new"] else FG
         shape = (
             f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" '
-            f'fill="{fill}" stroke="{stroke}" stroke-width="1.5"/>'
+            f'fill="{fill}" stroke="{stroke}" stroke-width="1.4"/>'
         )
         et = c.get("evolution_target")
         et_arrow = ""
@@ -382,7 +401,7 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
                 f'marker-end="url(#arrow-accent)"/>'
             )
         # Wrap label at 22 chars, max 2 lines.
-        label = truncate(p["label"], 44)  # hard cap
+        label = truncate(p["label"], 44)
         words = label.split()
         line1, line2 = "", ""
         for w in words:
@@ -399,14 +418,15 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
             line2 = line2[: LABEL_TRUNCATE - 1] + "…"
         text_lines = f'<tspan x="{cx:.1f}" dy="0">{escape(line1)}</tspan>'
         if line2:
-            text_lines += f'<tspan x="{cx:.1f}" dy="14">{escape(line2)}</tspan>'
+            text_lines += f'<tspan x="{cx:.1f}" dy="18">{escape(line2)}</tspan>'
+        is_new_class = " node-new" if p["is_new"] else ""
         parts.append(
-            f'<g class="node node-component{" node-new" if p["is_new"] else ""}" data-node-id="{c["id"]}" onclick="pnNodeClick(this)" style="cursor:pointer">'
+            f'<g class="node node-component{is_new_class}" data-node-id="{c["id"]}"{on_click}{cursor}>'
             f'<title>{escape(c.get("label", ""))}</title>'
             f'{shape}'
             f'{et_arrow}'
-            f'<text x="{cx:.1f}" y="{cy + r + 14:.1f}" text-anchor="middle" '
-            f'font-size="11" fill="{FG}">{text_lines}</text>'
+            f'<text x="{cx:.1f}" y="{cy + r + 18:.1f}" text-anchor="middle" '
+            f'font-size="14" fill="{FG}" font-weight="460" letter-spacing="-0.008em">{text_lines}</text>'
             f'</g>'
         )
 
@@ -415,501 +435,517 @@ def render_svg_inner(map_data: dict, interactive: bool = False) -> tuple[str, in
 
 
 def render_svg_standalone(map_data: dict) -> str:
+    """Static SVG for markdown embedding. Same content, no `onclick`,
+    no JS — just a portable image."""
     inner, H = render_svg_inner(map_data, interactive=False)
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" '
-        f'width="100%" style="font-family: ui-serif, Georgia, serif; background: {BG};">\n'
+        f'width="100%" style="font-family: \'Inter\', system-ui, sans-serif; background: {PAPER};">\n'
         f'{inner}\n</svg>'
     )
 
 
-EXTRA_CSS = """
-/* Value-map viewer — Play New design.
-   Pure white surface, editorial typography, hairlines, single accent. */
-
-body { background: #FFFFFF; color: var(--fg); }
-
-.container { max-width: 1240px; margin: 0 auto; padding: 80px 40px 96px; }
-
-header { margin: 0 auto 48px; max-width: 820px; }
-header .eyebrow { font-family: var(--font-display); font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 16px; }
-header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); }
-header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0; max-width: 720px; }
-
-.map-wrap { padding: 24px 0; margin: 24px 0; overflow-x: auto; }
-.map-wrap svg { display: block; }
+# ----------------------------------------------------------------------
+# Value-map-specific CSS — composes on top of design.app_pure_css(layout="canvas").
+# Only the bits that don't generalise to the other viewers live here:
+# the SVG full-bleed positioning, the node hover affordance, the bottom
+# stages legend, and the inspect "placement" copy.
+# ----------------------------------------------------------------------
+EXTRA_CSS = r"""
+/* Map SVG: positioned to leave room for the floating chrome — the
+   dateline + Analysis CTA take ~62px at the top; the symbol key takes
+   ~70px at the bottom; the Y axis labels need ~80px on the left. The
+   SVG uses preserveAspectRatio="xMidYMid meet" inside, so the viewBox
+   scales without distortion within whatever space is allocated. */
+.map-wrap {
+  position: fixed;
+  top: max(62px, calc(env(safe-area-inset-top) + 56px));
+  bottom: max(70px, calc(env(safe-area-inset-bottom) + 60px));
+  left: max(20px, env(safe-area-inset-left));
+  right: max(20px, env(safe-area-inset-right));
+  z-index: 1;
+}
+.map-wrap svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 .map-wrap svg .node { cursor: pointer; }
-.map-wrap svg .node:hover circle, .map-wrap svg .node:hover polygon { stroke-width: 2; }
+.map-wrap svg .node:hover circle,
+.map-wrap svg .node:hover polygon { stroke-width: 2.2; }
+.map-wrap svg .node.focused circle,
+.map-wrap svg .node.focused polygon { stroke: var(--ink); stroke-width: 2.4; }
 
-.legend-wrap { max-width: 820px; margin: 8px auto 0; }
-.legend { display: flex; gap: 28px; flex-wrap: wrap; font-size: 0.82rem; color: var(--fg-muted); margin: 0; align-items: center; }
-.legend .item { display: flex; align-items: center; gap: 8px; }
-.legend .shape { display: inline-block; width: 12px; height: 12px; }
-.legend .shape.user { background: var(--fg); border-radius: 50%; }
-.legend .shape.anchor { background: transparent; border: 1.5px solid var(--fg); transform: rotate(45deg); }
-.legend .shape.component { background: transparent; border: 1.5px solid var(--fg); border-radius: 50%; }
-.legend .shape.new { background: var(--ds-coral); }
-.legend .shape.arrow { width: 22px; height: 1.5px; background: var(--ds-coral); }
+/* Symbol key — the system that distinguishes the four element types
+   on the map. Bottom-centered, paper-coloured, hairline border. The
+   X-axis labels Genesis/Custom/Product/Commodity are inside the SVG. */
+.map-key {
+  position: fixed;
+  bottom: max(20px, calc(env(safe-area-inset-bottom) + 16px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex; flex-wrap: nowrap; align-items: center;
+  gap: 22px;
+  padding: 10px 18px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--ink-80);
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  pointer-events: none;
+  max-width: calc(100vw - 32px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.map-key::-webkit-scrollbar { display: none; }
+.map-key .key {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-style: italic;
+  color: var(--ink-40);
+}
+.map-key .key em {
+  font-style: normal;
+  color: var(--ink-80);
+  font-weight: 460;
+}
+.map-key .glyph {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px;
+}
+.map-key .glyph.stakeholder { background: var(--ink); border-radius: 50%; width: 12px; height: 12px; }
+.map-key .glyph.value {
+  width: 14px; height: 14px;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  transform: rotate(45deg);
+}
+.map-key .glyph.node {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1.2px solid var(--ink);
+}
+.map-key .glyph.new {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+}
+.map-key .glyph.arrow svg { width: 26px; height: 10px; }
+@media (max-width: 900px) {
+  .map-wrap {
+    top: max(54px, calc(env(safe-area-inset-top) + 50px));
+    bottom: max(110px, calc(env(safe-area-inset-bottom) + 100px));
+    left: 8px; right: 8px;
+  }
+}
+.map-key .key small {
+  font-size: inherit;
+  font-style: italic;
+  color: var(--ink-25);
+  margin-left: 2px;
+}
+@media (max-width: 760px) {
+  .map-key {
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: visible;
+    gap: 6px 14px;
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 14px;
+    max-width: calc(100vw - 24px);
+  }
+  /* Drop the secondary phrase on phones — keep only the glyph + main label. */
+  .map-key small { display: none; }
+}
 
-.section { margin: 96px auto 0; padding-top: 40px; border-top: 1px solid var(--fg-hairline); max-width: 820px; }
-.section h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 20px; }
-.section p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; max-width: 720px; }
-.section .lead { font-size: 0.95rem; color: var(--fg-muted); line-height: 1.65; max-width: 720px; margin: 0 0 28px; }
+/* Inspect "placement" copy — italic, ink-60. Used inside the inspect
+   card body for the genesis/custom/product/commodity description. */
+.inspect .placement {
+  font-style: italic;
+  color: var(--ink-60);
+  font-size: 12.5px;
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+.inspect .placement em { font-style: normal; color: var(--ink-80); }
+.inspect .ai-effect {
+  font-size: 13px;
+  color: var(--ink-95);
+  line-height: 1.55;
+  margin: 0 0 10px;
+}
+.inspect .emerging-why {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--paper-2);
+  border-left: 2px solid {ACCENT_COLOR};
+  border-radius: 3px;
+}
+.inspect .emerging-why-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: {ACCENT_COLOR};
+  margin-bottom: 4px;
+}
+.inspect .emerging-why p {
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin: 0;
+}
 
-.no-overlay { font-size: 0.9rem; color: var(--fg-muted); padding: 18px 22px; background: var(--bg-alt); border-radius: 4px; max-width: 720px; line-height: 1.6; }
+@media (max-width: 760px) {
+  .stages { gap: 6px 6px; max-width: 60vw; }
+  .stage-pill { padding: 7px 11px; font-size: 11.5px; }
+}
+""".replace("{ACCENT_COLOR}", ACCENT)
 
-/* Emerging section — surfaces every is_new component / new stakeholder
-   with its rationale, visible without clicking. Coral accent so the eye
-   ties items to the coral marks on the map. */
-.emerging-item { padding: 16px 18px; margin-bottom: 12px; border: 1px solid var(--ds-coral); border-radius: 4px; max-width: 720px; background: var(--ds-coral-bg, rgba(196,117,88,0.04)); }
-.emerging-item .emerging-kind { font-family: var(--font-display); font-size: 0.66rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--ds-coral); margin-bottom: 6px; }
-.emerging-item .emerging-label { font-family: var(--font-display); font-size: 1.0rem; font-weight: 500; color: var(--fg); margin-bottom: 6px; letter-spacing: -0.01em; }
-.emerging-item .why { font-size: 0.92rem; line-height: 1.65; color: var(--fg); margin: 0; }
-.no-overlay code { font-size: 0.85em; }
 
-.decision { margin-bottom: 32px; }
-.decision .question { font-family: var(--font-display); font-size: 1.05rem; font-weight: 500; color: var(--fg); margin: 0 0 8px; letter-spacing: -0.01em; }
-.decision .answer { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 6px; max-width: 720px; }
-.decision .source { font-size: 0.78rem; color: var(--fg-muted); font-family: ui-monospace, SF Mono, Menlo, monospace; }
+# ----------------------------------------------------------------------
+# Value-map-specific JavaScript. Modal open/close + ?focus permalink
+# come from app_pure_baseline_js. window.setFocus opens the inspect
+# card with the component's content; the shared baseline calls it for
+# anchors and ?focus.
+# ----------------------------------------------------------------------
+JS_TEMPLATE = r"""
+(() => {
+  const NODES = JSON.parse(document.getElementById('nodes-data').textContent);
+  const inspect = document.getElementById('inspect');
+  const inspectBody = document.getElementById('inspect-body');
+  const STAGE_COLORS = {
+    genesis: 'GENESIS_HEX', custom: 'CUSTOM_HEX',
+    product: 'PRODUCT_HEX', commodity: 'COMMODITY_HEX'
+  };
+  const STAGE_PLAIN = {
+    genesis:   'new territory — nobody knows yet how to do this well',
+    custom:    'built in-house — every shop figures it out their own way',
+    product:   'common practice — vendors and patterns exist, you can buy it',
+    commodity: 'market standard — indistinguishable across providers',
+  };
+  function stageFor(ev) {
+    if (ev < 0.17) return 'genesis';
+    if (ev < 0.40) return 'custom';
+    if (ev < 0.70) return 'product';
+    return 'commodity';
+  }
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[c]);
+  }
+  function kindLabel(node) {
+    if (node.is_new) return 'New / emerging';
+    if (node._kind === 'anchor') return 'User need';
+    if (node._kind === 'user') return 'End user';
+    if (node._kind === 'unit') return 'Unit';
+    if (node._kind === 'activity') return 'Activity';
+    if (node._kind === 'stakeholder') return 'External stakeholder';
+    return 'Part of the chain';
+  }
+  function kindSwatch(node) {
+    if (node.is_new) return 'ACCENT_HEX';
+    const ev = node.evolution;
+    if (ev != null) return STAGE_COLORS[stageFor(ev)];
+    if (node._kind === 'user') return 'INK_HEX';
+    return 'INK_HEX';
+  }
 
-/* Popover — small floating card next to the clicked node. Replaces the
-   full-screen modal: pop-overs read as 'a tooltip you can read', not 'a
-   page you have to dismiss'. */
-.popover { position: absolute; display: none; max-width: 320px; min-width: 220px; padding: 14px 18px 16px; background: #FFFFFF; border: 1px solid var(--fg-hairline); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); z-index: 100; animation: pn-pop 0.18s ease; }
-.popover.open { display: block; }
-.popover .close { position: absolute; top: 6px; right: 8px; background: transparent; border: 0; cursor: pointer; font-size: 1.1rem; color: var(--fg-muted); padding: 0; line-height: 1; }
-.popover .close:hover { color: var(--fg); background: transparent; }
-.popover .eyebrow { font-family: var(--font-display); font-size: 0.62rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 6px; color: var(--fg-muted); }
-.popover .eyebrow.is-new { color: var(--ds-coral); }
-.popover h3 { font-family: var(--font-display); font-size: 1rem; font-weight: 500; letter-spacing: -0.015em; margin: 0 0 8px; line-height: 1.25; color: var(--fg); padding-right: 18px; }
-.popover .body p { font-size: 0.84rem; line-height: 1.55; color: var(--fg); margin: 0 0 8px; }
-.popover .body p:last-child { margin-bottom: 0; }
-.popover .body em.placement { color: var(--fg-muted); font-style: normal; }
-.popover .citation { font-size: 0.7rem; color: var(--fg-muted); padding-top: 8px; margin-top: 10px; border-top: 1px solid var(--fg-hairline); font-family: ui-monospace, SF Mono, Menlo, monospace; }
-.popover .emerging-why { margin-top: 10px; padding: 10px 12px; background: var(--ds-coral-bg, rgba(196,117,88,0.08)); border-left: 2px solid var(--ds-coral); border-radius: 3px; }
-.popover .emerging-why-label { font-family: var(--font-display); font-size: 0.62rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--ds-coral); margin-bottom: 4px; }
-.popover .emerging-why p { font-size: 0.84rem; line-height: 1.55; margin: 0; }
+  function renderInspectFor(id) {
+    const node = NODES[id];
+    if (!node) { inspect.classList.remove('open'); return; }
+    inspect.classList.add('open');
+    const isUser = node._kind === 'user';
+    const stage = node.evolution != null ? stageFor(node.evolution) : null;
+    const swatch = kindSwatch(node);
+    const desc = node.description || node._description || node._body || '';
+
+    let html = `<div class="kind-tag" style="--tagcolor:${swatch}"><span class="swatch"></span><span>${escapeHtml(kindLabel(node))}</span></div>`;
+    html += `<h2>${escapeHtml(node.label || id)}</h2>`;
+    if (node._structure_id) {
+      html += `<p class="path"><em>_path</em>  ${escapeHtml(node._structure_id)}</p>`;
+    }
+    if (desc) html += `<p class="blurb">${escapeHtml(desc)}</p>`;
+    if (!isUser && node.evolution != null) {
+      const visText = node.visibility != null
+        ? (node.visibility >= 0.7 ? ' Visible to the client.'
+           : node.visibility >= 0.4 ? ' Mid-chain.'
+           : ' Behind the scenes.')
+        : '';
+      html += `<p class="placement">${STAGE_PLAIN[stage]}.${visText}</p>`;
+    }
+    if (node.evolution_target != null && !node.is_new) {
+      html += `<p class="placement">→ Heading toward <em>${STAGE_PLAIN[stageFor(node.evolution_target)]}</em>.</p>`;
+    }
+    if (node.ai_effect && !node.is_new) {
+      html += `<p class="ai-effect">${escapeHtml(node.ai_effect)}</p>`;
+    }
+    if (node.is_new) {
+      const why = node.ai_effect || node.rationale;
+      if (why) {
+        html += `<div class="emerging-why"><div class="emerging-why-label">Why it's on the map</div><p>${escapeHtml(why)}</p></div>`;
+      } else {
+        html += `<p class="placement">Emerging — does not exist today.</p>`;
+      }
+    }
+    inspectBody.innerHTML = html;
+
+    // Highlight the focused node in the SVG.
+    document.querySelectorAll('.map-wrap g.node').forEach(g => g.classList.toggle('focused', g.dataset.nodeId === id));
+  }
+
+  // Click / tap a node anywhere in the SVG.
+  window.pnNodeClick = function(el) {
+    const id = el.dataset && el.dataset.nodeId;
+    if (id) renderInspectFor(id);
+  };
+
+  // Belt-and-suspenders: a document-level click listener in case inline
+  // onclick is stripped by some sanitizer.
+  document.addEventListener('click', function(e) {
+    let g = e.target;
+    while (g && !(g.classList && g.classList.contains('node'))) g = g.parentNode;
+    if (g && g.dataset && g.dataset.nodeId) {
+      renderInspectFor(g.dataset.nodeId);
+    }
+  }, true);
+
+  // Inspect close button + Esc clear focus (modal Esc handled by baseline).
+  document.getElementById('inspect-close').addEventListener('click', () => {
+    inspect.classList.remove('open');
+    document.querySelectorAll('.map-wrap g.node.focused').forEach(g => g.classList.remove('focused'));
+  });
+  window.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Escape') return;
+    const scrim = document.getElementById('modal-scrim');
+    if (scrim && scrim.classList.contains('open')) return;  // baseline handled it
+    inspect.classList.remove('open');
+    document.querySelectorAll('.map-wrap g.node.focused').forEach(g => g.classList.remove('focused'));
+  });
+
+  // Expose for the shared modal's "show on canvas →" anchors and ?focus permalink.
+  window.setFocus = function(id) { if (id) renderInspectFor(id); };
+})();
+""".replace("GENESIS_HEX", GENESIS).replace("CUSTOM_HEX", CUSTOM).replace("PRODUCT_HEX", PRODUCT).replace("COMMODITY_HEX", COMMODITY).replace("ACCENT_HEX", ACCENT).replace("INK_HEX", FG)
+
+
+# ----------------------------------------------------------------------
+# HTML template
+# ----------------------------------------------------------------------
+HTML_TEMPLATE = """<!doctype html>
+<html lang="en">
+<head>
+{head_meta}
+<style>
+{css}
+</style>
+</head>
+<body>
+
+{dateline}
+
+{top_right}
+
+<div class="map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" preserveAspectRatio="xMidYMid meet" style="font-family: 'Inter', system-ui, sans-serif;">
+{svg_inner}
+  </svg>
+</div>
+
+<!-- Symbol key (bottom-center). Four element types on the map plus
+     the AI-pressure arrow. Stages (genesis / custom / product /
+     commodity) are labelled inside the SVG along the X axis. -->
+<div class="map-key">
+  <span class="key"><span class="glyph stakeholder"></span> <em>stakeholder</em></span>
+  <span class="key"><span class="glyph value"></span> <em>value</em><small> (user need)</small></span>
+  <span class="key"><span class="glyph node"></span> <em>node</em><small> (part of the chain)</small></span>
+  <span class="key"><span class="glyph new" style="background:{ACCENT}"></span> <em>new</em><small> / emerging</small></span>
+  <span class="key"><span class="glyph arrow"><svg viewBox="0 0 26 10"><line x1="0" y1="5" x2="22" y2="5" stroke="{ACCENT}" stroke-width="1.5" stroke-dasharray="3,3"/><path d="M18,1 L22,5 L18,9" stroke="{ACCENT}" stroke-width="1.5" fill="none"/></svg></span> <em>where AI is pushing</em></span>
+</div>
+
+{inspect_aside}
+
+{modal_html}
+
+<script type="application/json" id="nodes-data">{nodes_json}</script>
+<script>
+{baseline_js}
+{js}
+</script>
+</body>
+</html>
 """
 
 
-HTML_TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>{title} · value map</title>
-<style>{css}</style>
-</head>
-<body>
-  <div class="container">
-    {masthead_html}
-
-    <div class="map-wrap">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="100%" style="font-family: var(--font-display);">
-{svg_inner}
-      </svg>
-    </div>
-
-    <div class="legend-wrap">
-      <div class="legend">
-        <div class="item"><span class="shape user"></span><span>End user</span></div>
-        <div class="item"><span class="shape anchor"></span><span>User need</span></div>
-        <div class="item"><span class="shape component"></span><span>Part of the chain</span></div>
-        <div class="item"><span class="shape new"></span><span>New / emerging</span></div>
-        <div class="item"><span class="shape arrow"></span><span>Where AI is pushing</span></div>
-      </div>
-    </div>
-
-    {ai_overlay_section}
-
-    {emerging_section}
-
-    {decisions_section}
-
-    {colophon_html}
-  </div>
-
-  <div class="popover" id="popover">
-    <button class="close" id="popover-close" aria-label="Close">×</button>
-    <div id="popover-body"></div>
-  </div>
-
-<script>
-const NODES = {nodes_json};
-
-function stageFor(ev) {{
-  if (ev < 0.17) return 'genesis';
-  if (ev < 0.40) return 'custom';
-  if (ev < 0.70) return 'product';
-  return 'commodity';
-}}
-
-function escapeHtml(s) {{
-  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({{
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }})[c]);
-}}
-
-const STAGE_PLAIN = {{
-  genesis:   'new territory — nobody knows yet how to do this well',
-  custom:    'built in-house — every shop figures it out their own way',
-  product:   'common practice — vendors and patterns exist, you can buy it',
-  commodity: 'market standard — indistinguishable across providers',
-}};
-
-function kindLabel(node) {{
-  if (node.is_new) return 'New / emerging';
-  if (node._kind === 'anchor') return 'User need';
-  if (node._kind === 'user') return 'End user';
-  if (node._kind === 'unit') return 'Unit';
-  if (node._kind === 'activity') return 'Activity';
-  if (node._kind === 'stakeholder') return 'External stakeholder';
-  return 'Part of the chain';
-}}
-
-function renderPopoverContent(node) {{
-  const isUser = node._kind === 'user';
-  const stage = node.evolution != null ? stageFor(node.evolution) : null;
-  const eyebrowCls = node.is_new ? 'eyebrow is-new' : 'eyebrow';
-
-  let html = `<div class="${{eyebrowCls}}">${{escapeHtml(kindLabel(node))}}</div>`;
-  html += `<h3>${{escapeHtml(node.label || node.id)}}</h3>`;
-  html += '<div class="body">';
-
-  // Prefer the short frontmatter description for popover punch; fall
-  // through to longer extracts only if it's missing.
-  const desc = node.description || node._description || node._body;
-  if (desc) {{
-    html += `<p>${{escapeHtml(desc)}}</p>`;
-  }}
-
-  if (!isUser && node.evolution != null) {{
-    const visText = node.visibility != null
-      ? (node.visibility >= 0.7 ? ' Visible to the client.'
-         : node.visibility >= 0.4 ? ' Mid-chain.'
-         : ' Behind the scenes.')
-      : '';
-    html += `<p><em class="placement">${{STAGE_PLAIN[stage]}}.${{visText}}</em></p>`;
-  }}
-
-  if (node.evolution_target != null && !node.is_new) {{
-    html += `<p><em class="placement">→ Heading toward ${{STAGE_PLAIN[stageFor(node.evolution_target)]}}.</em></p>`;
-  }}
-
-  // Existing items: ai_effect describes what AI does to them.
-  if (node.ai_effect && !node.is_new) {{
-    html += `<p>${{escapeHtml(node.ai_effect)}}</p>`;
-  }}
-
-  // Emerging items (new component or new stakeholder): render a
-  // dedicated "Why it's on the map" block. For components the rationale
-  // lives in ai_effect; for new stakeholders it lives in rationale.
-  // Either way, the leader sees a clear answer to "why is this here?".
-  if (node.is_new) {{
-    const why = node.ai_effect || node.rationale;
-    if (why) {{
-      html += `<div class="emerging-why"><div class="emerging-why-label">Why it's on the map</div><p>${{escapeHtml(why)}}</p></div>`;
-    }} else {{
-      html += `<p><em class="placement">Emerging — does not exist today.</em></p>`;
-    }}
-  }}
-
-  html += '</div>';
-
-  if (node._structure_id) {{
-    html += `<div class="citation">${{escapeHtml(node._structure_id)}}</div>`;
-  }}
-
-  return html;
-}}
-
-const popoverEl   = document.getElementById('popover');
-const popoverBody = document.getElementById('popover-body');
-
-function showPopover(node, anchorRect) {{
-  // Open the popover BELOW the clicked node, centered horizontally
-  // on it. If there's not enough room below, flip above. Always
-  // clamped inside the viewport. Predictable placement close to
-  // what was clicked.
-  popoverBody.innerHTML = renderPopoverContent(node);
-  const margin = 12;
-  popoverEl.style.left = '0px';
-  popoverEl.style.top = '0px';
-  popoverEl.classList.add('open');
-  const r = popoverEl.getBoundingClientRect();
-  const anchorCenterX = (anchorRect.left + anchorRect.right) / 2;
-  const viewportRight  = window.scrollX + window.innerWidth;
-  const viewportBottom = window.scrollY + window.innerHeight;
-  let x = anchorCenterX - r.width / 2;
-  if (x + r.width > viewportRight - margin) x = viewportRight - r.width - margin;
-  if (x < window.scrollX + margin) x = window.scrollX + margin;
-  let y = anchorRect.bottom + margin;
-  if (y + r.height > viewportBottom - margin) {{
-    const above = anchorRect.top - margin - r.height;
-    if (above >= window.scrollY + margin) y = above;
-    else y = viewportBottom - r.height - margin;
-  }}
-  popoverEl.style.left = x + 'px';
-  popoverEl.style.top  = y + 'px';
-}}
-
-function hidePopover() {{
-  popoverEl.classList.remove('open');
-}}
-
-// Inline onclick="pnNodeClick(this)" on every <g class="node"> in the
-// SVG calls this. Reliable across renderers; no event delegation gymnastics.
-window.pnNodeClick = function(el) {{
-  const id = el.dataset && el.dataset.nodeId;
-  if (id && NODES[id]) {{
-    const rect = el.getBoundingClientRect();
-    // Convert to absolute coords (positions live in the document, not
-    // the viewport).
-    const absRect = {{
-      left:   rect.left   + window.scrollX,
-      right:  rect.right  + window.scrollX,
-      top:    rect.top    + window.scrollY,
-      bottom: rect.bottom + window.scrollY,
-    }};
-    showPopover(NODES[id], absRect);
-  }}
-}};
-
-// Belt-and-suspenders: a document-level click listener in case inline
-// onclick is stripped by some sanitizer or doesn't bind on a given
-// renderer. Walks up parentNode manually (closest() on SVG is uneven).
-document.addEventListener('click', function(e) {{
-  // Close on click outside the popover and outside any node.
-  let n = e.target;
-  let onNode = false, onPopover = false;
-  while (n && n.nodeType === 1) {{
-    if (n.classList && n.classList.contains('node')) {{ onNode = true; break; }}
-    if (n.id === 'popover') {{ onPopover = true; break; }}
-    n = n.parentNode;
-  }}
-  if (onNode) {{
-    // pnNodeClick already handled it via inline onclick, but also do it
-    // here for renderers that strip inline onclick.
-    let g = e.target;
-    while (g && !(g.classList && g.classList.contains('node'))) g = g.parentNode;
-    if (g) {{
-      const id = g.dataset && g.dataset.nodeId;
-      if (id && NODES[id]) {{
-        const rect = g.getBoundingClientRect();
-        showPopover(NODES[id], {{
-          left:   rect.left   + window.scrollX,
-          right:  rect.right  + window.scrollX,
-          top:    rect.top    + window.scrollY,
-          bottom: rect.bottom + window.scrollY,
-        }});
-      }}
-    }}
-  }} else if (!onPopover) {{
-    hidePopover();
-  }}
-}}, true);
-
-document.getElementById('popover-close').addEventListener('click', hidePopover);
-document.addEventListener('keydown', (e) => {{ if (e.key === 'Escape') hidePopover(); }});
-</script>
-</body>
-</html>"""
-
-
-def render_html(map_data: dict) -> str:
-    inner, H = render_svg_inner(map_data, interactive=True)
-    anchor = map_data.get("_anchor", {})
-    title = anchor.get("title") or "Value map"
-    # Lead paragraph fallback chain: anchor.description -> anchor.terms ->
-    # commitment terms field if build.py preserved it. The page header
-    # needs SOMETHING substantive under the H1.
-    description = (
-        anchor.get("description")
-        or anchor.get("terms")
-        or ""
-    )
-
-    # AI overlay — surface a clear notice when no component carries either
-    # `evolution_target` or `ai_effect`. The arrows on the map carry the
-    # signal when present; when absent the reader needs to know it's a
-    # gap, not a "no AI shift expected here" claim.
-    components = map_data.get("components", [])
-    has_ai = any(c.get("ai_effect") or c.get("evolution_target") is not None for c in components)
-    if has_ai:
-        ai_overlay_section = ""
-    else:
-        ai_overlay_section = (
-            '<div class="section">'
-            '<h2>Where AI is pushing</h2>'
-            '<div class="no-overlay">'
-            "This map shows where each piece of the chain sits today, but it "
-            "doesn't yet show where AI is pushing it. The dashed arrows that "
-            "would normally appear on each node, pointing to the right toward "
-            "more standardization, need observed AI-usage data to be drawn. "
-            "Run the <em>ai-exposure</em> playbook first; the result is a set "
-            "of matches between the studio's activities and observed AI usage "
-            "in the world. Then re-render this map with that overlay on."
-            '</div></div>'
-        )
-
-    # Emerging section — surfaces every is_new component and every
-    # new_end_user with a clear "why it emerges" line, visible without
-    # clicking. The popover shows the same content on click; this
-    # section makes it impossible to miss.
-    emerging_components = [c for c in components if c.get("is_new")]
-    new_users_list = map_data.get("new_end_users") or []
-    if emerging_components or new_users_list:
-        items: list[str] = []
-        for u in new_users_list:
-            label = escape(u.get("label", ""))
-            why = escape(u.get("rationale", "") or u.get("description", "") or "")
-            why_html = f'<p class="why">{why}</p>' if why else ""
-            items.append(
-                f'<div class="emerging-item">'
-                f'<div class="emerging-kind">New stakeholder</div>'
-                f'<div class="emerging-label">{label}</div>'
-                f'{why_html}'
-                f'</div>'
-            )
-        for c in emerging_components:
-            label = escape(c.get("label", ""))
-            why = escape(c.get("ai_effect", "") or c.get("description", "") or c.get("_description", "") or "")
-            why_html = f'<p class="why">{why}</p>' if why else ""
-            items.append(
-                f'<div class="emerging-item">'
-                f'<div class="emerging-kind">New piece of the chain</div>'
-                f'<div class="emerging-label">{label}</div>'
-                f'{why_html}'
-                f'</div>'
-            )
-        emerging_section = (
-            '<div class="section emerging-section">'
-            '<h2>What\'s new on the map</h2>'
-            '<p class="lead">Every coral mark on the map above is something that doesn\'t exist today. Each one is a candidate, not a commitment: it\'s here because the rest of the chain suggests the conditions for it are approaching, but whether to build it stays the org\'s choice. Below, what each is and what would have to be true for it to land.</p>'
-            + "".join(items)
-            + '</div>'
-        )
-    else:
-        emerging_section = ""
-
-    # Decisions enabled — the load-bearing interpretive section. If the
-    # JSON carries a `decisions` array (each item: {question, answer,
-    # source}), render it; otherwise prompt for one.
-    decisions = map_data.get("decisions") or []
-    if decisions:
-        items: list[str] = []
-        for d in decisions:
-            q = escape(d.get("question", ""))
-            a = escape(d.get("answer", ""))
-            src = d.get("source", "") or d.get("citation", "")
-            src_div = f'<div class="source">{escape(src)}</div>' if src else ""
-            items.append(
-                f'<div class="decision">'
-                f'<div class="question">{q}</div>'
-                f'<div class="answer">{a}</div>'
-                f'{src_div}'
-                f'</div>'
-            )
-        decisions_section = (
-            '<div class="section">'
-            '<h2>How to read this map</h2>'
-            '<p class="lead">'
-            'The map alone is just positions. Below are the questions someone '
-            'looking at it should be asking, and what the positions suggest as '
-            'an answer. Each is a move you could make on Monday morning.'
-            '</p>'
-            f'{"".join(items)}'
-            '</div>'
-        )
-    else:
-        decisions_section = (
-            '<div class="section">'
-            '<h2>How to read this map</h2>'
-            '<div class="no-overlay">'
-            "The map shows where each piece of the work sits today. What to "
-            "do with that — which moves it suggests, what it tells you about "
-            "where the value is and where it's heading — is the next step. "
-            "It hasn't been authored yet for this map."
-            '</div></div>'
-        )
-
-    # Build nodes JSON for modal lookup.
-    nodes: dict[str, dict] = {}
-    end_users = map_data["end_user"]
+# ----------------------------------------------------------------------
+# Adapter — pull every clickable node from the map JSON into a flat
+# {id: node-data} object the JS can index.
+# ----------------------------------------------------------------------
+def _build_nodes_index(map_data: dict) -> dict[str, dict]:
+    index: dict[str, dict] = {}
+    end_users = map_data.get("end_user") or []
     if isinstance(end_users, str):
         end_users = [end_users] if end_users else []
-    for i, eu in enumerate(end_users):
-        nodes[f"__user_{i}__"] = {"label": eu, "_kind": "user"}
+    for i, label in enumerate(end_users):
+        uid = f"__user_{i}__"
+        index[uid] = {"id": uid, "_kind": "user", "label": label}
     for j, eu in enumerate(map_data.get("new_end_users") or []):
-        nodes[f"__new_user_{j}__"] = {**eu, "_kind": "user", "is_new": True}
-    for a in map_data["anchors"]:
-        nodes[a["id"]] = {**a, "_kind": "anchor"}
-    for c in map_data["components"]:
-        nodes[c["id"]] = c
+        nuid = f"__new_user_{j}__"
+        index[nuid] = {
+            "id": nuid, "_kind": "user", "is_new": True,
+            "label": eu.get("label", "") if isinstance(eu, dict) else str(eu),
+            "rationale": eu.get("rationale", "") if isinstance(eu, dict) else "",
+        }
+    for a in map_data.get("anchors") or []:
+        index[a["id"]] = {**a, "_kind": "anchor"}
+    for c in map_data.get("components") or []:
+        index[c["id"]] = c
+    return index
 
-    # --- editorial chrome (Italianate masthead + magazine colophon) ---
-    n_components = len(map_data.get("components", []))
-    n_anchors = len(map_data.get("anchors", []))
-    anchor_label = (map_data.get("anchors") or [{}])[0].get("label", map_data.get("_anchor", ""))
-    masthead_html = masthead(
-        kicker_left="value map",
-        kicker_num=f"№ {n_components:02d}",
-        kicker_right=f"anchored on · {anchor_label}" if anchor_label else "",
-        title=f"<em>{escape(title)}</em>",
-        lede=description,
-        dateline="dated " + (map_data.get("_dated") or ""),
-        tags=[
-            f"{n_components} pieces",
-            f"{n_anchors} anchor" + ("s" if n_anchors != 1 else ""),
-        ],
+
+def _build_modal_html(map_data: dict, org_name: str, dated: str) -> str:
+    decisions = map_data.get("decisions") or []
+    if not decisions:
+        return ""
+    nodes_idx = _build_nodes_index(map_data)
+    items = []
+    for dec in decisions:
+        question = (dec.get("question") or "").strip()
+        answer_paragraphs = [
+            p.strip() for p in (dec.get("answer") or "").split("\n\n") if p.strip()
+        ]
+        node_ids = dec.get("node_ids") or []
+        anchor_html = ""
+        if node_ids:
+            first = node_ids[0]
+            label = (nodes_idx.get(first) or {}).get("label") or first
+            anchor_html = (
+                f'<span class="anchor" data-focus="{escape(first)}">'
+                f'show <em>{escape(label)}</em> on the map →'
+                f'</span>'
+            )
+        source = (dec.get("source") or "").strip()
+        source_html = f'<p class="source">{escape(source)}</p>' if source else ""
+        ps_html = "".join(f"<p>{escape(p)}</p>" for p in answer_paragraphs)
+        items.append(
+            f'<li><h3>{escape(question)}</h3>{ps_html}{source_html}{anchor_html}</li>'
+        )
+    n = len(decisions)
+    headline = map_data.get("_headline") or (
+        f"{n} decision{'s' if n != 1 else ''} surface{'s' if n == 1 else ''} from the value map."
     )
-    colophon_html = colophon(
-        citations=None, sources=None,
-        generator="skills/playbooks/value-map",
-        generated_on=map_data.get("_dated", ""),
-        audit="pass",
-        autoresearch="4 / 4 deterministic dimensions pass",
-        extra_lines=[
-            "Click any piece on the map for its citation and rationale · open AI overlay rows for matched signals.",
-        ],
+    lede_text = map_data.get("_lede") or ""
+    return app_pure_modal_html(
+        headline=headline,
+        org_name=org_name,
+        dated=dated,
+        decisions_html="".join(items),
+        kicker="Reading the chain",
+        lede=escape(lede_text) if lede_text else "",
     )
+
+
+# ----------------------------------------------------------------------
+# render_html
+# ----------------------------------------------------------------------
+def render_html(map_data: dict, *, org_name: str = "") -> str:
+    inner, H = render_svg_inner(map_data, interactive=True)
+    anchor = map_data.get("_anchor") or {}
+    anchor_label = anchor.get("title") or anchor.get("label") or anchor.get("id") or ""
+    # The dateline org slot. Falls back to JSON `_org` if the caller
+    # didn't pass --org-name. Generic "Value map" as last resort so
+    # the chrome never collapses.
+    if not org_name:
+        org_name = map_data.get("_org") or "Value map"
+    dated = map_data.get("_dated", "—")
+    nodes_index = _build_nodes_index(map_data)
+    nodes_json = json.dumps(nodes_index, ensure_ascii=False).replace("</", "<\\/")
+    modal_html = _build_modal_html(map_data, org_name, dated)
+    has_decisions = bool(map_data.get("decisions"))
+
+    title = f"value-map · {anchor_label}" if anchor_label else "value-map"
+    what_html = (
+        f"the chain anchored on <em>{escape(anchor_label)}</em>"
+        if anchor_label
+        else "the chain"
+    )
+
+    # About modal — plain-language explanation of the four stages and
+    # the visual system. Same shape as the other viewers' "?" content.
+    n_components = len(map_data.get("components") or [])
+    about_body = """
+  <p>The picture above is a <strong>value-mapping</strong> of the chain that fulfills one user need. Read it bottom-up: the user sits at the top, the parts of the chain that deliver value sit below.</p>
+
+  <h2>The four evolution stages</h2>
+  <p><strong>Genesis — new territory.</strong> Nobody knows yet how to do this well. Each shop figures it out from scratch, the work is exploratory, and the cost of getting it wrong is mostly research time.</p>
+  <p><strong>Custom — built in-house.</strong> Every shop builds its own version. The skill exists, but it's craft: each implementation is bespoke, takes a senior person, and isn't reusable across organisations.</p>
+  <p><strong>Product — buyable.</strong> Patterns and vendors exist. You can hire someone who's done it before, or you can purchase it as a product. Different shops produce roughly comparable outputs.</p>
+  <p><strong>Commodity — market standard.</strong> Indistinguishable across providers. The value of doing it in-house has dropped to near zero; the rational move is to buy the cheapest reliable version.</p>
+  <p>Over time, every component drifts rightward — what was custom yesterday becomes a product today, and what was a product today becomes market-standard tomorrow. The map says where each component sits <em>now</em>, and a dashed coral arrow marks where AI is pushing it.</p>
+
+  <h2>The visual system</h2>
+  <p><strong>● Stakeholder</strong> — the people the chain ultimately serves (filled black disk at the top).</p>
+  <p><strong>◇ Value (user need)</strong> — the promise the chain has to deliver, stated as a need (outline diamond).</p>
+  <p><strong>○ Node (part of the chain)</strong> — a piece of the chain that contributes to delivering the value (outline circle, coloured by stage).</p>
+  <p><strong>● New / emerging</strong> — a piece that doesn't yet exist as such; named in conditional voice (terracotta fill).</p>
+  <p><strong>--→ Where AI is pushing</strong> — a dashed coral arrow on a component shows the direction of pressure: rightward = becoming standardised, faster.</p>
+
+  <h2>What the Y axis means</h2>
+  <p>The vertical axis is <strong>visibility</strong>: components at the top are visible to the user (they shape what the user actually experiences); components at the bottom are invisible plumbing (necessary, but the user never sees them).</p>
+
+  <h2>Where it comes from</h2>
+  <p>The framework is from Simon Wardley's value-mapping practice. Click any component for its placement rationale and the cited evidence behind it.</p>
+"""
+    about_modal_html_str = app_pure_about_modal_html(
+        kicker=f"№ {n_components:02d} · value map",
+        headline=anchor_label or title,
+        lede=(
+            "A read of the chain that fulfills this user need — "
+            "every component placed by how mature it is and how visible "
+            "it is to the user, with the direction AI is pushing it."
+        ),
+        body_html=about_body,
+    )
+
     return HTML_TEMPLATE.format(
-        css=base_css() + EXTRA_CSS,
-        title=escape(title),
-        description=escape(description),
-        masthead_html=masthead_html,
-        colophon_html=colophon_html,
-        W=W,
-        H=H,
+        head_meta=app_pure_head_meta(title),
+        css=app_pure_css(layout="canvas") + EXTRA_CSS,
+        dateline=app_pure_dateline_html(org_name, what=what_html),
+        top_right=app_pure_top_right_html(dated, show_analysis=has_decisions, show_help=True),
+        inspect_aside=app_pure_inspect_aside_html(),
+        modal_html=(modal_html or "") + about_modal_html_str,
+        W=W, H=H,
         svg_inner=inner,
-        ai_overlay_section=ai_overlay_section,
-        emerging_section=emerging_section,
-        decisions_section=decisions_section,
-        nodes_json=json.dumps(nodes, ensure_ascii=False),
+        nodes_json=nodes_json,
+        baseline_js=app_pure_baseline_js(),
+        js=JS_TEMPLATE,
+        GENESIS=GENESIS, CUSTOM=CUSTOM, PRODUCT=PRODUCT, COMMODITY=COMMODITY,
+        ACCENT=ACCENT,
     )
 
 
+# ----------------------------------------------------------------------
+# CLI
+# ----------------------------------------------------------------------
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Render value-map JSON as interactive HTML (and optional SVG).")
-    parser.add_argument("--map", required=True, help="WardleyMap JSON path")
-    parser.add_argument("--html", required=True, help="Output HTML path (primary artefact)")
-    parser.add_argument("--svg", help="Optional standalone SVG path (for markdown embedding)")
+    parser = argparse.ArgumentParser(description="Render a value-map JSON as an interactive App-pure HTML viewer (and an optional standalone SVG).")
+    parser.add_argument("--map", required=True, help="value-map JSON")
+    parser.add_argument("--html", required=True, help="HTML out")
+    parser.add_argument("--svg", help="standalone SVG out (optional, for markdown embedding)")
+    parser.add_argument("--org-name", default="", help="Organization name for the dateline (default: JSON `_org`, else 'Value map')")
     args = parser.parse_args()
 
     map_data = json.loads(Path(args.map).read_text(encoding="utf-8"))
-
-    if not map_data.get("components") or not map_data.get("anchors"):
-        print("Map has no components or no anchors; nothing to render.", file=sys.stderr)
-        return 1
-
-    html = render_html(map_data)
+    html = render_html(map_data, org_name=args.org_name)
     Path(args.html).write_text(html, encoding="utf-8")
     print(f"Wrote {Path(args.html).resolve()} ({len(html):,} bytes)")
-
     if args.svg:
         svg = render_svg_standalone(map_data)
         Path(args.svg).write_text(svg, encoding="utf-8")
         print(f"Wrote {Path(args.svg).resolve()} ({len(svg):,} bytes)")
-
     return 0
 
 

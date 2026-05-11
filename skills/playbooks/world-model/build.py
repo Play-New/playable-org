@@ -4,7 +4,7 @@ world-model / build.py — Build a structure skeleton for the four-part analysis
 
 Walks org/ and emits a JSON skeleton that the agent fills with capability
 contracts, world-model observations, intelligence-layer compositions, and
-failure signals. The builder does not invent capabilities — it surfaces
+pieces to build. The builder does not invent capabilities — it surfaces
 candidates and provides the structure paths the agent will use as evidence.
 
 Usage:
@@ -160,6 +160,22 @@ def aei_summary(matches_path: Path | None, activities: list[dict]) -> dict[str, 
     }
 
 
+def _read_org_name(org_dir: Path) -> str:
+    """Pull the organisation's display name from `identity/mission.md`
+    frontmatter (key: `org_name`) — same convention as graph/build.py."""
+    identity_dir = org_dir / "identity"
+    if identity_dir.is_dir():
+        for f in sorted(identity_dir.glob("*.md")):
+            try:
+                fm = parse_frontmatter(f.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            name = (fm.get("org_name") or "").strip()
+            if name:
+                return name
+    return org_dir.name.replace("-", " ").replace("_", " ").title()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build world-model structure skeleton.")
     parser.add_argument("--org-dir", required=True, help="Path to org/")
@@ -179,6 +195,7 @@ def main() -> int:
     skeleton = {
         "_scope": args.scope or "whole-org",
         "_dated": date.today().isoformat(),
+        "_org": _read_org_name(Path(args.org_dir)),
         "_structure_summary": {
             "units_total": len(structure["units"]),
             "activities_total": len(structure["activities"]),
@@ -189,23 +206,50 @@ def main() -> int:
         },
         "_aei_summary": aei,
         "_structure": structure,
-        # Agent fills these:
-        "capabilities": [],          # list of capability dicts
-        "world_model_company": {     # how the org understands itself
-            "observations": [],      # list of {dimension, lives_in, maturity, gaps}
-            "overall_maturity": "",  # high|medium|low
+        # Agent fills these. Schema notes (see SKILL.md §1-6):
+        #
+        # - capability: name (verb-object), description, input, output,
+        #   slo_targets, regulatory_constraints, invocation_modality,
+        #   is_callable_by, composes_with, current_dri (single person id),
+        #   current_owners (list, optional), moat_grade ('moat'|'commodity'),
+        #   moat_rationale, _structure_id, _structure_evidence,
+        #   exposure_status: {contract_written, dri_named, discoverable,
+        #     invocable_channel, failure_log} — each true | false | 'partial'
+        #     | 'implicit' | 'informal' (5-criteria wrapper checklist).
+        #
+        # - interface: name, description, _structure_id, surfaces_capabilities,
+        #   today_state (what the surface delivers today),
+        #   signals_lost_today (what passes through unrecorded),
+        #   after_state_hint (what it would collect once it's a signal point).
+        #
+        # - world_model_company: operations / performance / priorities the
+        #   org tracks about itself; observation = {dimension, lives_in,
+        #   maturity, gaps}.
+        #
+        # - world_model_customer: per stakeholder type; entry = {type,
+        #   description, what_they_get_from_org, what_they_contribute_back,
+        #   honest_signal, current_maturity, fragmentation}. The agent runs
+        #   the "users-and-contributors" rule from CAPABILITIES.md per entry.
+        #
+        # - pieces_to_build: each entry names a missing capability the loop
+        #   would surface today (verb-object form), with trigger,
+        #   composition_attempted, what_would_be_needed, structure_evidence.
+        "capabilities": [],
+        "world_model_company": {
+            "observations": [],
+            "overall_maturity": "",
         },
-        "world_model_customer": {    # per-stakeholder representation
-            "by_stakeholder": [],    # list of {type, honest_signal, current_maturity, fragmentation}
-            "is_unified": False,     # whether a unified per-stakeholder view exists
+        "world_model_customer": {
+            "by_stakeholder": [],
+            "is_unified": False,
         },
         "intelligence_layer": {
             "exists": False,
-            "current_human_compositions": [],   # list of {trigger, capabilities_composed, failure_modes}
-            "potential_compositions": [],       # list of {trigger, capabilities, precondition}
+            "current_human_compositions": [],
+            "potential_compositions": [],
         },
-        "interfaces": [],            # list of {name, surfaces_capabilities, _structure}
-        "failure_signals": [],       # list of {trigger, composition_attempted, missing_capability, structure_evidence}
+        "interfaces": [],
+        "pieces_to_build": [],
     }
 
     Path(args.out).write_text(json.dumps(skeleton, ensure_ascii=False, indent=2), encoding="utf-8")

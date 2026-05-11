@@ -368,135 +368,318 @@
   },
   "capabilities": [
     {
-      "name": "Brand positioning craft",
+      "name": "define-positioning",
       "kind": "judgement",
       "moat_grade": "moat",
-      "description": "Author a positioning document that holds up under twelve months of market pressure: who the client is, against whom, with what proof points.",
-      "input": "Engagement scope, audience-research synthesis, competitive audit",
-      "output": "A positioning brief the design lead builds the identity system on top of",
-      "invocation_modality": "Run by Marco on every engagement, not delegated",
+      "description": "Author a positioning document the studio commits will hold under twelve months of market pressure: who the client is, against whom, with what proof points.",
+      "input": "prospect brief, audience synthesis, competitive synthesis",
+      "output": "positioning brief signed by Marco, structured to feed downstream capabilities",
+      "slo_targets": "holds 12 months under market pressure (measured at 12-month follow-up); brief delivered within 3 weeks of accepted engagement",
+      "regulatory_constraints": "none",
+      "invocation_modality": "structured request via pitch flow → kickoff workshop; runs once per engagement",
       "is_callable_by": [
         "mid-market-clients",
         "enterprise-clients"
       ],
+      "composes_with": [
+        "define-visual-language",
+        "build-identity-system",
+        "author-brand-book"
+      ],
+      "current_dri": "marco-bellini",
       "current_owners": [
         "marco-bellini"
       ],
+      "exposure_status": {
+        "contract_written": "partial",
+        "dri_named": "implicit",
+        "discoverable": false,
+        "invocable_channel": "informal",
+        "failure_log": false
+      },
       "_structure_id": "brand-positioning",
-      "moat_rationale": "Marco is the studio's signature on this; the document goes out under his name on every engagement. The skill is years of pattern-recognition not transferable in a handover.",
+      "moat_rationale": "Marco signs every positioning brief; the document goes out under his name on every engagement. The skill is years of pattern-recognition not transferable in a handover.",
       "_structure_evidence": [
-        "outline-charter-2024 §1, §9",
-        "outline-roles-2025"
+        "sources/outline-charter-2024.md",
+        "sources/outline-roles-2025.md"
       ]
     },
     {
-      "name": "Visual language definition",
+      "name": "define-visual-language",
       "kind": "judgement",
       "moat_grade": "moat",
-      "description": "Define the visual language for an engagement on top of the positioning brief: typography, colour, imagery direction, motion logic.",
-      "input": "Positioning brief",
-      "output": "Visual system that feeds the identity-system build",
-      "invocation_modality": "Run by Lena on every engagement, not delegated",
+      "description": "Define the visual language for an engagement on top of the positioning brief: typography, colour, imagery direction, motion principles.",
+      "input": "positioning brief",
+      "output": "visual language specification (typography, colour, motion, imagery direction)",
+      "slo_targets": "coherent with positioning (Lena's signoff); delivered within 4 weeks of positioning brief",
+      "regulatory_constraints": "none",
+      "invocation_modality": "structured request following positioning brief sign-off",
       "is_callable_by": [
         "mid-market-clients",
         "enterprise-clients"
       ],
+      "composes_with": [
+        "author-brand-book",
+        "build-identity-system",
+        "design-ui"
+      ],
+      "current_dri": "lena-thorvaldsen",
       "current_owners": [
         "lena-thorvaldsen"
       ],
+      "exposure_status": {
+        "contract_written": "partial",
+        "dri_named": "implicit",
+        "discoverable": false,
+        "invocable_channel": "informal",
+        "failure_log": false
+      },
       "_structure_id": "visual-language",
-      "moat_rationale": "Lena's hand on the language is what the brand book carries. Senior designers build under her direction; the language itself is hers.",
+      "moat_rationale": "Lena signs the visual language; the studio's visual identity carries her judgement. Not transferable in a handover.",
       "_structure_evidence": [
-        "outline-charter-2024 §9",
-        "outline-roles-2025"
+        "sources/outline-charter-2024.md",
+        "sources/outline-roles-2025.md"
       ]
     },
     {
-      "name": "Brand book authorship",
+      "name": "author-brand-book",
       "kind": "judgement",
       "moat_grade": "moat",
-      "description": "Build the brand book as a single coherent artefact — the studio's most-recognized output. Personally integrated by the design lead.",
-      "input": "Identity system, visual language, positioning brief",
-      "output": "Brand book deliverable, the artefact the studio is best known for",
-      "invocation_modality": "Run by Lena personally on every engagement; mid-level designers may produce chapters under her review",
+      "description": "Build the brand book as a single coherent artefact, the studio's most-recognized output. Personally integrated by the design lead.",
+      "input": "positioning brief, visual language specification, identity system",
+      "output": "brand book deliverable",
+      "slo_targets": "integrated by Lena; delivered within 6 weeks of identity system handoff",
+      "regulatory_constraints": "none",
+      "invocation_modality": "structured request following identity system completion",
       "is_callable_by": [
         "mid-market-clients",
         "enterprise-clients"
       ],
+      "composes_with": [
+        "hand-off-engagement"
+      ],
+      "current_dri": "lena-thorvaldsen",
       "current_owners": [
         "lena-thorvaldsen"
       ],
+      "exposure_status": {
+        "contract_written": "partial",
+        "dri_named": "implicit",
+        "discoverable": false,
+        "invocable_channel": "informal",
+        "failure_log": false
+      },
       "_structure_id": "brand-book",
-      "moat_rationale": "The brand book is the studio's signature artefact; the integration into a single object is the design lead's hand.",
+      "moat_rationale": "Lena integrates the chapters into one coherent volume; the brand book is the studio's signature deliverable. Mid-level designers may produce chapters under her review, but the integration stays with her.",
       "_structure_evidence": [
-        "outline-roles-2025"
+        "sources/outline-charter-2024.md",
+        "sources/outline-roles-2025.md"
       ]
     },
     {
-      "name": "Identity system build",
-      "kind": "production",
+      "name": "build-identity-system",
+      "kind": "practice",
       "moat_grade": "commodity",
       "description": "Build the full identity system: typography, colour, grid, motion, illustration direction.",
-      "input": "Visual language",
-      "output": "Identity system deliverable",
-      "invocation_modality": "Run by senior designers under Lena's review",
+      "input": "visual language specification",
+      "output": "identity system covering declared touchpoints",
+      "slo_targets": "complete coverage of declared touchpoints; delivered within 4 weeks of visual language sign-off",
+      "regulatory_constraints": "none",
+      "invocation_modality": "structured request following visual language sign-off; senior designers under Lena's review",
       "is_callable_by": [
         "mid-market-clients",
         "enterprise-clients"
       ],
-      "current_owners": [
-        "design"
+      "composes_with": [
+        "design-ui",
+        "author-brand-book",
+        "hand-off-engagement"
       ],
-      "_structure_id": "identity-system-build"
+      "current_dri": "lena-thorvaldsen",
+      "current_owners": [
+        "lena-thorvaldsen"
+      ],
+      "exposure_status": {
+        "contract_written": "partial",
+        "dri_named": "implicit",
+        "discoverable": false,
+        "invocable_channel": "informal",
+        "failure_log": false
+      },
+      "_structure_id": "identity-system-build",
+      "moat_rationale": "Standard practice every studio in the category executes. Differentiation lives in the visual language above this, not in the system itself.",
+      "_structure_evidence": [
+        "sources/outline-roles-2025.md"
+      ]
     },
     {
-      "name": "UI design",
-      "kind": "production",
+      "name": "design-ui",
+      "kind": "practice",
       "moat_grade": "commodity",
-      "description": "UI design for B2B web and apps: screens, components, prototyping, accessibility audits.",
-      "input": "Identity system",
-      "output": "UI screens, ready for client-side engineering",
-      "invocation_modality": "Run by senior product designers; product lead reviews every deliverable",
+      "description": "UI design for B2B web and apps: screens, components, prototyping, accessibility.",
+      "input": "identity system, product specification",
+      "output": "UI screens ready for engineering handoff",
+      "slo_targets": "WCAG 2.1 AA accessibility; delivered iteratively in 2-week sprints",
+      "regulatory_constraints": "WCAG 2.1 AA for B2B web/apps",
+      "invocation_modality": "structured request post-identity-system; senior product designer leads, product lead reviews",
       "is_callable_by": [
         "enterprise-clients"
       ],
-      "current_owners": [
-        "digital-product"
+      "composes_with": [
+        "document-design-system",
+        "hand-off-engagement"
       ],
-      "_structure_id": "ui-design"
+      "current_dri": "digital-product-lead",
+      "current_owners": [
+        "digital-product-lead"
+      ],
+      "exposure_status": {
+        "contract_written": "partial",
+        "dri_named": "no",
+        "discoverable": false,
+        "invocable_channel": "informal",
+        "failure_log": false
+      },
+      "_structure_id": "ui-design",
+      "moat_rationale": "AI levels the field on UI production fast. Standard practice the studio shares with the category.",
+      "_structure_evidence": [
+        "sources/outline-roles-2025.md"
+      ]
     },
     {
-      "name": "Design system documentation",
-      "kind": "production",
+      "name": "document-design-system",
+      "kind": "practice",
       "moat_grade": "commodity",
-      "description": "Document a design system handed off to clients who maintain their own product engineering.",
-      "input": "Identity system, UI screens",
-      "output": "Design system the client team can maintain",
-      "invocation_modality": "Mid-level product designers under the senior's lead",
+      "description": "Document a design system handed off to clients who maintain their own product engineering long-term.",
+      "input": "identity system, UI screens",
+      "output": "design system documentation a client team can maintain",
+      "slo_targets": "covers components used in deliverables; client onboarding completed within 2 weeks of handover",
+      "regulatory_constraints": "none",
+      "invocation_modality": "structured request post-UI completion; mid-level product designers under senior lead",
       "is_callable_by": [
         "enterprise-clients"
       ],
-      "current_owners": [
-        "digital-product"
+      "composes_with": [
+        "hand-off-engagement"
       ],
-      "_structure_id": "design-system-build"
+      "current_dri": "digital-product-lead",
+      "current_owners": [
+        "digital-product-lead"
+      ],
+      "exposure_status": {
+        "contract_written": "partial",
+        "dri_named": "no",
+        "discoverable": false,
+        "invocable_channel": "informal",
+        "failure_log": false
+      },
+      "_structure_id": "design-system-build",
+      "moat_rationale": "Standard component-library work; clients can also commission this from larger product agencies.",
+      "_structure_evidence": [
+        "sources/outline-roles-2025.md"
+      ]
     },
     {
-      "name": "Asset handover",
-      "kind": "process",
+      "name": "hand-off-engagement",
+      "kind": "practice",
       "moat_grade": "commodity",
-      "description": "Run the asset-handover ritual at the end of each engagement — every deliverable, sign-off, archived.",
-      "input": "Brand book, identity system, design system, UI screens",
-      "output": "Client handoff package",
-      "invocation_modality": "Tomás runs it with the discipline lead present at the close of each engagement",
+      "description": "Run the closeout ritual at the end of each engagement: every deliverable archived, every sign-off logged.",
+      "input": "all engagement deliverables (brand book, identity system, design system, UI screens)",
+      "output": "client handoff package + sign-off log",
+      "slo_targets": "every deliverable archived and signed; closeout meeting within 2 weeks of final delivery",
+      "regulatory_constraints": "none",
+      "invocation_modality": "structured ritual at engagement close; Tomás runs it with discipline lead present",
       "is_callable_by": [
         "mid-market-clients",
         "enterprise-clients"
       ],
-      "current_owners": [
-        "client-services"
+      "composes_with": [
+        "read-engagement-memory"
       ],
-      "_structure_id": "asset-handover"
+      "current_dri": "tomas-castellon",
+      "current_owners": [
+        "tomas-castellon"
+      ],
+      "exposure_status": {
+        "contract_written": "partial",
+        "dri_named": "implicit",
+        "discoverable": false,
+        "invocable_channel": "informal",
+        "failure_log": false
+      },
+      "_structure_id": "asset-handover",
+      "moat_rationale": "Coordination practice; required to close engagements cleanly but not differentiating in the market.",
+      "_structure_evidence": [
+        "sources/outline-roles-2025.md"
+      ]
+    },
+    {
+      "name": "synthesize-audience",
+      "kind": "practice",
+      "moat_grade": "commodity",
+      "description": "Synthesize the audience for an engagement: who the brand serves, what they say, what they buy, what they leave.",
+      "input": "prospect brief, market access (interviews, panels, public data)",
+      "output": "audience synthesis used as input for define-positioning",
+      "slo_targets": "synthesis sourced from at least 3 distinct signal types; delivered within 2 weeks of brief acceptance",
+      "regulatory_constraints": "GDPR if the synthesis touches identifiable user data",
+      "invocation_modality": "structured request at engagement open; strategy team executes",
+      "is_callable_by": [
+        "mid-market-clients",
+        "enterprise-clients"
+      ],
+      "composes_with": [
+        "define-positioning"
+      ],
+      "current_dri": "strategy-lead",
+      "current_owners": [
+        "strategy-lead"
+      ],
+      "exposure_status": {
+        "contract_written": "partial",
+        "dri_named": "no",
+        "discoverable": false,
+        "invocable_channel": "informal",
+        "failure_log": false
+      },
+      "_structure_id": "audience-research",
+      "moat_rationale": "Standard research practice the studio executes competently. AI assists synthesis once the structure is in place.",
+      "_structure_evidence": [
+        "sources/outline-roles-2025.md"
+      ]
+    },
+    {
+      "name": "synthesize-competitive",
+      "kind": "practice",
+      "moat_grade": "commodity",
+      "description": "Synthesize the competitive landscape: who plays in the prospect's category, with what positioning, how each is moving.",
+      "input": "prospect brief, prospect's domain",
+      "output": "structured competitive synthesis used as input for define-positioning",
+      "slo_targets": "covers at least 5 competitors with positioning angles named; delivered within 2 weeks of brief acceptance",
+      "regulatory_constraints": "none",
+      "invocation_modality": "structured request at engagement open; strategy team executes",
+      "is_callable_by": [
+        "mid-market-clients",
+        "enterprise-clients"
+      ],
+      "composes_with": [
+        "define-positioning"
+      ],
+      "current_dri": "strategy-lead",
+      "current_owners": [
+        "strategy-lead"
+      ],
+      "exposure_status": {
+        "contract_written": "partial",
+        "dri_named": "no",
+        "discoverable": false,
+        "invocable_channel": "informal",
+        "failure_log": false
+      },
+      "_structure_id": "competitive-audit",
+      "moat_rationale": "Standard competitive-audit practice. AI accelerates the data gathering once the synthesis frame is in place.",
+      "_structure_evidence": [
+        "sources/outline-roles-2025.md"
+      ]
     }
   ],
   "world_model_company": {
@@ -551,9 +734,9 @@
       {
         "trigger": "A returning client asks for a brand refresh 18 months later",
         "capabilities_composed": [
-          "Brand positioning craft",
-          "Visual language definition",
-          "Audience research"
+          "define-positioning",
+          "define-visual-language",
+          "synthesize-audience"
         ],
         "description": "The studio runs the same flow it would for a new client; the prior engagement is in delivered files but not retrievable in a useful way.",
         "failure_modes": "Marco and Lena pull from memory of the past engagement; insights from the prior brief don't compound into the new one. Effectively the second engagement starts from zero."
@@ -561,18 +744,17 @@
       {
         "trigger": "Tomás's weekly check-in note mentions scope drift",
         "capabilities_composed": [
-          "Asset handover process",
-          "Pitch evidence"
+          "hand-off-engagement"
         ],
-        "description": "Marco reviews every weekly check-in note Tomás writes and decides whether to escalate to a scope-renegotiation conversation. Three engagements in 2025 needed his intervention.",
+        "description": "Marco reviews every weekly check-in note Tomás writes and decides whether to escalate to a scope-renegotiation conversation. Three engagements in 2025 needed his intervention. No formal capability is composed; the work is entirely human-mediated.",
         "failure_modes": "Founder is in the loop on every drift signal across 14 engagements per year; the bottleneck scales with engagement count."
       },
       {
         "trigger": "Pitching a new prospect",
         "capabilities_composed": [
-          "Brand positioning craft",
-          "Competitive audit",
-          "Visual language definition"
+          "define-positioning",
+          "synthesize-competitive",
+          "define-visual-language"
         ],
         "description": "Marco, Lena and Tomás each pull from their own memory of past clients to compose a positioning angle for the pitch.",
         "failure_modes": "Lessons from past engagements don't surface unless the pitch happens to remind one of the three of a relevant case. Pattern is fragile and doesn't compound."
@@ -582,8 +764,8 @@
       {
         "trigger": "A returning client asks for a brand refresh",
         "capabilities": [
-          "Brand positioning craft",
-          "Returning-client context retrieval"
+          "define-positioning",
+          "read-engagement-memory"
         ],
         "description": "Prior engagement loads into the kickoff: positioning, visual language, brand book, what was learned about the client's market. The kickoff becomes a shorter and more strategic conversation.",
         "precondition": "A context-keeping practice exists that captures each engagement in a queryable shape, owned by a named role."
@@ -591,8 +773,8 @@
       {
         "trigger": "A check-in note hints at scope drift",
         "capabilities": [
-          "Scope-drift early-warning",
-          "Asset handover"
+          "recognize-scope-drift",
+          "hand-off-engagement"
         ],
         "description": "Pattern-match across past drift episodes flags the early-warning signal automatically; Tomás escalates without Marco being in the loop on every case.",
         "precondition": "The studio has captured what scope drift looks like across 30+ engagements and the patterns are queryable."
@@ -603,64 +785,77 @@
     {
       "name": "Pitch meeting",
       "description": "Where a prospect first sees the studio's work and gets a price.",
+      "today_state": "Delivers proposal and price. Captures the prospect's stated brief but no structured trace of which positioning angles were tried, why this prospect chose the studio, what objections came up.",
+      "signals_lost_today": "Stated objections, comparison set the prospect was running, what made them choose Outline. All three live in Tomás's and Marco's recall.",
+      "after_state_hint": "The pitch becomes a structured signal: brief on the way in, chosen angle and objections logged on the way out. Feeds the per-caller world model.",
       "surfaces_capabilities": [
-        "Brand positioning craft"
+        "define-positioning"
       ],
       "_structure_id": "kickoff-workshop"
     },
     {
       "name": "Kickoff workshop",
       "description": "The engagement opens with a 1-day workshop: scope, calendar, single point of contact, deliverables agreed.",
+      "today_state": "Delivers shared understanding for the team and the client. Captures scope and calendar in a SOW; transcript and decisions live as Tomás's notes plus what people remember.",
+      "signals_lost_today": "Live client reactions, the questions they don't yet know to ask, the assumptions they bring. None of these are captured in a queryable form.",
+      "after_state_hint": "Workshop transcript indexed, decisions captured as structured signal, prior-engagement context loaded for returning clients via read-engagement-memory.",
       "surfaces_capabilities": [
-        "Brand positioning craft"
+        "define-positioning",
+        "define-visual-language"
       ],
       "_structure_id": "kickoff-workshop"
     },
     {
       "name": "Weekly check-in call",
       "description": "Recurring 30-min call on every active engagement: progress, blockers, next-week scope.",
+      "today_state": "Delivers a status update and unblocks decisions. Tomás writes a note Marco reads to decide on escalations. The note exists; structured signal does not.",
+      "signals_lost_today": "Drift signals (today only Marco notices), client pace changes, scope-creep early indicators. All three pass through unrecorded.",
+      "after_state_hint": "Notes pattern-matched against past drift episodes via recognize-scope-drift; Tomás escalates without Marco needing to read every note.",
       "surfaces_capabilities": [],
       "_structure_id": "weekly-check-in"
     },
     {
       "name": "Asset handover meeting",
       "description": "Closing meeting where the client receives every artefact and signs off.",
+      "today_state": "Delivers the artefacts. Captures sign-off in a signed log.",
+      "signals_lost_today": "What the client expects from the artefacts in the next 12 months, which decisions they will revisit, what they will defer. Lost as soon as the meeting ends.",
+      "after_state_hint": "Handover captures the client's stated forward-looking expectations; feeds into a 12-month follow-up loop (run-12-month-followup) that closes the cycle.",
       "surfaces_capabilities": [
-        "Asset handover",
-        "Brand book authorship"
+        "hand-off-engagement",
+        "author-brand-book"
       ],
       "_structure_id": "asset-handover"
     }
   ],
-  "failure_signals": [
+  "pieces_to_build": [
     {
       "trigger": "A returning client comes back 18 months later asking for a brand refresh",
-      "missing_capability": "Returning-client context retrieval",
+      "missing_capability": "read-engagement-memory",
       "composition_attempted": [
-        "Brand positioning craft",
-        "Audience research",
-        "Competitive audit"
+        "define-positioning",
+        "synthesize-audience",
+        "synthesize-competitive"
       ],
       "what_would_be_needed": "A context-keeping practice that captures each delivered engagement (positioning, visual language, brand book, what was learned about the market) in a queryable shape. Owned by a named role; refreshed at every engagement close.",
       "structure_evidence": "outline-roles-2025 — currently no one in the org owns this role"
     },
     {
       "trigger": "A weekly check-in note mentions a blocker that could be early scope drift",
-      "missing_capability": "Scope-drift early-warning",
+      "missing_capability": "recognize-scope-drift",
       "composition_attempted": [
-        "Asset handover process"
+        "hand-off-engagement"
       ],
       "what_would_be_needed": "A pattern-match across past scope-drift episodes that flags the early signal automatically, so Tomás can escalate without Marco needing to read every check-in note.",
       "structure_evidence": "outline-annual-review-2025 — three founder-mediated renegotiations in 2025"
     },
     {
       "trigger": "Twelve months after handover, the question is: did the work hold up in the market?",
-      "missing_capability": "Post-handover market check-in",
+      "missing_capability": "run-12-month-followup",
       "composition_attempted": [
-        "Asset handover process"
+        "hand-off-engagement"
       ],
       "what_would_be_needed": "A scheduled 12-month conversation with each delivered client, capturing what changed and what the brand book carried. The signal feeds back into Brand positioning craft on future engagements.",
-      "structure_evidence": "outline-charter-2024 §15 — the studio pitches engagement quality but has no loop that closes 12 months later"
+      "structure_evidence": "sources/outline-charter-2024.md §15 — the studio pitches engagement quality but has no loop that closes 12 months later"
     }
   ],
   "decisions": [
@@ -680,5 +875,6 @@
       "source": "outline-roles-2025; outline-charter-2024 §20"
     }
   ],
-  "_dated": "2026-05-07"
+  "_dated": "2026-05-07",
+  "_org": "Outline & Co."
 }

@@ -65,7 +65,8 @@
           "human_education_years_mean": null,
           "penetration": 0.0
         }
-      ]
+      ],
+      "_unit": "client-services"
     },
     {
       "id": "audience-research",
@@ -121,7 +122,8 @@
           "human_education_years_mean": 13.6364,
           "penetration": null
         }
-      ]
+      ],
+      "_unit": "strategy"
     },
     {
       "id": "brand-book",
@@ -177,7 +179,8 @@
           "human_education_years_mean": 9.9427,
           "penetration": 0.8335
         }
-      ]
+      ],
+      "_unit": "design"
     },
     {
       "id": "brand-positioning",
@@ -233,7 +236,8 @@
           "human_education_years_mean": 13.6016,
           "penetration": 0.6793
         }
-      ]
+      ],
+      "_unit": "strategy"
     },
     {
       "id": "competitive-audit",
@@ -289,7 +293,8 @@
           "human_education_years_mean": 12.0689,
           "penetration": 0.9399
         }
-      ]
+      ],
+      "_unit": "strategy"
     },
     {
       "id": "design-system-build",
@@ -345,7 +350,8 @@
           "human_education_years_mean": null,
           "penetration": 0.0
         }
-      ]
+      ],
+      "_unit": "digital-product"
     },
     {
       "id": "identity-system-build",
@@ -401,7 +407,8 @@
           "human_education_years_mean": 11.6234,
           "penetration": 0.8504
         }
-      ]
+      ],
+      "_unit": "design"
     },
     {
       "id": "kickoff-workshop",
@@ -457,7 +464,8 @@
           "human_education_years_mean": 12.7996,
           "penetration": 0.7955
         }
-      ]
+      ],
+      "_unit": "client-services"
     },
     {
       "id": "quarterly-finance-review",
@@ -513,7 +521,8 @@
           "human_education_years_mean": null,
           "penetration": 0.0
         }
-      ]
+      ],
+      "_unit": "operations"
     },
     {
       "id": "ui-design",
@@ -569,7 +578,8 @@
           "human_education_years_mean": null,
           "penetration": 0.0
         }
-      ]
+      ],
+      "_unit": "digital-product"
     },
     {
       "id": "ux-research",
@@ -625,7 +635,8 @@
           "human_education_years_mean": null,
           "penetration": 0.0
         }
-      ]
+      ],
+      "_unit": "digital-product"
     },
     {
       "id": "vendor-invoicing",
@@ -681,7 +692,8 @@
           "human_education_years_mean": 10.8,
           "penetration": 0.0
         }
-      ]
+      ],
+      "_unit": "operations"
     },
     {
       "id": "visual-language",
@@ -737,7 +749,8 @@
           "human_education_years_mean": 10.4231,
           "penetration": 0.0
         }
-      ]
+      ],
+      "_unit": "design"
     },
     {
       "id": "weekly-check-in",
@@ -793,7 +806,8 @@
           "human_education_years_mean": null,
           "penetration": 0.0
         }
-      ]
+      ],
+      "_unit": "client-services"
     }
   ],
   "decisions": [
@@ -818,5 +832,6 @@
       "source": "outline-roles-2025; outline-charter-2024 §20"
     }
   ],
-  "_dated": "2026-05-07"
+  "_dated": "2026-05-07",
+  "_org": "Outline & Co."
 }

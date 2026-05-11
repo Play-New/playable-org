@@ -36,88 +36,530 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from html import escape
 from pathlib import Path
 from typing import Any
 
-# Import the shared Play New design system
+# Shared App-pure shell — palette, body, mobile baseline, chrome
+# helpers, modal, favicon, font. The viewer composes on top.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from design import base_css, masthead, colophon  # noqa: E402
+from design import (  # noqa: E402
+    app_pure_about_modal_html,
+    app_pure_baseline_js,
+    app_pure_css,
+    app_pure_dateline_html,
+    app_pure_head_meta,
+    app_pure_modal_html,
+    app_pure_top_right_html,
+)
 
 
 EXTRA_CSS = """
-/* ai-exposure viewer — Play New design (unified with value-map).
-   Pure white surface, editorial typography, hairlines, single accent. */
+/* ai-exposure viewer — App-pure scroll-on-paper. The shared shell in
+   skills/design.py provides palette, typography, mobile baseline,
+   dateline + Analysis CTA + modal + colophon + safe-area + favicon.
+   This file adds only the playbook-specific viz: heatmap squares
+   (one per top-K AEI match, coloured by category), area sections,
+   activity cards, popover-on-click, and the bottom legend. */
 
 :root {
-  /* Category colours route through the data-viz palette in design.py */
-  --automated: var(--ds-sage);
-  --augmented: var(--ds-lilac);
-  --assistive: var(--ds-slate);
-  --no-data:   var(--ds-sand);
-  --low-conf:  #c8c0b6;
+  /* Category colours — ai-exposure's four levels mapped onto the
+     Carta sbiadita data-viz palette (sage / lilac / slate / sand). */
+  --automated: var(--k-activity);   /* sage  · mostly automated */
+  --augmented: var(--k-stakeholder);/* lilac · mostly augmented */
+  --assistive: var(--k-unit);       /* slate · assistive */
+  --no-data:   var(--k-role);       /* sand  · outside observed sample */
+  --low-conf:  var(--ink-25);
 }
 
-body { background: #FFFFFF; color: var(--fg); }
+/* Filter row — sits directly below the chrome (dateline + ? +
+   Analysis CTA) and above the dashboard. Carries the unit pills
+   and the live "N of M activities" counter on the right. */
+.filter-row {
+  display: flex; align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  max-width: 1440px;
+  margin: max(70px, calc(env(safe-area-inset-top) + 64px)) auto 18px;
+  padding: 0 max(28px, env(safe-area-inset-left))
+           0 max(28px, env(safe-area-inset-right));
+}
+.filter-row .summary {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--ink-60);
+  font-style: italic;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+}
 
-/* One container width, applied uniformly to every block on the page.
-   Header, legend, org-overview, area-section, decisions, footer all
-   share the same horizontal frame. Text inside a block can still wrap
-   at a readable length via inline max-width on the prose element, but
-   the block itself is always container-width. */
-.container { max-width: 1240px; margin: 0 auto; padding: 80px 40px 96px; }
-@media (max-width: 900px) { .container { padding: 56px 24px 80px; } }
+/* Dashboard — full viewport width, fills the rest of the screen
+   with activity cards. The "?" popover holds the explanatory
+   chrome. */
+.dashboard {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 max(28px, env(safe-area-inset-left))
+           max(80px, calc(env(safe-area-inset-bottom) + 60px))
+           max(28px, env(safe-area-inset-right));
+}
+@media (max-width: 760px) {
+  .filter-row {
+    margin-top: max(56px, calc(env(safe-area-inset-top) + 50px));
+    padding: 0 14px;
+    gap: 8px;
+  }
+  /* Pills scroll horizontally on narrow viewports — small chevron
+     would help but the system scrollbar is enough as a primer. */
+  .filter-row .filter-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+  .filter-row .filter-pills::-webkit-scrollbar { display: none; }
+  .filter-row .summary { display: none; }
+  .filter-row .unit-filter-label { display: none; }
+  .dashboard { padding: 0 14px max(80px, calc(env(safe-area-inset-bottom) + 60px)); }
+}
 
-/* Editorial text columns at the start and end of the page sit in a
-   centered narrower column inside the 1240px container; data-heavy
-   blocks (filters, org-overview, area sections, card grid) span the
-   full container. */
-header { max-width: 820px; margin: 0 auto 48px; }
-header .eyebrow { font-family: var(--font-display); font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.10em; color: var(--fg-muted); margin-bottom: 16px; }
-header h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; margin: 0 0 16px; color: var(--fg); }
-header .lead { font-size: 1.0rem; color: var(--fg-muted); line-height: 1.65; margin: 0; }
-
-/* Intro: editorial prose explaining how to read the map. Same column
-   width as the header, sits between header and legend. */
-.intro { max-width: 820px; margin: 0 auto 48px; }
-.intro h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 16px; }
-.intro p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; }
-.intro p:last-child { margin-bottom: 0; }
-
-.legend-wrap { max-width: 820px; margin: 0 auto 40px; }
-.legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 0.82rem; color: var(--fg-muted); align-items: center; }
-.legend-item { display: flex; align-items: center; gap: 7px; }
-.legend-square { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+/* Legend — small inline strip under the intro. */
+.legend {
+  display: flex; gap: 22px; flex-wrap: wrap;
+  font-size: 12.5px; color: var(--ink-60);
+  align-items: center; margin: 22px 0 28px;
+}
+.legend-item { display: flex; align-items: center; gap: 8px; }
+.legend-square {
+  width: 12px; height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+  box-shadow: 0 0 0 1px rgba(28,26,22,0.12) inset;
+}
 .legend-square.automated { background: var(--automated); }
 .legend-square.augmented { background: var(--augmented); }
 .legend-square.assistive { background: var(--assistive); }
 .legend-square.no-data { background: var(--no-data); }
 
-/* Filter row — inline editorial controls, no chunky borders. */
-.controls { max-width: 820px; margin: 0 auto 40px; display: flex; flex-direction: column; gap: 14px; }
-.control-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.control-label { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; min-width: 60px; font-weight: 500; }
-.search-box { flex: 1; min-width: 240px; padding: 8px 14px; border: 1px solid var(--fg-hairline); border-radius: 3px; font-size: 0.9rem; background: #FFFFFF; font-family: inherit; color: var(--fg); }
-.search-box:focus { outline: none; border-color: var(--fg); }
-.filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
-.pill { background: #FFFFFF; border: 1px solid var(--fg-hairline); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 0.76rem; font-family: inherit; color: var(--fg); transition: all 0.15s ease; white-space: nowrap; }
-.pill:hover { border-color: var(--fg); }
-.pill.active { background: var(--fg); color: #FFFFFF; border-color: var(--fg); }
+/* Activity cards — paper, hairline border, no shadow. Each card has
+   the activity title + description + a small grid of K coloured
+   squares (one per AEI match). */
+.card {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 18px 18px 16px;
+}
+.card.low-confidence { opacity: 0.55; }
+.card-title {
+  font-size: 14.5px;
+  font-weight: 540;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  line-height: 1.3;
+  margin: 0 0 4px;
+  text-wrap: pretty;
+}
+.card-id {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-40);
+  margin: 0 0 10px;
+}
+.card-desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-80);
+  margin: 0 0 14px;
+  text-wrap: pretty;
+}
+.task-grid {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.task-square {
+  width: 22px;
+  height: 22px;
+  border-radius: 2px;
+  cursor: pointer;
+  background: var(--no-data);
+  box-shadow: 0 0 0 1px rgba(28,26,22,0.10) inset;
+  transition: transform 0.12s ease;
+}
+.task-square:hover { transform: scale(1.18); }
+.task-square.automated { background: var(--automated); }
+.task-square.augmented { background: var(--augmented); }
+.task-square.assistive { background: var(--assistive); }
+.task-square.no-data { background: var(--no-data); }
+.task-square.low-confidence { background: var(--low-conf); }
+.card-stat {
+  font-size: 11px;
+  color: var(--ink-40);
+  font-style: italic;
+  letter-spacing: -0.005em;
+}
 
-.summary { max-width: 820px; margin: 0 auto 24px; font-size: 0.82rem; color: var(--fg-muted); }
+/* Area sections — one editorial-width header per organizational area,
+   then the cards for that area span the wider grid. */
+.area-section { margin: 56px 0 0; }
+.area-section:first-of-type { margin-top: 32px; }
+.area-section h2 {
+  font-size: 19px;
+  font-weight: 540;
+  letter-spacing: -0.018em;
+  margin: 0 0 6px;
+}
+.area-section .area-meta {
+  font-size: 12px;
+  color: var(--ink-60);
+  font-style: italic;
+  margin: 0 0 12px;
+}
+.area-desc {
+  font-size: 13.5px;
+  color: var(--ink-95);
+  line-height: 1.55;
+  margin: 0 0 14px;
+  text-wrap: pretty;
+}
+.area-notes {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  background: var(--paper-2);
+  border-left: 2px solid var(--hairline);
+  border-radius: 3px;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.area-notes-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--ink-60);
+  margin-bottom: 6px;
+}
+.desc-label, .area-notes-label {
+  font-family: inherit;
+}
 
-/* Org snapshot — editorial block, centered column. */
-.org-overview { max-width: 820px; margin: 0 auto 64px; }
-.org-overview .label { font-family: var(--font-display); font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 14px; font-weight: 500; }
-.org-overview .org-desc { font-size: 0.95rem; line-height: 1.7; margin-bottom: 22px; color: var(--fg); max-width: 720px; }
-.org-overview .stats-row { display: flex; gap: 36px; flex-wrap: wrap; font-size: 0.85rem; color: var(--fg-muted); margin-bottom: 18px; }
-.org-overview .stats-row strong { color: var(--fg); font-weight: 500; }
-
-.dist-bar { display: flex; height: 12px; border-radius: 2px; overflow: hidden; margin: 10px 0; }
+/* Stat row + distribution bar (org overview). */
+.stats-row {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--ink-60);
+  margin: 14px 0;
+}
+.stats-row strong { color: var(--ink); font-weight: 540; }
+.dist-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 12px 0;
+  background: var(--paper-2);
+}
 .dist-bar > div { height: 100%; }
 .dist-bar .seg.automated { background: var(--automated); }
 .dist-bar .seg.augmented { background: var(--augmented); }
 .dist-bar .seg.assistive { background: var(--assistive); }
 .dist-bar .seg.no-data { background: var(--no-data); }
+
+/* Popover — small floating card opened on click of a task square.
+   `position: absolute` so it stays anchored to the clicked square's
+   document position; the JS uses document-coordinate maths. */
+.popover {
+  position: absolute;
+  display: none;
+  max-width: 360px;
+  min-width: 260px;
+  padding: 16px 20px 18px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  box-shadow: 0 4px 18px rgba(28,26,22,0.10);
+  z-index: 50;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.popover.open { display: block; }
+.popover .close {
+  position: absolute;
+  top: 8px; right: 10px;
+  background: transparent; border: 0;
+  cursor: pointer;
+  font: inherit; font-size: 16px;
+  color: var(--ink-40);
+  padding: 2px 6px;
+  line-height: 1;
+}
+.popover .close:hover { color: var(--ink); }
+.popover h3 {
+  font-size: 14px;
+  font-weight: 540;
+  letter-spacing: -0.012em;
+  margin: 0 0 4px;
+  padding-right: 20px;
+  text-wrap: pretty;
+}
+.popover .eyebrow {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--ink-60);
+  margin-bottom: 6px;
+}
+.popover .pop-id {
+  font-family: ui-monospace, SF Mono, Menlo, monospace;
+  font-size: 10.5px;
+  color: var(--ink-40);
+  margin-bottom: 10px;
+}
+.popover .pop-task {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-95);
+  padding: 10px 12px;
+  background: var(--paper-2);
+  border-radius: 3px;
+  margin-bottom: 10px;
+}
+.popover .pop-task strong { font-weight: 540; }
+.popover dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 14px;
+  font-size: 11.5px;
+}
+.popover dt { color: var(--ink-60); margin: 0; }
+.popover dd { margin: 0; color: var(--ink); }
+.popover .pop-chain {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hairline-2);
+  font-size: 10.5px;
+  color: var(--ink-60);
+  font-style: italic;
+  line-height: 1.55;
+}
+.popover .pop-chain strong {
+  font-style: normal; color: var(--ink-80); font-weight: 540;
+}
+
+/* Empty state when filters return no results. */
+.empty {
+  text-align: center;
+  padding: 64px 0;
+  color: var(--ink-40);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* Unit filter label (used inside .filter-row above the dashboard). */
+.unit-filter-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--ink-60);
+  white-space: nowrap;
+}
+.filter-pills {
+  display: flex; gap: 6px;
+  flex-wrap: wrap;
+}
+.pill {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 5px 12px 6px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11.5px;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+.pill:hover { border-color: var(--ink); }
+.pill.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+/* JS-produced classes — preserved from the v4 viewer with the
+   palette swapped to Carta sbiadita. Listed flat here so the JS in
+   render_html doesn't need any change. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+@media (min-width: 1100px) {
+  .grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+}
+@media (min-width: 1440px) {
+  .grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+}
+.area-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 56px;
+  margin: 0 0 28px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .area-head { grid-template-columns: 1fr; gap: 24px; }
+}
+.area-head-left, .area-head-right { min-width: 0; }
+.summary {
+  font-size: 12.5px; color: var(--ink-60);
+  margin: 14px 0 22px; font-style: italic;
+}
+.summary-label, .desc-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--ink-60);
+  margin-bottom: 8px;
+}
+.org-overview { margin: 0 0 48px; }
+.org-overview .label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--ink-60);
+  margin-bottom: 12px;
+}
+.org-desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-95);
+  margin: 0 0 18px;
+  text-wrap: pretty;
+}
+.dist-legend {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  font-size: 11.5px;
+  color: var(--ink-60);
+  margin-top: 8px;
+}
+.dist-legend .item { display: flex; align-items: center; gap: 6px; }
+.dist-legend .swatch {
+  width: 11px; height: 11px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.dist-legend .swatch.automated { background: var(--automated); }
+.dist-legend .swatch.augmented { background: var(--augmented); }
+.dist-legend .swatch.assistive { background: var(--assistive); }
+.dist-legend .swatch.no-data { background: var(--no-data); }
+
+/* Closest-match block (inline inside each card). */
+.closest-match {
+  padding: 10px 12px;
+  margin: 12px 0;
+  background: var(--paper-2);
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.closest-match .label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--ink-60);
+  margin-bottom: 6px;
+}
+.closest-match .task-it { color: var(--ink); margin-bottom: 4px; }
+.closest-match .task-en { color: var(--ink-60); font-style: italic; font-size: 11px; }
+.closest-match .metrics {
+  display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap;
+  font-size: 11px;
+}
+.closest-match .metric strong { font-weight: 540; color: var(--ink); }
+.closest-match .metric .key { color: var(--ink-60); margin-right: 3px; }
+.closest-match.no-rich .warn { color: var(--ink-60); font-size: 11px; margin-top: 6px; }
+
+/* Card stat + level-tag pill. */
+.card-stat .level-tag {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  margin-right: 8px;
+  color: var(--ink);
+}
+.level-tag.strong { background: var(--automated); }
+.level-tag.medium { background: var(--augmented); }
+.level-tag.mixed { background: var(--assistive); }
+.level-tag.zero { background: var(--no-data); }
+.level-tag.low-confidence {
+  background: transparent;
+  border: 1px solid var(--hairline);
+  color: var(--ink-60);
+}
+.card.low-confidence .task-grid::before {
+  content: "Low confidence — top-1 similarity below threshold.";
+  width: 100%;
+  font-size: 11px;
+  color: var(--ink-60);
+  padding: 8px 10px;
+  background: var(--paper-2);
+  border-radius: 2px;
+  margin-bottom: 6px;
+}
+
+/* Area section override — single editorial column above its cards. */
+.area-section { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--hairline-2); }
+
+/* Bottom colophon strip — same shape as the canvas viewers. */
+.colophon-strip {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 5;
+  padding: 12px max(28px, env(safe-area-inset-right))
+           max(14px, calc(env(safe-area-inset-bottom) + 10px))
+           max(28px, env(safe-area-inset-left));
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--ink-40);
+  letter-spacing: -0.005em;
+  background: linear-gradient(to bottom, transparent, var(--paper) 55%);
+  pointer-events: none;
+}
+.colophon-strip strong {
+  font-style: normal; color: var(--ink-80); font-weight: 540;
+}
+
+@media (max-width: 760px) {
+  .activity-grid {
+    grid-template-columns: 1fr;
+    padding: 0 14px;
+  }
+  .colophon-strip { font-size: 10px; padding: 8px 14px; }
+}
+"""
+
+# Legacy CSS (pre-v5) intentionally removed below. All chrome and viz
+# classes used by the JS-rendered content are now defined in EXTRA_CSS
+# above (App-pure scroll-on-paper).
+_LEGACY_CSS_REMOVED = """
 .dist-legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.78rem; color: var(--fg-muted); margin-top: 8px; }
 .dist-legend .item { display: flex; align-items: center; gap: 6px; }
 .dist-legend .swatch { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
@@ -232,9 +674,9 @@ STRINGS = {
         "search_label": "Search",
         "search_placeholder": "Words from the activity title or description",
         "signal_label": "Signal",
-        "area_label": "Area",
+        "unit_label": "Unit",
         "all": "All",
-        "all_areas": "All areas",
+        "all_units": "Entire org",
         "level_strong": "High signal",
         "level_medium": "Some signal",
         "level_mixed": "Low signal",
@@ -247,7 +689,7 @@ STRINGS = {
         "confidence": "Confidence",
         "automation": "Automation",
         "low_conf_hint": "Low confidence — top-1 similarity below threshold.",
-        "no_area": "(no area)",
+        "no_unit": "(no area)",
         "activities_count": "{n} activities",
         "tooltip_click": "Click for details",
         "tooltip_conv_one": "1 conversation on Claude.ai",
@@ -297,9 +739,9 @@ STRINGS = {
         "search_label": "Cerca",
         "search_placeholder": "Parole dal titolo o dalla descrizione dell'attività",
         "signal_label": "Segnale",
-        "area_label": "Area",
+        "unit_label": "Unit",
         "all": "Tutto",
-        "all_areas": "Tutte le aree",
+        "all_units": "Tutta l'organizzazione",
         "level_strong": "Forte: Claude in autonomia su almeno 3 mansioni vicine",
         "level_medium": "Medio: almeno 5 mansioni vicine assistite o autonome",
         "level_mixed": "Misto: mansioni vicine con dati spariti",
@@ -312,7 +754,7 @@ STRINGS = {
         "confidence": "Vicinanza",
         "automation": "Autonomia di Claude",
         "low_conf_hint": "Match incerto: la mansione più vicina nel catalogo è troppo distante per fidarsi del dato.",
-        "no_area": "(senza area)",
+        "no_unit": "(senza area)",
         "activities_count": "{n} attività",
         "tooltip_click": "Click per il dettaglio numerico",
         "tooltip_conv_one": "osservato su 1 conversazione Claude.ai (campione minimo)",
@@ -421,21 +863,25 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
             if t in translations:
                 mm["task_it"] = translations[t]
             annotated.append(mm)
+        # Resolution order for `_unit`: explicit metadata field if
+        # passed via --metadata, else the `_unit` already on the
+        # activity match (populated by the build/match step from the
+        # activity's frontmatter `unit` field), else empty.
+        unit_value = meta.get("unit") or a.get("_unit") or ""
         classified.append({
             **a,
             "matches": annotated,
             **c,
-            "_title": meta.get("title") or a["id"],
-            "_description": meta.get("description") or "",
-            "_area": meta.get("area") or "",
-            "_unit": meta.get("unit") or "",
+            "_title": meta.get("title") or a.get("label") or a["id"],
+            "_description": meta.get("description") or a.get("description") or "",
+            "_unit": unit_value,
         })
 
     levels = [c["level"] for c in classified]
     counts = {lv: levels.count(lv) for lv in ("strong", "medium", "mixed", "zero", "low-confidence")}
 
     # Distinct areas, sorted
-    areas = sorted({c["_area"] for c in classified if c["_area"]})
+    units = sorted({c["_unit"] for c in classified if c["_unit"]})
 
     data_js = json.dumps(classified, ensure_ascii=False)
     strings_js = json.dumps(S, ensure_ascii=False)
@@ -445,136 +891,156 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
     area_desc_js = json.dumps(area_descriptions or {}, ensure_ascii=False)
     org_desc_escaped = (org_description or "").replace("</", "<\\/")
 
-    # --- editorial chrome (Italianate masthead + magazine colophon) ---
+    # --- App-pure chrome assembly ---
     n_activities = len(classified)
-    n_areas = len(areas)
+    n_units = len(units)
+    org_name = (
+        # Resolution order: explicit metadata `_org` if present, else
+        # one of the JSON-level fields the build pipeline may have
+        # populated, else generic "AI exposure".
+        (metadata.get("_org") if isinstance(metadata, dict) else None)
+        or "AI exposure"
+    )
+    dated = ""  # filled by main() from the JSON payload, set on metadata if present
+    if isinstance(metadata, dict):
+        dated = metadata.get("_dated", "")
     if lang == "it":
-        kicker_left = "esposizione all'AI"
-        kicker_right = f"organizzazione · {n_activities} attività"
-        title_html = f"<em>{title}</em>"
-        lede_text = S.get("subtitle", "")
-        dateline_text = ""
-        masthead_tags = [f"{n_activities} attività", f"{n_areas} aree"]
-        colo_extra = ["Clicca un quadratino per leggere la classificazione, la fonte AEI, l'articolo dietro la mossa."]
+        what_html = "esposizione all'AI · attività × catalogo pubblico del lavoro"
     else:
-        kicker_left = "ai exposure"
-        kicker_right = f"organization · {n_activities} activities"
-        title_html = f"<em>{title}</em>"
-        lede_text = S.get("subtitle", "")
-        dateline_text = ""
-        masthead_tags = [f"{n_activities} activities", f"{n_areas} areas"]
-        colo_extra = ["Click any square to read its classification, the AEI source, and the story behind the move."]
-    masthead_html = masthead(
-        kicker_left=kicker_left,
-        kicker_num=f"№ {n_activities:02d}",
-        kicker_right=kicker_right,
-        title=title_html,
-        lede=lede_text,
-        dateline=dateline_text,
-        tags=masthead_tags,
-    )
-    colophon_html = colophon(
-        citations=None, sources=None,
-        generator="skills/playbooks/ai-exposure",
-        generated_on="",
-        audit="pass",
-        autoresearch="4 / 4 deterministic dimensions pass",
-        extra_lines=colo_extra,
-    )
+        what_html = "ai exposure · activities × public catalog of work"
 
-    decisions_html = ""
-    if decisions:
+    # Decisions go into the shared Analysis modal.
+    has_decisions = bool(decisions)
+    modal_html_str = ""
+    if has_decisions:
         from html import escape as _esc
         items = []
         for d in decisions:
             q = _esc(d.get("question", ""))
-            ans_paragraphs = "".join(f'<p class="answer">{_esc(p)}</p>' for p in (d.get("answer", "") or "").split("\n\n") if p.strip())
+            ans_paragraphs = "".join(
+                f"<p>{_esc(p)}</p>"
+                for p in (d.get("answer", "") or "").split("\n\n")
+                if p.strip()
+            )
             src = _esc(d.get("source", ""))
-            src_html = f'<div class="source">{src}</div>' if src else ""
-            items.append(f'<div class="decision"><div class="question">{q}</div>{ans_paragraphs}{src_html}</div>')
-        decisions_eyebrow = "How to read this map" if lang == "en" else "Come leggere questa mappa"
-        decisions_lead = (
-            "Each square above is one of the closest matches in the public catalog of work; the decisions below translate the pattern into moves the leader could make."
+            src_html = f'<p class="source">{src}</p>' if src else ""
+            items.append(f"<li><h3>{q}</h3>{ans_paragraphs}{src_html}</li>")
+        kicker = "Reading the map" if lang == "en" else "Come leggere questa mappa"
+        headline = (
+            f"{n_activities} activities, mapped against the public catalog of work."
             if lang == "en"
-            else "Ogni quadratino sopra è una delle attività più vicine nel catalogo pubblico del lavoro; le decisioni qui sotto traducono il pattern in mosse che chi guida l'organizzazione può fare."
+            else f"{n_activities} attività, viste attraverso il catalogo pubblico del lavoro."
         )
-        decisions_html = f"""
-    <div class="section" id="decisions">
-      <h2>{decisions_eyebrow}</h2>
-      <p class="lead">{decisions_lead}</p>
-      {''.join(items)}
-    </div>"""
+        modal_html_str = app_pure_modal_html(
+            headline=headline,
+            org_name=org_name,
+            dated=dated or "",
+            decisions_html="".join(items),
+            kicker=kicker,
+            lede="",
+        )
 
-    return f"""<!DOCTYPE html>
+    # About-modal body — the editorial intro behind the "?" button.
+    # Plain-language definitions of every category, no jargon (per
+    # skills/STYLE.md). The colour-coded labels on the squares above
+    # are otherwise opaque to a leader reading this for the first time.
+    if lang == "it":
+        colour_defs = """
+  <h2>Cosa vogliono dire i colori dei quadratini</h2>
+  <p><strong>Per lo più automatizzata</strong> — sulle attività più vicine a questa, nel campione pubblico Claude ha lavorato in autonomia; nella maggior parte delle conversazioni l'umano non è dovuto intervenire.</p>
+  <p><strong>Per lo più aumentata</strong> — Claude e l'umano hanno lavorato insieme: entrambi hanno contribuito al risultato.</p>
+  <p><strong>Assistiva</strong> — Claude ha dato una mano (cercare informazioni, suggerire bozze), ma l'umano è rimasto in guida e ha preso le decisioni.</p>
+  <p><strong>Fuori dal campione osservato</strong> — nessuna conversazione pubblica con Claude nel campione corrispondeva abbastanza a questa attività. Significa "non lo sappiamo da questo campione", non "Claude qui non si usa".</p>
+"""
+    else:
+        colour_defs = """
+  <h2>What the colours mean</h2>
+  <p><strong>Mostly automated</strong> — on the public-catalog tasks closest to this activity, Claude in the sample handled the work on its own; in most of those conversations the human didn't step in.</p>
+  <p><strong>Mostly augmented</strong> — the human and Claude worked together; both contributed to the result.</p>
+  <p><strong>Assistive</strong> — Claude helped (looking things up, drafting, summarising) but the human stayed in the lead and made the calls.</p>
+  <p><strong>Outside the observed sample</strong> — no public Claude conversation in the sample was close enough to this activity. Read as "we don't know from this sample", not as "Claude isn't used here".</p>
+"""
+
+    about_body = f"""
+  <p class="lede">{escape(S['subtitle'])}</p>
+
+  <h2>{escape(S['intro_h2'])}</h2>
+  <p>{escape(S['intro_p1'])}</p>
+  <p>{escape(S['intro_p2'])}</p>
+  <p>{escape(S['intro_p3'])}</p>
+
+{colour_defs}
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-square automated"></span>{escape(S["legend_automated"])}</div>
+    <div class="legend-item"><span class="legend-square augmented"></span>{escape(S["legend_augmented"])}</div>
+    <div class="legend-item"><span class="legend-square assistive"></span>{escape(S["legend_assistive"])}</div>
+    <div class="legend-item"><span class="legend-square no-data"></span>{escape(S["legend_no_data"])}</div>
+  </div>
+
+  <div id="org-overview"></div>
+"""
+    about_modal_html_str = app_pure_about_modal_html(
+        kicker=f"№ {n_activities:02d} · ai exposure",
+        headline=title,
+        lede="",
+        body_html=about_body,
+    )
+
+    return f"""<!doctype html>
 <html lang="{lang}">
 <head>
-<meta charset="UTF-8">
-<title>{title} · ai exposure</title>
-<style>{base_css() + EXTRA_CSS}</style>
+{app_pure_head_meta(f"{title} · ai exposure")}
+<style>{app_pure_css(layout="scroll") + EXTRA_CSS}</style>
 </head>
 <body>
-  <div class="container">
-    {masthead_html}
 
-    <div class="intro">
-      <h2>{S["intro_h2"]}</h2>
-      <p>{S["intro_p1"]}</p>
-      <p>{S["intro_p2"]}</p>
-      <p>{S["intro_p3"]}</p>
-    </div>
+{app_pure_dateline_html(org_name, what=what_html)}
 
-    <div class="legend-wrap">
-      <div class="legend">
-        <div class="legend-item"><span class="legend-square automated"></span>{S["legend_automated"]}</div>
-        <div class="legend-item"><span class="legend-square augmented"></span>{S["legend_augmented"]}</div>
-        <div class="legend-item"><span class="legend-square assistive"></span>{S["legend_assistive"]}</div>
-        <div class="legend-item"><span class="legend-square no-data"></span>{S["legend_no_data"]}</div>
-      </div>
-    </div>
+{app_pure_top_right_html(dated or "—", show_analysis=has_decisions, show_help=True)}
 
-    <div class="controls">
-      <div class="control-row">
-        <span class="control-label">{S["search_label"]}</span>
-        <input class="search-box" id="search" placeholder="{S["search_placeholder"]}" />
-      </div>
-      <div class="control-row">
-        <span class="control-label">{S["signal_label"]}</span>
-        <div class="filter-pills" id="filter-level">
-          <button class="pill active" data-level="all">{S["all"]}</button>
-          <button class="pill" data-level="strong">{S["level_strong"]}</button>
-          <button class="pill" data-level="medium">{S["level_medium"]}</button>
-          <button class="pill" data-level="mixed">{S["level_mixed"]}</button>
-          <button class="pill" data-level="zero">{S["level_zero"]}</button>
-          <button class="pill" data-level="low-confidence">{S["level_low_confidence"]}</button>
-        </div>
-      </div>
-      <div class="control-row">
-        <span class="control-label">{S["area_label"]}</span>
-        <div class="filter-pills" id="filter-area">
-          <button class="pill active" data-area="all">{S["all_areas"]}</button>
-          {''.join(f'<button class="pill" data-area="{a}">{a}</button>' for a in areas)}
-        </div>
-      </div>
-    </div>
-
-    <div id="org-overview"></div>
-
-    <div class="summary" id="summary"></div>
-
-    <div id="content"></div>
-    <div class="empty" id="empty" style="display:none">{S["no_match"]}</div>
-
-    {decisions_html}
-
-    <div class="footer"><p>{S["footer"]}</p></div>
-
-    {colophon_html}
+<!-- Filter row + dashboard live in the body directly. Editorial
+     intro / legend / org snapshot are behind the "?" button. -->
+<div class="filter-row">
+  <span class="unit-filter-label">{escape(S.get("unit_label", "Unit"))}</span>
+  <div class="filter-pills" id="filter-unit">
+    <button class="pill active" data-unit="all">{escape(S.get("all_units", "Entire org"))}</button>
+    {''.join(f'<button class="pill" data-unit="{escape(u)}">{escape(u)}</button>' for u in units)}
   </div>
+  <span class="summary" id="summary"></span>
+</div>
 
-  <div class="popover" id="popover">
-    <button class="close" id="popover-close" aria-label="Close">×</button>
-    <div id="popover-body"></div>
+<section class="dashboard">
+  <div id="content"></div>
+  <div class="empty" id="empty" style="display:none">{escape(S["no_match"])}</div>
+</section>
+
+{about_modal_html_str}
+
+<!-- Hidden inputs the legacy JS binds to (search box + signal-level
+     filter dropped from the App-pure UI). Display:none on the wrapper. -->
+<div style="display:none">
+  <input id="search" />
+  <div id="filter-level">
+    <button class="pill active" data-level="all"></button>
   </div>
+</div>
+
+<div class="colophon-strip">
+  <span><strong>{n_activities}</strong> activities · <strong>{n_units}</strong> areas</span>
+  <span>{S['footer'][:80]}…</span>
+</div>
+
+<div class="popover" id="popover">
+  <button class="close" id="popover-close" aria-label="Close">×</button>
+  <div id="popover-body"></div>
+</div>
+
+{modal_html_str}
+
+<script>
+{app_pure_baseline_js()}
+</script>
 
 <script>
 const data = {data_js};
@@ -601,16 +1067,16 @@ function escapeHtml(s) {{
 }}
 
 let currentLevel = 'all';
-let currentArea = 'all';
+let currentUnit = 'all';
 let currentQuery = '';
 
 function applyFilters() {{
   const q = currentQuery.trim().toLowerCase();
   return data.filter(d => {{
     if (currentLevel !== 'all' && d.level !== currentLevel) return false;
-    if (currentArea !== 'all' && d._area !== currentArea) return false;
+    if (currentUnit !== 'all' && d._unit !== currentUnit) return false;
     if (q) {{
-      const blob = `${{d._title}} ${{d._description}} ${{d.id}} ${{d._area}}`.toLowerCase();
+      const blob = `${{d._title}} ${{d._description}} ${{d.id}} ${{d._unit}}`.toLowerCase();
       if (!blob.includes(q)) return false;
     }}
     return true;
@@ -781,7 +1247,7 @@ function renderCard(d) {{
   return `
     <div class="card ${{isLow ? 'low-confidence' : ''}}">
       <div class="card-title">${{escapeHtml(d._title || d.id)}}</div>
-      <div class="card-id">${{escapeHtml(d.id)}} · ${{escapeHtml(d._area)}}</div>
+      <div class="card-id">${{escapeHtml(d.id)}} · ${{escapeHtml(d._unit)}}</div>
       <div class="card-desc">${{escapeHtml(d._description || '')}}</div>
       ${{closest}}
       <div class="task-grid">${{squaresHtml}}</div>
@@ -797,7 +1263,7 @@ function render() {{
   const overview = document.getElementById('org-overview');
 
   // org overview only when no specific area filter is active.
-  overview.innerHTML = (currentArea === 'all') ? renderOrgOverview() : '';
+  overview.innerHTML = (currentUnit === 'all') ? renderOrgOverview() : '';
 
   summary.textContent = S.summary.replace('{{n}}', items.length).replace('{{total}}', data.length);
 
@@ -809,15 +1275,24 @@ function render() {{
   empty.style.display = 'none';
 
   // Group by area when "All areas" + no specific area filter
-  if (currentArea === 'all') {{
+  if (currentUnit === 'all') {{
     const groups = {{}};
     items.forEach(d => {{
-      const key = d._area || S.no_area;
+      const key = d._unit || S.no_unit;
       if (!groups[key]) groups[key] = [];
       groups[key].push(d);
     }});
-    const sortedAreas = Object.keys(groups).sort();
-    content.innerHTML = sortedAreas.map(area => {{
+    const sortedUnits = Object.keys(groups).sort();
+    // When there is only one area (often the case for orgs without
+    // area metadata, where everything falls into the "no_unit"
+    // bucket), suppress the area-head — its per-area summary just
+    // duplicates the org-overview already shown above. Render cards
+    // flat in that case.
+    if (sortedUnits.length === 1) {{
+      const cards = groups[sortedUnits[0]].map(renderCard).join('');
+      content.innerHTML = `<div class="grid">${{cards}}</div>`;
+    }} else {{
+    content.innerHTML = sortedUnits.map(area => {{
       const cards = groups[area].map(renderCard).join('');
       const summary = renderAreaSummary(area, groups[area]);
       return `
@@ -834,13 +1309,14 @@ function render() {{
           <div class="grid">${{cards}}</div>
         </div>`;
     }}).join('');
-  }} else if (currentArea !== 'all') {{
-    const summary = renderAreaSummary(currentArea, items);
+    }}
+  }} else if (currentUnit !== 'all') {{
+    const summary = renderAreaSummary(currentUnit, items);
     content.innerHTML = `
       <div class="area-section">
         <div class="area-head">
           <div class="area-head-left">
-            <h2>${{escapeHtml(currentArea)}}</h2>
+            <h2>${{escapeHtml(currentUnit)}}</h2>
             ${{summary.left}}
           </div>
           <div class="area-head-right">
@@ -863,11 +1339,11 @@ document.querySelectorAll('#filter-level .pill').forEach(btn => {{
   }});
 }});
 
-document.querySelectorAll('#filter-area .pill').forEach(btn => {{
+document.querySelectorAll('#filter-unit .pill').forEach(btn => {{
   btn.addEventListener('click', () => {{
-    document.querySelectorAll('#filter-area .pill').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#filter-unit .pill').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    currentArea = btn.dataset.area;
+    currentUnit = btn.dataset.unit;
     render();
   }});
 }});
@@ -939,7 +1415,7 @@ document.addEventListener('click', e => {{
          </dl>`;
     const taskItHtml = m.task_it ? `<div class="pop-task"><strong>${{escapeHtml(m.task_it)}}</strong><br><span style="color: var(--fg-muted); font-size: 0.78rem; font-style: italic">${{escapeHtml(m.task)}}</span></div>` : `<div class="pop-task">${{escapeHtml(m.task)}}</div>`;
     const html = `
-      <div class="eyebrow">${{escapeHtml(a._area || '')}}</div>
+      <div class="eyebrow">${{escapeHtml(a._unit || '')}}</div>
       <h3>${{escapeHtml(a._title || a.id)}}</h3>
       <div class="pop-id">${{escapeHtml(a.id)}}</div>
       ${{taskItHtml}}
@@ -1017,10 +1493,14 @@ def main() -> int:
     #    mcp-tool render flow where the agent passes the whole play
     #    context via json_content.
     embedded_decisions: list[dict] | None = None
+    embedded_dated = ""
+    embedded_org = ""
     if isinstance(raw, dict) and "matches" in raw:
         matches = raw["matches"]
         if "decisions" in raw and isinstance(raw["decisions"], list):
             embedded_decisions = raw["decisions"]
+        embedded_dated = (raw.get("_dated") or "").strip()
+        embedded_org = (raw.get("_org") or "").strip()
     else:
         matches = raw
     metadata: dict[str, dict] = {}
@@ -1030,6 +1510,11 @@ def main() -> int:
             metadata = {m["id"]: m for m in meta_list if "id" in m}
         elif isinstance(meta_list, dict):
             metadata = meta_list
+    # Surface wrapper-level fields so render_html's chrome can read them.
+    if embedded_dated:
+        metadata["_dated"] = embedded_dated
+    if embedded_org:
+        metadata["_org"] = embedded_org
 
     translations: dict[str, str] = {}
     if args.task_translations:

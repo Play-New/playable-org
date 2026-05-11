@@ -29,7 +29,7 @@ These constrain every operation. Violation = bug.
 | Folder | Content | Mutability |
 |---|---|---|
 | `sources/` | Raw documents | Never modified |
-| `identity/` | Mission, limits, governance rules | Slow, human-edited |
+| `identity/` | Mission, limits, governance rules. Mission file's frontmatter carries the optional `org_name: "<display name>"` key — the dateline string every playbook viewer reads to build its chrome (e.g. *Outline & Co.*). Falls back to a title-cased version of the org-dir basename if absent. | Slow, human-edited |
 | `language/` | Domain terms (flat glossary) | Maintained by ingest |
 | `nodes/units/` | Organizational units (divisions, areas, teams, governance bodies) | Maintained by ingest |
 | `nodes/people/` | Named individuals | Maintained by ingest |
@@ -37,7 +37,7 @@ These constrain every operation. Violation = bug.
 | `nodes/activities/` | Atomic activities (who does what, FTE, artefacts) | Maintained by ingest |
 | `nodes/stakeholders/` | Donors, partners, regulators, peers, suppliers | Maintained by ingest |
 | `commitments/` | Relationships between nodes (5 levels, 3 state dimensions) | Maintained by ingest |
-| `financials/` | Market view of the organization (revenue lines, headcount, costs by division) | Maintained by ingest |
+| `financials/` | Market snapshot of the organization (revenue lines, headcount, costs by division) | Maintained by ingest |
 | `plays/` | Point-in-time playbook executions (interpretations) | Frozen at creation |
 | `log.md` | Prepend-only audit | Prepend-only |
 
@@ -223,7 +223,7 @@ description: "..."
 sources: [...]             # annual report, institutional profile, HR analysis, etc.
 ```
 
-Market view of the organization: annual snapshot, revenue lines, headcount, operating costs by division. The body is prose with tables and inline citations to the source.
+Market snapshot of the organization: annual lines, revenue lines, headcount, operating costs by division. The body is prose with tables and inline citations to the source.
 
 ## Frontmatter conventions
 
@@ -309,7 +309,7 @@ Playbooks are named for what they do, never for the author. Four base playbooks:
 - `ai-exposure` — maps each activity to AEI tasks and classifies AI exposure on two layers (observed signal + organizational constraints).
 - `value-map` — positions an anchor's components on the evolution axis with AI overlay grounded in AEI evidence.
 - `reshuffle` — diagnoses which constraints hold a bundle together (scarcity / risk / coordination) and classifies AI uses as tools or engines.
-- `world-model` — re-reads the organization as a stack of capability + world model + intelligence layer + interfaces; produces a roadmap from failure signals.
+- `world-model` — re-reads the organization as a stack of capability + world model + intelligence layer + interfaces; produces a roadmap from pieces to build.
 
 Plus a meta-skill `new-playbook` (5-question interview that scaffolds a new playbook by forking the closest base). See `<repo>/skills/ROADMAP.md` for the order, and `<repo>/skills/playbooks/<name>/SKILL.md` for each.
 

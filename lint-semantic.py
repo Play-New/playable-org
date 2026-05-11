@@ -8,9 +8,12 @@ Tier 2 semantic lint for playable-org.
   M3: Language term usage (inbound links)
   M4: Body stub detection (<30 words)
 
-Output: lint-semantic-report-<date>.md at repo root.
+Defaults to linting `<repo-root>/org/`. Pass `--org-dir <path>` to lint a
+different directory. Output: `lint-semantic-report-<date>.md` at repo root
+unless `--report` is passed.
 """
 
+import argparse
 import os
 import re
 import sys
@@ -19,8 +22,11 @@ from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).parent
-ORG = ROOT / "Org"
-REPORT = ROOT / f"lint-semantic-report-{date.today().isoformat()}.md"
+
+# Resolved from CLI args at the bottom of the file. Default lower-case
+# (was `Org` — silently masked on case-insensitive filesystems).
+ORG: Path = ROOT / "org"
+REPORT: Path = ROOT / f"lint-semantic-report-{date.today().isoformat()}.md"
 
 STUB_THRESHOLD_WORDS = 30
 
@@ -344,5 +350,37 @@ def main():
     return 0
 
 
+def _resolve_paths_from_argv() -> None:
+    """Apply --org-dir / --report to the module-level ORG and REPORT
+    before main() walks the filesystem."""
+    global ORG, REPORT
+    parser = argparse.ArgumentParser(
+        description="Tier-2 semantic lint of an org/ directory.",
+    )
+    parser.add_argument(
+        "--org-dir",
+        type=Path,
+        default=ROOT / "org",
+        help="Directory to lint (default: <repo-root>/org).",
+    )
+    parser.add_argument(
+        "--report",
+        type=Path,
+        default=None,
+        help="Where to write the markdown report (default: <repo-root>/lint-semantic-report-<date>.md).",
+    )
+    args = parser.parse_args()
+    ORG = args.org_dir.resolve()
+    if not ORG.is_dir():
+        sys.stderr.write(f"lint-semantic: org dir not found: {ORG}\n")
+        sys.exit(2)
+    REPORT = (
+        args.report.resolve()
+        if args.report
+        else ROOT / f"lint-semantic-report-{date.today().isoformat()}.md"
+    )
+
+
 if __name__ == "__main__":
+    _resolve_paths_from_argv()
     sys.exit(main())

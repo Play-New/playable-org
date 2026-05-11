@@ -128,7 +128,7 @@ Once initialized, ask Claude in plain language. The system reads from your struc
 
 - "Where is the X process going on the evolution curve, and where can AI change it?" (value-map)
 - "What holds the Y bundle together today, and what changes if AI matures?" (reshuffle)
-- "What are our key capabilities, which are unique, which are commodity?" (world-model)
+- "What are our key capabilities, which are differentiated craft, which are standard practice?" (world-model)
 - "On which of our activities is AI already capable enough to help?" (ai-exposure)
 
 Running a playbook produces a *play* — a frozen interactive HTML page that Claude generates and opens in your default browser. Plays accumulate under `org/plays/data/`; old plays are never overwritten.

@@ -27,7 +27,7 @@ Five base playbooks plus one meta-skill. Each answers one analytical question an
 
 **Question.** Where does each component of a process sit on the evolution curve (genesis → custom-built → product → commodity), and where is AI pushing it?
 
-**Source theory.** Simon Wardley, value-chain mapping (2005-). Components of a process are placed on a 2D grid: visibility (how directly the user sees this) on the y-axis, evolution (genesis → commodity) on the x-axis. The map exposes which components are differentiating, which are commoditizing, which need investment.
+**Source theory.** Simon Wardley, value-chain mapping (2005-). Components of a process are placed on a 2D grid: visibility (how directly the user sees this) on the y-axis, evolution (genesis → commodity) on the x-axis. The map exposes which components are differentiating, which are levelling toward market-standard, which need investment.
 
 **What it does.**
 1. Takes an anchor: a commitment, a unit, or a stakeholder slice.
@@ -68,14 +68,14 @@ Five base playbooks plus one meta-skill. Each answers one analytical question an
 
 **Question.** Reading the organization as a platform: what are its capabilities? Which are uniquely hard to acquire (moat) vs commodity? Where does the organization fail to compose capabilities into solutions for stakeholders?
 
-**Source theory.** Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026). An organization has four layers. **Capabilities** are atomic invocable functions with a public contract (input, output, SLO, regulatory constraints). **World model** is the representation of operations and stakeholders. **Intelligence layer** composes capabilities into responses to stakeholder signals. **Interfaces** deliver. The roadmap emerges from failure signals: composition attempts that fail because a capability is missing.
+**Source theory.** Jack Dorsey + Roelof Botha, *From Hierarchy to Intelligence* (Block, March 2026). An organization has four layers. **Capabilities** are atomic invocable functions with a public contract (input, output, SLO, regulatory constraints). **World model** is the representation of operations and stakeholders. **Intelligence layer** composes capabilities into responses to stakeholder signals. **Interfaces** deliver. The roadmap emerges from pieces to build: composition attempts that fail because a capability is missing.
 
 **What it does.**
 1. Inventories candidate capabilities by clustering activities.
 2. Filters via the five-property test (invocable, structured output, atomic, hard to acquire, composable). See [`skills/CAPABILITIES.md`](../skills/CAPABILITIES.md).
 3. The agent classifies each capability as `moat` or `commodity` with rationale.
 4. For each stakeholder type the agent fills bidirectional fields: what they get from the org, what they contribute back, the most honest signal recorded, current maturity, fragmentation across teams.
-5. The agent surfaces pieces to build (formerly "failure signals"): stakeholder requests that fail today because one needed piece of the chain isn't there yet.
+5. The agent surfaces pieces to build (formerly "pieces to build"): stakeholder requests that fail today because one needed piece of the chain isn't there yet.
 6. Renders the layered stack with a floating popover on every clickable card.
 
 **Output.**
@@ -88,7 +88,7 @@ Five base playbooks plus one meta-skill. Each answers one analytical question an
 
 **Question.** What does the whole organization look like as one connected graph? Which nodes are load-bearing? Where is the structure dense, and where has it not been written down yet?
 
-**Source theory.** None — this playbook is the only one without an external source. The structure is rendered as the structure declares itself, with no interpretive frame in between. It is the lightest of the playbooks and the one to run earliest, after the first ingest, before any of the framed reads.
+**Source theory.** None — this playbook is the only one without an external source. The structure is rendered as the structure declares itself, with no analytical framework in between. It is the lightest of the playbooks and the one to run earliest, after the first ingest, before any of the framework-led reads.
 
 **What it does.**
 1. Walks every node in `org/`: identity, units, activities, people, stakeholders, commitments, financial summaries, sources.

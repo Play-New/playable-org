@@ -235,6 +235,23 @@ def attach_aei(components: list[dict], matches_path: Path) -> int:
     return attached
 
 
+def _read_org_name(org_dir: Path) -> str:
+    """Pull the organisation's display name from `identity/mission.md`
+    frontmatter (key: `org_name`) — same convention as graph/build.py.
+    Falls back to a title-cased version of the org-dir basename."""
+    identity_dir = org_dir / "identity"
+    if identity_dir.is_dir():
+        for f in sorted(identity_dir.glob("*.md")):
+            try:
+                fm = parse_frontmatter(f.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            name = (fm.get("org_name") or "").strip()
+            if name:
+                return name
+    return org_dir.name.replace("-", " ").replace("_", " ").title()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build WardleyMap skeleton from structure.")
     parser.add_argument("--anchor", required=True, help="Anchor id (commitment or unit)")
@@ -369,6 +386,7 @@ def main() -> int:
             "terms": anchor_fm.get("terms", ""),
         },
         "_dated": date.today().isoformat(),
+        "_org": _read_org_name(Path(args.org_dir)),
         "_scope_units": scope_units,
         "end_user": "",  # agent fills
         "new_end_users": [],

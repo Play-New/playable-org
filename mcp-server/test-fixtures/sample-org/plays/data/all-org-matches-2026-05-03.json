@@ -1,1 +1,786 @@
-[]
+[
+  {
+    "id": "asset-handover",
+    "text": "Run the asset-handover ritual at the end of each engagement: delivery of all artefacts, sign-off, archival. # Asset handover\n\nThe client services lead manages the asset-handover ritual at the end of each engagement. The handover package collects the brand book, identity system files, design-system documentation, UI screens, and any source files the client owns under the contract (outline-roles-2025).\n\nThe",
+    "matches": [
+      {
+        "task": "Offer customers carry-out service at the completion of transactions.",
+        "similarity": 0.498,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Deliver merchandise and collect payment.",
+        "similarity": 0.4703,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "coordinate property closings, overseeing signing of documents and disbursement of funds.",
+        "similarity": 0.4638,
+        "in_rich": true,
+        "count": 28.0,
+        "ai_autonomy_mean": 2.8929,
+        "ai_education_years_mean": 14.3214,
+        "human_education_years_mean": 14.5,
+        "penetration": 0.0
+      },
+      {
+        "task": "Open and close cash floats and game tables.",
+        "similarity": 0.4614,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Obtain signatures and payments, or arrange for recipients to make payments.",
+        "similarity": 0.4596,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "audience-research",
+    "text": "Interview the client's customers and stakeholders, transcribe and synthesise into an insights document feeding positioning. # Audience research\n\nThe strategy lead and one strategist run the audience-research interviews for an engagement. They transcribe and synthesise into an insights document that feeds [brand positioning](brand-positioning.md) (outline-roles-2025).\n\nThe four mid-level strategists run interviews and tra",
+    "matches": [
+      {
+        "task": "Supervise the work of survey interviewers.",
+        "similarity": 0.6802,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Conduct auditions or interviews to evaluate potential clients.",
+        "similarity": 0.6599,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "confer with clients to determine objectives, budget, background information, and presentation approaches, styles, and techniques.",
+        "similarity": 0.6582,
+        "in_rich": true,
+        "count": 484.0,
+        "ai_autonomy_mean": 3.3719,
+        "ai_education_years_mean": 11.1983,
+        "human_education_years_mean": 12.7996,
+        "penetration": 0.7955
+      },
+      {
+        "task": "identify main client groups and audiences, determine the best way to communicate publicity information to them, and develop and implement a communication plan.",
+        "similarity": 0.6514,
+        "in_rich": true,
+        "count": 115.0,
+        "ai_autonomy_mean": 3.5217,
+        "ai_education_years_mean": 11.8435,
+        "human_education_years_mean": 12.6261,
+        "penetration": 0.8656
+      },
+      {
+        "task": "Explain survey objectives and procedures to interviewees and interpret survey questions to help interviewees' comprehension.",
+        "similarity": 0.6287,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "brand-book",
+    "text": "Author the brand book — the studio's signature artefact. Built personally by the design lead on every engagement. # Brand book\n\nThe design lead builds the brand book personally on every engagement. The brand book is the artefact the studio is best known for and the design lead does not delegate it (outline-roles-2025).\n\nMid-level designers may produce individual brand-book chapters under the lead's review, but",
+    "matches": [
+      {
+        "task": "make manuscript acceptance or revision recommendations to the publisher.",
+        "similarity": 0.4908,
+        "in_rich": true,
+        "count": 81.0,
+        "ai_autonomy_mean": 3.679,
+        "ai_education_years_mean": 17.2099,
+        "human_education_years_mean": 17.2469,
+        "penetration": 0.7885
+      },
+      {
+        "task": "Design original or special bindings for limited editions or other custom binding projects.",
+        "similarity": 0.4731,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Consult with authors and editors regarding manuscript changes and suggestions.",
+        "similarity": 0.458,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Manage inventory or sale of artist merchandise.",
+        "similarity": 0.4467,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "collaborate with graphic artists, editors and writers to produce master copies according to design specifications.",
+        "similarity": 0.4419,
+        "in_rich": true,
+        "count": 54.0,
+        "ai_autonomy_mean": 3.1667,
+        "ai_education_years_mean": 10.7037,
+        "human_education_years_mean": 10.4074,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "brand-positioning",
+    "text": "Author the positioning document for an engagement: how the client should be understood, against whom, with what proof points. # Brand positioning\n\nThe strategy lead writes the positioning document for every engagement. Inputs come from [audience research](audience-research.md) and the [competitive audit](competitive-audit.md); the output is a written brief that the [design lead](../people/lena-thorvaldsen.md) builds the id",
+    "matches": [
+      {
+        "task": "confer with colleagues to formulate positions and strategies pertaining to pending issues.",
+        "similarity": 0.55,
+        "in_rich": true,
+        "count": 55.0,
+        "ai_autonomy_mean": 3.3818,
+        "ai_education_years_mean": 14.9455,
+        "human_education_years_mean": 15.0,
+        "penetration": 0.0
+      },
+      {
+        "task": "Develop written contracts for bookings.",
+        "similarity": 0.5468,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "prepare written documents to establish contracts with or communicate financial recommendations to clients.",
+        "similarity": 0.533,
+        "in_rich": true,
+        "count": 67.0,
+        "ai_autonomy_mean": 3.1642,
+        "ai_education_years_mean": 14.9552,
+        "human_education_years_mean": 15.2836,
+        "penetration": 0.0
+      },
+      {
+        "task": "prepare design presentations and proposals for staff or customers.",
+        "similarity": 0.5277,
+        "in_rich": true,
+        "count": 71.0,
+        "ai_autonomy_mean": 3.6056,
+        "ai_education_years_mean": 11.6479,
+        "human_education_years_mean": 11.7042,
+        "penetration": 0.8032
+      },
+      {
+        "task": "Discuss issues with editors to establish priorities or positions.",
+        "similarity": 0.5218,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "competitive-audit",
+    "text": "Map a client's competitive landscape: who else exists in the category, what they sound like, where the white space is. # Competitive audit\n\nStrategists write competitive audits on briefed projects: who else exists in the category, what they sound like, where the white space is. The audit feeds the positioning brief (outline-roles-2025).\n\nThe strategy lead also does competitive-audit work for new pitches when the stu",
+    "matches": [
+      {
+        "task": "identify prospective customers using business directories, leads from existing clients, participation in organizations, or trade show or conference attendance.",
+        "similarity": 0.5448,
+        "in_rich": true,
+        "count": 26.0,
+        "ai_autonomy_mean": 3.3077,
+        "ai_education_years_mean": 13.0769,
+        "human_education_years_mean": 13.5769,
+        "penetration": null
+      },
+      {
+        "task": "Identify prospective customers, using business directories, leads from existing clients, participation in organizations, or trade show or conference attendance.",
+        "similarity": 0.5429,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.7239
+      },
+      {
+        "task": "identify prospective customers by using business directories, following leads from existing clients, participating in organizations and clubs, and attending trade shows and conferences.",
+        "similarity": 0.5343,
+        "in_rich": true,
+        "count": 102.0,
+        "ai_autonomy_mean": 3.451,
+        "ai_education_years_mean": 12.9412,
+        "human_education_years_mean": 12.8431,
+        "penetration": 0.9852
+      },
+      {
+        "task": "Conduct store audits to identify problem areas or procedural deficiencies.",
+        "similarity": 0.5258,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "develop prospects from current commercial customers, referral leads, or sales or trade meetings.",
+        "similarity": 0.5205,
+        "in_rich": true,
+        "count": 42.0,
+        "ai_autonomy_mean": 3.3333,
+        "ai_education_years_mean": 13.5714,
+        "human_education_years_mean": 14.0714,
+        "penetration": null
+      }
+    ]
+  },
+  {
+    "id": "design-system-build",
+    "text": "Build a design system for clients who maintain their own product engineering. Documented system, ready for client handoff. # Design system build\n\nMid-level product designers own design-system documentation when the client is building a system the studio will hand off. The senior product designer leads the system architecture; the mid-level produces the documentation that lets the client team maintain it (outline-roles-2",
+    "matches": [
+      {
+        "task": "Discuss the design with the client.",
+        "similarity": 0.7245,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "communicate with management and user personnel to develop production and design standards.",
+        "similarity": 0.6956,
+        "in_rich": true,
+        "count": 43.0,
+        "ai_autonomy_mean": 3.2558,
+        "ai_education_years_mean": 12.5349,
+        "human_education_years_mean": 13.1395,
+        "penetration": 0.0
+      },
+      {
+        "task": "prepare design presentations and proposals for staff or customers.",
+        "similarity": 0.691,
+        "in_rich": true,
+        "count": 71.0,
+        "ai_autonomy_mean": 3.6056,
+        "ai_education_years_mean": 11.6479,
+        "human_education_years_mean": 11.7042,
+        "penetration": 0.8032
+      },
+      {
+        "task": "Provide training and support to system designers and users.",
+        "similarity": 0.6841,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "create and manage documentation, production schedules, prototyping goals, and communication plans in collaboration with production staff.",
+        "similarity": 0.664,
+        "in_rich": true,
+        "count": 28.0,
+        "ai_autonomy_mean": 3.2857,
+        "ai_education_years_mean": 13.6429,
+        "human_education_years_mean": 13.7857,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "identity-system-build",
+    "text": "Build the full identity system for an engagement: typography, colour, grid, motion, illustration direction, photo direction. # Identity system build\n\nSenior designers run the identity-system build for individual engagements: typography, colour, grid, motion logic, illustration direction, photo direction. They typically own one engagement at a time (outline-roles-2025).\n\nMid-level designers support the senior on the system",
+    "matches": [
+      {
+        "task": "design, plan, organize, or direct orientation and training programs for employees or customers.",
+        "similarity": 0.5279,
+        "in_rich": true,
+        "count": 103.0,
+        "ai_autonomy_mean": 3.7961,
+        "ai_education_years_mean": 12.4175,
+        "human_education_years_mean": 13.3786,
+        "penetration": 0.8219
+      },
+      {
+        "task": "create designs, concepts, and sample layouts, based on knowledge of layout principles and esthetic design concepts.",
+        "similarity": 0.5149,
+        "in_rich": true,
+        "count": 30.0,
+        "ai_autonomy_mean": 3.8333,
+        "ai_education_years_mean": 10.6333,
+        "human_education_years_mean": 9.9333,
+        "penetration": 0.0
+      },
+      {
+        "task": "design complex graphics and animation, using independent judgment, creativity, and computer equipment.",
+        "similarity": 0.5118,
+        "in_rich": true,
+        "count": 704.0,
+        "ai_autonomy_mean": 3.6278,
+        "ai_education_years_mean": 9.6577,
+        "human_education_years_mean": 8.9858,
+        "penetration": 0.934
+      },
+      {
+        "task": "Hire, train, and direct staff members who develop design concepts into art layouts or who prepare layouts for printing.",
+        "similarity": 0.5086,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Assign staff to complete design ideas and prepare sketches, illustrations, and detailed drawings of sets, or graphics and animation.",
+        "similarity": 0.5049,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "kickoff-workshop",
+    "text": "Run the kickoff workshop for every engagement: scope agreement, calendar, weekly cadence, single point of contact on client side. # Kickoff workshop\n\nThe client services lead runs the kickoff workshop for every engagement: scoping, calendar, weekly cadence agreement, single point of contact on the client side. The output is the engagement-scope document that anchors weekly check-ins, asset handovers, and the fixed-price agreem",
+    "matches": [
+      {
+        "task": "Schedule promotional or performance engagements for clients.",
+        "similarity": 0.5922,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "plan, organize, and conduct practice sessions.",
+        "similarity": 0.5597,
+        "in_rich": true,
+        "count": 63.0,
+        "ai_autonomy_mean": 3.4762,
+        "ai_education_years_mean": 9.3492,
+        "human_education_years_mean": 9.0794,
+        "penetration": 0.0
+      },
+      {
+        "task": "Organize performance groups and direct their rehearsals.",
+        "similarity": 0.521,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Conduct orientation sessions and arrange on-the-job training for new hires.",
+        "similarity": 0.5204,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "meet with clients to schedule and plan details of conventions, banquets, receptions and other functions.",
+        "similarity": 0.5113,
+        "in_rich": true,
+        "count": 15.0,
+        "ai_autonomy_mean": 3.6,
+        "ai_education_years_mean": 9.0667,
+        "human_education_years_mean": 9.1333,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "quarterly-finance-review",
+    "text": "Founder-led quarterly review of studio finances: P&L, vendor spend, engagement margin, runway. # Quarterly finance review\n\nThe founder runs the quarterly studio finance review. Operations prepares the materials (P&L, vendor spend, engagement margin, runway). The four discipline leads attend; decisions about price changes, vendor partner relationships, and discretionary spend are made in this",
+    "matches": [
+      {
+        "task": "analyze financial activities of establishments or departments and provide input into budget planning and preparation processes.",
+        "similarity": 0.5807,
+        "in_rich": true,
+        "count": 26.0,
+        "ai_autonomy_mean": 3.5,
+        "ai_education_years_mean": 13.4231,
+        "human_education_years_mean": 13.8462,
+        "penetration": 0.0
+      },
+      {
+        "task": "Approve, prepare, monitor, and adjust operational budgets.",
+        "similarity": 0.5658,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Review operating budgets to analyze trends affecting budget needs.",
+        "similarity": 0.5596,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Summarize budgets and submit recommendations for the approval or disapproval of funds requests.",
+        "similarity": 0.5519,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Report to supervisors about prospective firms' credit ratings.",
+        "similarity": 0.5465,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "ui-design",
+    "text": "UI design for B2B web and apps: screens, components, interactions, accessibility, paired with client front-end engineers. # UI design\n\nSenior product designers own UI design for individual engagements: screens, components, interactions, prototyping, accessibility audits, pairing with the client's front-end developers (outline-roles-2025).\n\nThe product lead reviews every UI deliverable; on enterprise engagements the lea",
+    "matches": [
+      {
+        "task": "Conceptualize and help design interfaces for multimedia games, products, and devices.",
+        "similarity": 0.5823,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Research and apply innovative solutions for product design, visuals, and user experience to meet the needs of individual Web development projects.",
+        "similarity": 0.58,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "confer with clients to discuss and determine layout design.",
+        "similarity": 0.562,
+        "in_rich": true,
+        "count": 26.0,
+        "ai_autonomy_mean": 3.3077,
+        "ai_education_years_mean": 10.5769,
+        "human_education_years_mean": 10.4231,
+        "penetration": 0.0
+      },
+      {
+        "task": "Develop new visual design concepts and modify concepts based on stakeholder feedback.",
+        "similarity": 0.5616,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Obtain plans from display designers or display managers and discuss their implementation with clients or supervisors.",
+        "similarity": 0.5575,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "ux-research",
+    "text": "Embedded UX research with the client product team: usability testing, observation, synthesis. # UX research\n\nThe product lead runs UX research when the engagement asks for it: embedded with the client's product team, usability testing, observation, synthesis into a research report (outline-roles-2025).\n\nUser insights from research feed back into [UI design](ui-design.md) and into the [positi",
+    "matches": [
+      {
+        "task": "Collaborate in research studies.",
+        "similarity": 0.5746,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Assess the user-interface or usability characteristics of products.",
+        "similarity": 0.5721,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Collaborate with development teams to discuss, analyze, or resolve usability issues.",
+        "similarity": 0.568,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "define product requirements, based on market research analysis, in collaboration with user interface design and engineering staff.",
+        "similarity": 0.556,
+        "in_rich": true,
+        "count": 25.0,
+        "ai_autonomy_mean": 3.84,
+        "ai_education_years_mean": 13.68,
+        "human_education_years_mean": 13.8,
+        "penetration": 0.0
+      },
+      {
+        "task": "Purchase and maintain equipment to support research projects.",
+        "similarity": 0.5493,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "vendor-invoicing",
+    "text": "Process vendor partner invoices on a 14-day cycle so the studio can honour its 30-day-payment commitment to the network. # Vendor invoicing\n\nOperators run the vendor invoice cycle every two weeks. The cadence is what lets the studio honour its commitment to pay vendor partners within 30 days of invoice receipt regardless of whether the underlying client has paid (outline-roles-2025, outline-charter-2024 §18).\n\nTotal v",
+    "matches": [
+      {
+        "task": "Process invoices for payment.",
+        "similarity": 0.5389,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Schedule promotional or performance engagements for clients.",
+        "similarity": 0.5338,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Post relevant work hours to client files to bill clients properly.",
+        "similarity": 0.5125,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "Schedule client appointments and accept payments.",
+        "similarity": 0.5092,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 1.0
+      },
+      {
+        "task": "Schedule use of studio and editing facilities for producers and engineering and maintenance staff.",
+        "similarity": 0.5068,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "visual-language",
+    "text": "Define the visual language for an engagement: typography, colour, imagery direction, motion logic, on top of the positioning brief. # Visual language\n\nThe design lead defines the visual language for the brief from strategy: typography choice, colour direction, imagery treatment, motion logic. The visual language feeds the [identity system build](identity-system-build.md) (outline-roles-2025).",
+    "matches": [
+      {
+        "task": "Develop new visual design concepts and modify concepts based on stakeholder feedback.",
+        "similarity": 0.5289,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "integrate and develop visual elements, such as line, space, mass, color, and perspective, to produce desired effects, such as the illustration of ideas, emotions, or moods.",
+        "similarity": 0.5271,
+        "in_rich": true,
+        "count": 372.0,
+        "ai_autonomy_mean": 3.6237,
+        "ai_education_years_mean": 9.8737,
+        "human_education_years_mean": 9.3522,
+        "penetration": 0.961
+      },
+      {
+        "task": "interpret engineering sketches, specifications, or drawings.",
+        "similarity": 0.5042,
+        "in_rich": true,
+        "count": 28.0,
+        "ai_autonomy_mean": 3.1786,
+        "ai_education_years_mean": 13.3929,
+        "human_education_years_mean": 13.8214,
+        "penetration": 0.0
+      },
+      {
+        "task": "collaborate with artists to achieve appropriate visual style.",
+        "similarity": 0.5029,
+        "in_rich": true,
+        "count": 51.0,
+        "ai_autonomy_mean": 3.5686,
+        "ai_education_years_mean": 10.8039,
+        "human_education_years_mean": 10.098,
+        "penetration": 0.9177
+      },
+      {
+        "task": "confer with clients to discuss and determine layout design.",
+        "similarity": 0.4862,
+        "in_rich": true,
+        "count": 26.0,
+        "ai_autonomy_mean": 3.3077,
+        "ai_education_years_mean": 10.5769,
+        "human_education_years_mean": 10.4231,
+        "penetration": 0.0
+      }
+    ]
+  },
+  {
+    "id": "weekly-check-in",
+    "text": "Run the weekly check-in call on each active engagement: progress, blockers, next-week scope confirmation. # Weekly check-in\n\nAccount managers run the weekly check-ins on three assigned engagements each. The lead [Tomás Reis](../people/tomas-reis.md) does not run weekly check-ins himself but reviews the notes and intervenes when an engagement is sliding (outline-roles-2025).\n\nThe weekly check-in is the r",
+    "matches": [
+      {
+        "task": "Arrange to pick up particular customers or groups on a regular schedule.",
+        "similarity": 0.5561,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      },
+      {
+        "task": "schedule and confirm appointments for clients, customers, or supervisors.",
+        "similarity": 0.536,
+        "in_rich": true,
+        "count": 69.0,
+        "ai_autonomy_mean": 2.5507,
+        "ai_education_years_mean": 8.2899,
+        "human_education_years_mean": 8.913,
+        "penetration": 0.9907
+      },
+      {
+        "task": "Schedule client appointments.",
+        "similarity": 0.5307,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 1.0
+      },
+      {
+        "task": "Schedule client appointments and accept payments.",
+        "similarity": 0.5288,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 1.0
+      },
+      {
+        "task": "Provide check-cashing services to employees.",
+        "similarity": 0.5281,
+        "in_rich": false,
+        "count": 0,
+        "ai_autonomy_mean": null,
+        "ai_education_years_mean": null,
+        "human_education_years_mean": null,
+        "penetration": 0.0
+      }
+    ]
+  }
+]

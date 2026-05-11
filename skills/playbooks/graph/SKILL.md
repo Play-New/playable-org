@@ -1,6 +1,6 @@
 ---
 name: graph
-description: "Render the whole organization as one graph: every node (unit, activity, person, stakeholder, commitment, source, identity, financial-summary) and every relation declared in the structure between them. Output: an interactive force-directed visualization plus a leader-facing reading of the topology — which nodes are load-bearing, which regions are thin, where the structure has been written down and where it has not."
+description: "Render the operational dependencies of the organization: every load-bearing node (unit, activity, person, role, stakeholder, commitment) and every typed dependency declared between them (memberships, accountability, party_committing, party_benefiting, touches). Output: an interactive force-directed visualization plus a leader-facing reading of the topology — which nodes carry load, which are thin, where commitments concentrate. Corpus and declarative kinds (sources, identity, language, financial summaries) are emitted into the JSON for other tools but stripped from this viewer; body-markdown link edges are stripped too — they are prose cross-references, not dependencies."
 ---
 
 # Playbook: graph
@@ -29,7 +29,7 @@ If `org_play_run` errors, report verbatim and stop. Do not fall back to an in-ch
 
 ## Output style
 
-All consumer-facing text produced by this skill (decisions, viewer copy, popover labels) follows the project style charter in [skills/STYLE.md](../../STYLE.md). The graph is the most plumbing-flavoured of the playbooks; the discipline matters more, not less. No graph-theory jargon (degree centrality, betweenness, clustering coefficient) leaks into the leader-facing prose. The autoresearch gate enforces this.
+All consumer-facing text produced by this skill (decisions, viewer copy, popover labels) **must** follow the project style charter in [skills/STYLE.md](../../STYLE.md). The agent **must** run the self-check at the end of STYLE.md before saving any prose. The graph is the most plumbing-flavoured of the playbooks; the discipline matters more, not less. No graph-theory jargon (degree centrality, betweenness, clustering coefficient) leaks into the leader-facing prose. The autoresearch gate enforces this.
 
 The deliverable is a frozen `play` written as a JSON + HTML pair in `org/plays/data/graph-<scope>-<date>.{json,html}` — there is no markdown play file under `plays/` for this skill, the artefact lives entirely under `plays/data/`.
 
@@ -43,7 +43,7 @@ This skill differs from the previous four:
 - **world-model** redescribes the organization as a five-layer stack with capabilities at the bottom and stakeholders at the top. Organization-grain, structural.
 - **graph** reads the structure as itself: every node and every relation it declares, with no interpretive layer in between. Topology-grain.
 
-The first four read the structure through a frame. This one reads the structure as the structure is written. It is the simplest of the five and the one that shows the leader where the writing is dense and where it is thin without committing to any interpretive vocabulary.
+The first four read the structure through a framework. This one reads the structure as the structure is written. It is the simplest of the five and the one that shows the leader where the writing is dense and where it is thin without committing to any interpretive vocabulary.
 
 ## Pre-conditions
 
@@ -81,7 +81,7 @@ Build walks `org/` and emits:
 
 Build does not interpret. Decisions are not written here.
 
-### 2. Read the graph in the viewer
+### 2. Render and read the graph
 
 ```bash
 python3 skills/playbooks/graph/viewer.py \
@@ -89,63 +89,88 @@ python3 skills/playbooks/graph/viewer.py \
   --html org/plays/data/graph-<scope>-<date>.html
 ```
 
-The HTML is the **primary consumer artefact**. **This shape is frozen**; the canonical Outline & Co. play under `mcp-server/test-fixtures/sample-org/plays/data/graph-outline-2026-05-08.html` is the reference render. Page structure, in order:
+The HTML is the **primary consumer artefact**. The reference render is the canonical Outline & Co. play under `mcp-server/test-fixtures/sample-org/plays/data/graph-outline-2026-05-09.html`; the contract below is locked by the regression tests in `mcp-server/test-e2e.py` (section "Graph viewer design regression").
 
-1. **Header** (820px centered): eyebrow `graph` + h1 title + one-paragraph lead.
-2. **Intro** (820px centered): two paragraphs explaining what the page is and how to read it (size = number of mentions; clusters = parts of the org that talk to each other in writing), plus a pull-quote on what the topology says.
-3. **Stats strip** (820px centered): four numbers — nodes, relations, kinds, isolates.
-4. **Legend** (1160px centered): row of clickable kind swatches (click to dim a kind) + the hint "click a kind to dim it · click a node to inspect".
-5. **Graph canvas** (1160px centered, 640px tall): force-directed SVG. Vanilla JS, ~80 lines of simulation code. Circles sized by degree, coloured by kind. Edges hairline, dashed for `cite`, lighter for `link`, solid+dark for `parent`.
-6. **Decisions section** (820px centered): "How to read this graph" — the leader-facing reading.
+**Layout — App-pure**. The canvas is the page (`100vw × 100vh`, full-bleed). Editorial chrome floats on the paper without borders:
 
-**Visual code (frozen)**:
+- Top-left: dateline `<org> / the operational structure`.
+- Top-right: italic date + outline `Analysis →` button (opens the leader-facing modal).
+- Bottom-left: kinds ribbon (one pill per visible kind, swatch + label + count). Tap toggles kind visibility.
+- Bottom-center: ephemeral hint primer ("click any node to focus · drag to reposition · scroll to zoom · drag empty space to pan"). Fades on first interaction.
+- Bottom-right: zoom readout + `Reset focus` link.
+- Right side, on focus: floating `Inspect` card (340px, slides in from the right edge with margins).
 
-- **Shape = circle for every node**. Graphs read shape unreliably; the differentiator is colour and size.
-- **Colour = node kind**. Pulled from the project's data-viz palette (`--ds-sage / --ds-lilac / --ds-slate / --ds-sand / --ds-coral`) so the graph viewer and the other four viewers stay coherent.
-- **Size = log of degree** computed against the *currently visible* subgraph (not the full graph). Toggling kinds on/off recomputes degrees so the "what's load-bearing right now" reading stays accurate.
-- **Edges hairline (0.5–1.2px, opacity 0.6 in focus / 0.06 out of focus)**. Parent edges solid+dark; structural edges medium; bibliographic edges thin and dashed. The graph reads as topology, not as a wiring diagram.
-- **Labels appear only for nodes with degree ≥ 4** in the current visible subgraph, plus the focused node and its first-degree neighbours. Avoids canvas clutter at AIRC scale (hundreds of nodes).
+**What the viewer renders, what it strips**. The viewer reads the *operational dependencies* layer of the graph — six kinds:
 
-**Default visibility (frozen)**:
+- **Rendered**: `unit`, `activity`, `person`, `role`, `stakeholder`, `commitment` (all six visible by default; pills can be toggled off).
+- **Stripped from the viewer** (kept in the JSON for other tools): `source`, `identity`, `language-term`, `financial-summary`. These are corpus / declarative metadata, not load-bearing dependencies.
+- **Edges rendered**: the structural relations between the six kinds — `parent`, `unit`, `performer`, `head_role`, `holds_role`, `covers`, `party_committing`, `party_benefiting`, `touches`.
+- **Edges stripped**: `link` (body-markdown cross-reference, not a dependency), `cite` (points at sources we just dropped).
 
-- **Visible by default**: `unit`, `activity`, `person`, `stakeholder`, `commitment`. The five operational kinds — what shows where the org's weight insists.
-- **Hidden by default**: `identity`, `language-term`, `role`, `financial-summary`, `source`. Declarative / taxonomic / corpus metadata that either distorts the spatial picture (cited-source hubs) or duplicates what the operational kinds already say.
-- **Visible edges by default**: the structural relations (`parent`, `unit`, `performer`, `head_role`, `holds_role`, `covers`, `party_committing`, `party_benefiting`, `touches`).
-- **Hidden edges by default**: `cite`, `link` (bibliographic).
+The list of excluded kinds and edge kinds lives at the top of `viewer.py` as `EXCLUDED_KINDS` / `EXCLUDED_EDGE_KINDS`; flipping that list moves the cut.
 
-The legend is the live filter. Toggling a kind removes those nodes (or those edges) from the simulation entirely so the rest of the graph repacks the freed space — not a dim, an actual filter. The simulation reheats on every toggle and settles to a new layout.
+**Visual code**:
 
-**Click-to-focus (frozen)**. Clicking a circle:
-1. Opens a popover below it (centred horizontally, flipping above when there's no room — same pattern as the other four playbooks).
-2. **Dims everything that isn't the clicked node or its first-degree neighbours.** This is the affordance that makes the graph navigable at AIRC scale.
-3. Highlights the focused node's circle with a heavier stroke.
+- **Shape = filled dot for every node**. Differentiation by colour + size.
+- **Colour = node kind**, from the *Carta sbiadita* palette baked into `viewer.py`: `unit #6b7d8c` slate · `activity #8a9d6b` sage · `person #1c1a16` ink · `role #bca787` sand · `stakeholder #9b8aa3` lilac · `commitment #b87b5e` terracotta. Paper background `#f4eee2`, hairlines `rgba(28,26,22,.14)`, ink `#1c1a16`. Same palette tokens are surfaced as `--k-<kind>` CSS variables for reuse.
+- **Size = log of degree** computed against the *currently visible* subgraph. Toggling kinds recomputes degrees so the "what's load-bearing right now" reading stays accurate.
+- **Edges hairline** (`rgba(28,26,22,.30)` idle, brighter in focus, much dimmer out of focus). Quadratic Bezier with a small bow so parallel edges don't overlap exactly. No dashes, no per-kind stroke variation — the picture reads as one weight class.
+- **Labels** show on the focused node + its first-degree neighbours, plus a tooltip on hover (mouse only — touch has no hover).
 
-Click empty space (or Esc) clears focus.
+**Click-to-focus**. Tapping a node:
 
-**Popover contents**:
+1. Slides the `Inspect` card in from the right.
+2. Dims every other node and edge that isn't a first-degree neighbour.
+3. Strokes the focused dot in ink (1.5px) and prints the node's label tight against it.
 
-- Eyebrow with the kind (`unit`, `activity`, `person`, `role`, `stakeholder`, `commitment`, `financial-summary`, `identity`, `language-term`, `source`).
-- The full label as h3.
-- Description paragraph (from the node's frontmatter `description`).
-- Outgoing relations list (relation label + target name; first 10, "+ N more" beyond). Filter-aware — only relations through currently-visible edge kinds appear.
-- Incoming relations list (same shape, with reversed relation labels: `cited by`, `hosts`, `performs`, etc.).
-- Footer citation: the relative path of the node's source markdown file.
+Tap empty space, the inspect close button (×), `Reset focus`, or `Esc` clears focus.
 
-**Viewport interactions (frozen)**:
+**Inspect card contents**:
 
-- Wheel zoom (0.3× to 4×, anchored on the cursor).
-- Drag to pan.
-- "reset view" button restores the default 1× translate(0,0).
-- "re-shake" button nudges every visible node by a small random vector and reheats the simulation, useful when the layout settles into a local minimum.
+- Eyebrow `INSPECT` + close `×`.
+- Kind tag with swatch + label.
+- Node label as h2.
+- `_path` italic (the relative path to the markdown file).
+- Blurb paragraph (from the node's frontmatter `description`, when non-empty).
+- `Outgoing` section, count, **grouped by verb** — one sub-header per verb with sub-count, then a flat list of node rows (swatch + name). Click a row to jump focus.
+- `Incoming` section, same shape, with reversed verbs.
 
-**Plain-language discipline (frozen)**. The relation labels are written in plain English: `is part of` / `contains`, `in` / `hosts`, `performed by` / `performs`, `led by` / `leads`, `as` / `filled by`, `responsible for` / `owned by`, `binds` / `bound by`, `for` / `for`, `involves` / `involved in`, `cites` / `cited by`, `mentions` / `mentioned by` — never `parties_committing`, never `head_role`, never `degree`, never `edge`. Inside the prose and the decisions, no graph-theory vocabulary leaks. Words to never use in user-visible strings:
+**Viewport interactions**:
+
+- **Wheel zoom** 0.4× to 3×, anchored on the cursor.
+- **Pinch zoom** on touch (two pointers) — same range, anchored on the centre between fingers.
+- **Drag empty space** to pan. **Drag a node** to reposition it (the simulation reheats lightly).
+- **`Reset focus`** clears focus and resets pan + zoom to 1×.
+- **`?focus=<id>`** URL parameter focuses a node on load — used by the analysis modal's "show on canvas →" anchors and by external permalinks.
+
+Pointer Events power both mouse and touch through one code path; `touch-action: none` on the canvas prevents the browser from hijacking gestures.
+
+**Editorial CTA**. The `Analysis` button in the top-right opens a modal containing the leader-facing decisions: kicker (`READING THE STRUCTURE`), h1 headline, italic dateline (`<org> · structure dated <date>`), italic lede, numbered `<ol>` of decisions (one per `decisions[]` entry, each with question as `<h3>`, answer paragraphs, optional source citation, and a "show on canvas →" anchor that closes the modal and focuses the relevant node).
+
+**Plain-language discipline**. Relation verbs in the inspect card, plain English on both sides:
+
+| edge `kind` in JSON | FROM-side verb | TO-side verb |
+|---|---|---|
+| `parent`           | is part of      | contains      |
+| `unit`             | in              | groups        |
+| `performer`        | performed by    | performs      |
+| `head_role`        | led by          | leads         |
+| `holds_role`       | holds           | filled by     |
+| `covers`           | responsible for | owned by      |
+| `party_committing` | binds           | bound by      |
+| `party_benefiting` | benefits        | benefits from |
+| `touches`          | involves        | involved in   |
+
+Never the schema names (`parties_committing`, `head_role`, ...), never graph-theory vocabulary in user-visible strings. Inside decisions and prose:
 
 - `node degree` → "how many things connect to it" / "how connected"
 - `degree centrality`, `betweenness`, `clustering coefficient` → never
 - `hub`, `subgraph` → "load-bearing node", "region of the structure"
-- `sparse / dense` is acceptable when used about regions of the structure; not as graph-theory shorthand.
+- `sparse / dense` is acceptable about regions of the structure; not as graph-theory shorthand.
 
 Decisions are reviewed by `autoresearch.py` against the deterministic jargon list.
+
+**Mobile**. Designed as one app surface — no separate mobile artefact. The viewport meta sets `viewport-fit=cover`; safe-area insets are honoured around all floating chrome; tap targets are ≥ 44pt; the kinds row scrolls horizontally when it overflows; the date hides on widths under 760px to give the Analysis button room; the Inspect card switches to full-bleed (top, bottom, left, right) so it reads as a sheet.
 
 **`--decisions <list.json>`** merges a JSON list of `{question, answer, source}` into the map's `decisions[]` field before rendering. **Required** for a shippable play — autoresearch fails without it.
 
@@ -219,7 +244,7 @@ Three structural rules:
 
 The graph is the lightest of the five and the one that is most useful early. Run it after the first ingest (when the structure has at least 10 nodes and a handful of citations) to give the agent and the leader a single picture of what is in the corpus. Re-run after any major ingest pass — the topology change between runs is itself informative.
 
-It can be run alongside any of the other four playbooks; the graph view of the structure does not depend on a prior interpretive read.
+It can be run alongside any of the other four playbooks; reading the structure as topology does not depend on a prior interpretive read.
 
 ## Reference example
 
@@ -228,4 +253,4 @@ The canonical artefact for this skill is the Outline & Co. sample-org play:
 - `mcp-server/test-fixtures/sample-org/plays/data/graph-outline-2026-05-09.json` — the source JSON with the full graph (41 nodes, 165 typed relations) + 3 decisions
 - `mcp-server/test-fixtures/sample-org/plays/data/graph-outline-2026-05-09.html` — the rendered viewer
 
-Open the HTML in a browser to see exactly what this skill produces. The default view shows 32 nodes and 75 edges — the operational core: 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments. The two stakeholder types (enterprise-clients, mid-market-clients) come out as the most-connected nodes (degree 13 each); the four client-facing units cluster at near-equal weight (6–7); operations sits visibly below at 6. The three decisions name the operational quadrant (where the org's weight insists), the load-bearing commitment, and the regions written most thinly (strategic-partners, studio-vendors, quarterly-finance-review). Toggle `source` and `cite` from the legend to see the full bibliographic picture.
+Open the HTML in a browser to see exactly what this skill produces. The viewer renders 32 nodes and 75 edges — the operational dependencies: 5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments and the typed relations between them (memberships, accountability, party_committing, party_benefiting, touches). The two stakeholder types (enterprise-clients, mid-market-clients) come out as the most-connected nodes; the four client-facing units cluster at near-equal weight; operations sits visibly below. The three decisions name the operational concentration (where the org's weight insists), the load-bearing commitment, and the regions written most thinly (strategic-partners, studio-vendors, quarterly-finance-review). Sources, identity declarations, glossary terms, and financial summaries stay in the JSON for other tools but are stripped from the viewer; body-markdown link edges are stripped too — they are prose cross-references, not dependencies.

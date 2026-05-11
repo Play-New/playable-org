@@ -40,7 +40,7 @@ org/
 │   ├── activities/      who does what
 │   └── stakeholders/    external entities
 ├── commitments/         relationships between nodes (5 levels)
-├── financials/          market view — annual snapshot, revenue lines, headcount, costs
+├── financials/          market snapshot — annual lines, revenue lines, headcount, costs
 ├── sources/             raw immutable source documents
 ├── plays/               point-in-time interpretations, frozen at creation (artefacts in plays/data/)
 ├── AGENTS.md            operational contract for anyone who modifies org

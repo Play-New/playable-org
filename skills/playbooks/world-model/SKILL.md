@@ -1,6 +1,6 @@
 ---
 name: world-model
-description: "Read an organization through the four-part frame from Block (Dorsey + Botha, March 2026): capabilities, world model, intelligence layer, interfaces. Output: a frozen analysis with the org's exposed and latent capabilities, the signals that feed its understanding of operations and customers, the compositions that an intelligence layer could perform, the interfaces that deliver them, and the failure signals that constitute the future roadmap."
+description: "Read an organization through the four-part frame from Block (Dorsey + Botha, March 2026): capabilities, world model, intelligence layer, interfaces. Output: a frozen analysis describing how the three layers (interfaces, capabilities, world model) currently operate in the org and how each would change once the intelligence layer is in place. The roadmap surfaces from the loop: requests the org would already receive that no current composition can fulfil."
 ---
 
 # Playbook: world-model
@@ -29,18 +29,17 @@ If `org_play_run` errors, report verbatim and stop. Do not fall back to an in-ch
 
 ## Output style
 
-All consumer-facing text produced by this skill (play body, viewer copy, modals, interpretive narratives) must follow the project style charter in [skills/STYLE.md](../../STYLE.md). The methodology behind the analysis is in [skills/CAPABILITIES.md](../../CAPABILITIES.md), which the SKILL.md and the agent both reference.
+All consumer-facing text produced by this skill (play body, viewer copy, modals, interpretive narratives) must follow the project style charter in [skills/STYLE.md](../../STYLE.md). The methodology behind the analysis is in [skills/CAPABILITIES.md](../../CAPABILITIES.md), starting from the *"The move, in one paragraph"* section, which the SKILL.md and the agent both reference.
 
-For an organization in scope, the skill produces a structured analysis of:
+The skill produces, for an organization in scope, a reading of where it sits along the move from hierarchy to intelligence. For each of the three layers, the play describes the today state and the after state. The gap between them is what the intelligence layer would close.
 
-1. **Capabilities**: the atomic invocable functions of the organization. Each has a contract (input, output, target SLO, regulatory constraints) and is tagged moat or commodity.
-2. **World model — company side**: how the organization understands its own operations, performance, priorities. Built from structure observations.
-3. **World model — customer side**: per-stakeholder representation built from the most honest signals the organization records (transactions, recurring choices, declared intentions). Often fragmented across teams; the analysis surfaces the fragmentation.
-4. **Intelligence layer**: the (typically not-yet-existing) component that composes capabilities into solutions for specific stakeholders at specific moments. The analysis lists current compositions that today are human-mediated and could become systemic.
-5. **Interfaces**: delivery surfaces (web, app, physical channels, telephone, post). Not where value is created; where it's delivered.
-6. **Failure signals**: compositions an intelligence layer would attempt that fail because a capability is missing. Each failure signal is a roadmap item.
+1. **Interfaces**: delivery surfaces (web, app, physical channels, telephone, post, in-person events). For each, today the surface mostly delivers; after the move it also captures signal. The play names which signals each interface lets pass through unrecorded today.
+2. **Capabilities**: the org's invocable functions. Each has a contract (input, output, SLO, regulatory constraints, invocation modality) and a DRI. Today most capabilities are crafts embedded in named people; after the move the person stays as DRI but a wrapper exposes the capability to invocation by the intelligence layer or by external actors. The play lists capabilities and the wrapper criteria each one already satisfies vs still misses.
+3. **World model**: the org's living memory. Operational metrics, per-caller representations, the capability registry itself, the log of captured signals (both successful invocations and unanswered requests). Today most of it is implicit, fragmented across heads and files. After the move it is a system that auto-updates from each loop turn.
+4. **Intelligence layer**: the runtime that connects the three. Today usually doesn't exist as a system; humans (often a single founder or coordinator) do the routing in their head. The play lists current human-mediated compositions and the compositions that would emerge once the runtime is in place.
+5. **Roadmap**: the queryable subset of captured signals with no current composition. Surfaces from running the loop, not from a planning artefact.
 
-The deliverable is a frozen `play` in `org/plays/world-model-<scope>-<date>.md` with companion JSON and an interactive HTML viewer that renders the four parts as a layered stack.
+The deliverable is a frozen `play` in `org/plays/world-model-<scope>-<date>.md` with companion JSON and an interactive HTML viewer that renders the three layers, the runtime as a connective annotation, and the loop as overlay.
 
 ## What this skill does that's different
 
@@ -57,7 +56,7 @@ The first three help an organization understand specific aspects of itself. This
 
 - Structure `org/` healthy (lint Tier 1 + Tier 2 = 0).
 - Activities, units, commitments, stakeholders fully populated.
-- Optional but recommended: completed `ai-exposure` matches and at least one `value-map` play, to inform the customer-side world model and the failure-signal analysis.
+- Optional but recommended: completed `ai-exposure` matches and at least one `value-map` play, to inform the customer-side world model and the piece to build analysis.
 - The agent has read [skills/CAPABILITIES.md](../../CAPABILITIES.md). The methodology there is non-negotiable for this skill.
 
 ## Workflow
@@ -67,7 +66,7 @@ The first three help an organization understand specific aspects of itself. This
 When the bundled mcp server is available, launch this playbook via `org_play_run`:
 
 1. Call `org_play_run` with `playbook="world-model"`, `mode="build"`, `scope=<unit-id>` (omit for full org). The tool runs `build.py` and returns the skeleton inline (capability candidates, stakeholder shells, AEI evidence).
-2. Read the skeleton; for every capability fill the contract (input/output/SLO/regulatory/invocation_modality), the moat/commodity classification, the structure evidence; for every stakeholder fill the bidirectional fields per §3 below; surface failure signals per §6. Cite structure.
+2. Read the skeleton; for every capability fill the contract (input/output/SLO/regulatory/invocation_modality), the moat/commodity classification, the structure evidence; for every stakeholder fill the bidirectional fields per §3 below; surface pieces to build per §6. Cite structure.
 3. Call `org_play_run` again with `mode="render"` and `json_content=<filled JSON>`. The tool writes to `plays/data/`, runs `audit.py`, runs `viewer.py`, returns artefact paths plus audit summary.
 4. Append a log line via `org_log_append`.
 
@@ -138,17 +137,17 @@ List delivery surfaces (web, app, telephone, post, physical channels, in-person 
 
 Interfaces are not where value is created. The section exists to make the layer separation explicit.
 
-### 6. Compute failure signals
+### 6. Surface the roadmap
 
-A failure signal is: a stakeholder request that an intelligence layer would attempt to compose, and that fails because at least one capability is missing.
+The roadmap is not a separate planning artefact. It surfaces from the loop: the subset of captured signals that *no current composition can fulfil*. Each one names a request the org would already receive (or already receives, handled badly) and the missing capability that would close it.
 
-For each failure signal:
-- **Trigger**: the stakeholder situation or signal that generates the request.
-- **Composition attempted**: which capabilities the layer would chain.
-- **What's missing**: the capability that doesn't exist yet (named as a verb-object).
-- **Structure evidence**: which structure file or AEI signal indicates the request would actually arise.
+For each roadmap entry:
+- **Trigger**: the request or signal that generates it. Cite the structure observation that says this request actually arises (a commitment, an activity body that names the situation, an AEI signal).
+- **Composition attempted**: the capabilities the intelligence layer would chain (existing or partial) to handle the request.
+- **Missing capability**: the one that isn't there, named as a verb-object (e.g., `read-engagement-memory`, `recognize-scope-drift`).
+- **What it would take**: a 1-2 sentence sketch of what would need to exist for the missing capability to ship its contract.
 
-Failure signals are the roadmap. They are concrete; each should map to a specific missing capability.
+The agent does not invent roadmap entries. They emerge from running the diagnostic: which interfaces don't capture the signals they could, which capabilities don't yet have wrappers, where the world model is implicit. Each entry must trace to a concrete observation in the structure or in the captured-signals log.
 
 ### 7. Audit
 
@@ -163,10 +162,12 @@ The audit verifies:
 2. Each capability has structure evidence (citation paths exist).
 3. Each capability has at least three stakeholder types in `is_callable_by` (the three-actors rule).
 4. Each capability has a non-empty contract (input, output, slo_targets, invocation_modality).
-5. Each capability is tagged moat or commodity, with rationale.
-6. Each customer-side world model entry cites a stakeholder type and an honest signal.
-7. Each failure signal names a missing capability and cites a structure or AEI source.
-8. No capability candidate is in fact a governance organ, an asset, an aspiration, or a function of staff (rule from CAPABILITIES.md).
+5. Each capability has a named DRI (single person, not a list) and a wrapper status indicating which of the five wrapper criteria are met today.
+6. Each capability is tagged moat or commodity, with rationale.
+7. Each interface entry has both a today-state (what it delivers) and an after-state hint (which signals it would capture if transformed).
+8. Each world-model entry, whether operational, per-caller, or captured-signals, cites the structure source where the data lives today (or "implicit, in heads" if explicitly fragmented).
+9. Each roadmap entry names a missing capability in verb-object form and cites a structure observation or captured signal that says the request arises.
+10. No capability candidate is in fact a governance organ, an asset, an aspiration, or a staff function (rule from CAPABILITIES.md).
 
 ### 8. Visualize
 
@@ -177,23 +178,31 @@ python3 skills/playbooks/world-model/viewer.py \
   [--decisions <decisions.json>]
 ```
 
-The HTML is the **primary consumer artefact** — a self-contained interactive document the leader opens in a browser. **This shape is frozen**; the canonical Outline & Co. play under `mcp-server/test-fixtures/sample-org/plays/data/world-model-outline-2026-05-07.html` is the reference render. Every block on the page lives in the same centered 820px column inside the 1240px container — nothing escapes the editorial grid. Page structure, in order:
+The HTML is the **primary consumer artefact**, a self-contained interactive document the leader opens in a browser. **The shape is frozen**: the canonical Outline & Co. play under `mcp-server/test-fixtures/sample-org/plays/data/world-model-outline-2026-05-07.html` is the reference render. Every block on the page lives in the same centered 820px column inside the 1240px container; nothing escapes the editorial grid. Page structure, in order:
 
-1. **Header** (820px centered): eyebrow `world model` + h1 title + one-paragraph lead.
-2. **Intro** (820px centered): one paragraph framing what the page does (the structure under the org-chart: who the org serves, where it meets them, how it composes responses, what it knows, what it can do — and the pieces that aren't there yet), plus a pull-quote with the central insight (the value compounds at the bottom layers; replacing the alignment cost with shared knowledge is the move that ages well).
-3. **The stack** (820px centered) — five layer blocks, each with the same shape:
-   - Layer head: layer name with a thin coloured rule on the left + plain-language hint paragraph below it.
-   - Layer body: the actual data for that layer, rendered inside the 820px column.
-   - Layers, top to bottom: **Stakeholders** (row of hairline-bordered cards), **Interfaces** (row of hairline-bordered chips), **Intelligence layer** (2-column grid side-by-side: held-together-by-people-today | could-be-held-together-by-systems — the contrast is the whole point of the layer), **World model** (2-column grid side-by-side: about-itself | about-the-people-it-serves — same contrast logic), **Capabilities** (grid of cards, ~3 per row in the 820px column).
-4. **Principle block** (820px centered): coral-bordered pull-quote naming the shared principle.
-5. **"What to build next"** block (820px centered): h2 + lead + a vertical column of cards. Each card names a request the organization would already try to handle and where the response would fall short because one needed piece of the chain isn't there yet. The list comes from the demand the structure already produces — not from a three-year plan made at the top.
-6. **Decisions section** "How to read this map" (820px centered): h2 + lead + each decision rendered as `.question` + `.answer` (one or more paragraphs) + `.source` citation. The load-bearing interpretive surface — the map shows the layers, this section says what to do about it.
+1. **Header** (820px centered): eyebrow `world model` + h1 title + one-paragraph lead naming the move.
+2. **Intro** (820px centered): one paragraph framing the loop the page describes. Plain-language description of how interfaces, capabilities, and world model interact when a request arrives.
+3. **The three layers** (820px centered):
+   - **Interfaces**: row of cards. Each card names the surface and shows two states (today / after) explaining what the surface delivers today and what signals it would collect after the transformation.
+   - **Capabilities**: visually dominant block, largest card area. Grid of cards, roughly 3 per row. Each card shows: the contract (input → output in monospace), who runs it today, the differentiated/standard tag, and a row of five dots showing how callable the function is today (filled = met, half = partial, empty = not yet). Coral border = differentiated craft. Hairline border = standard practice. No left-rule cards.
+   - **World model**: wide block at the bottom with two sub-sections side by side. *Organization side* (what the studio knows about its own work: operations, performance, priorities). *Stakeholder side* (per-stakeholder-type representation, with fragmentation explicit). Each item is clickable for the full content.
+4. **Intelligence layer**: between Capabilities and World model, a thin annotation band (italic, no background fill) describing where the AI middle layer sits and what it does in plain language. A connective label, not a full block.
 
-**No frame diagram**. An earlier shape included a schematic 5-layer SVG above the intro; removed because it duplicated the actual stack below. The hint paragraph under each layer name carries the same explanatory weight in plain language without the tutorial decoration.
+**No stakeholder band.** Stakeholders appear inside the stakeholder-side sub-section of the world model. They are not a separate layer.
+
+**No on-page roadmap or decisions sections.** The page itself is the structural read (interfaces / capabilities / world model). The leader-facing reading (what to do, what to decide) lives in the Analysis modal.
+
+### Analysis modal (top-right CTA, opens the leader-facing reading)
+
+1. **Headline**: action-oriented, names the move the studio would make.
+2. **The move, in three steps**: numbered list. (1) Make interfaces collect what comes back (the implication: stop delivering finished products, start delivering tools the client uses). (2) Reorganize around the studio's invokable functions. (3) Build the memory the studio uses to decide.
+3. **Decisions** (3+): each rendered as `<h3>question</h3>` + `<p>answer</p>` paragraphs + `<p class="source">` citation.
+
+The roadmap (the list of missing capabilities the loop would surface today) is deliberately not surfaced as a section. The framework's claim is that the roadmap emerges from running the loop, not from a list compiled today. Showing it would invite planning-table thinking, the opposite of the move.
 
 **Visual code (frozen)**:
 
-- **Shape = kind**: cards (rounded-corner full-border) for everything that's content-rich (stakeholder, interface, composition, world-model entry, capability, failure-signal). All clickable items use the same shape and the same hover signal (border darkens to `--fg`).
+- **Shape = kind**: cards (rounded-corner full-border) for everything that's content-rich (stakeholder, interface, composition, world-model entry, capability, piece to build). All clickable items use the same shape and the same hover signal (border darkens to `--fg`).
 - **Colour = state / role**: hairline border = standard / commodity; coral border (`--ds-coral`) = differentiated / moat (capabilities) or emerging (any future `is_new` item — value-map convention). The shape never changes when an item is differentiated or emerging — only the border colour does.
 - **No left-rule cards**. Every card has a full hairline border.
 
@@ -213,7 +222,7 @@ Every card on the page is clickable — no card is a display-only block. The hov
 - `commodity` → "standard"
 - `judgment density`, `capability stack` → never appear
 - `coordination tax` → "the cost of keeping everyone aligned" or "alignment cost"
-- `failure-signal` → "a piece to build" or "a place where the response would fall short"
+- `piece to build` → "a piece to build" or "a place where the response would fall short"
 - `the structure is thin` → "what to build next" or "the pieces that aren't there yet" — never the word `thin` in user-visible prose. It's metaphorical and the leader stops on it.
 
 Decisions are reviewed by `autoresearch.py` against the deterministic jargon list; the editorial words above are caught by hand on every release.
@@ -249,7 +258,7 @@ Body sections:
 3. **World model — customer side**: per-stakeholder representation status, with fragmentation explicit.
 4. **Intelligence layer**: current human-mediated compositions, potential automatable ones.
 5. **Interfaces**: delivery surfaces, with capabilities surfaced.
-6. **Failure signals**: the roadmap. Each signal cited.
+6. **Pieces to build**: the roadmap. Each signal cited.
 7. **Operational consequences**: what to do with the analysis. Concrete.
 8. **Method limits**: what the analysis cannot say.
 9. **Cross-references**.
@@ -264,7 +273,7 @@ Body sections:
 - **Customer-side signal richness varies by sector**. Block has transactional data on millions of users every day. Most non-profit organizations have less continuous signal. The skill must adapt the customer-side world model to whatever signal density the structure actually has.
 - **The intelligence layer is mostly hypothetical for most organizations today**. The skill describes potential compositions; deploying them is not in scope.
 - **The frame assumes structural willingness**. An organization unwilling to question Direzione boundaries can read the analysis as a thought experiment. The same analysis applied with structural intent is a different conversation.
-- **Failure signals are a partial roadmap, not the full one**. They surface the compositions the layer can't make. They don't capture work that would never trigger composition (pure infrastructure, regulatory upkeep, etc.).
+- **Pieces to build are a partial roadmap, not the full one**. They surface the compositions the layer can't make. They don't capture work that would never trigger composition (pure infrastructure, regulatory upkeep, etc.).
 
 ## Anti-hallucination discipline
 
@@ -272,7 +281,7 @@ Three structural rules:
 
 1. Every capability cites structure. The audit gate refuses capabilities without structure evidence paths.
 2. Every customer-world-model entry names the honest signal and where it lives. No hand-wave "we have data".
-3. Failure signals are concrete. Each names the trigger, the composition attempted, the missing capability, and the structure source for the request being plausible.
+3. Pieces to build are concrete. Each names the trigger, the composition attempted, the missing capability, and the structure source for the request being plausible.
 
 ## When to run this skill
 
@@ -296,16 +305,16 @@ python3 skills/playbooks/world-model/autoresearch.py \
 | Dimension | What it checks |
 |---|---|
 | **Recognizability** | Decisions mention specific units / activities / stakeholders / capabilities of the org by name. |
-| **Plain language** | No paraphrased framework jargon: `world model`, `capability stack`, `intelligence layer`, `failure signal`, `moat`, `judgment density`, etc. |
+| **Plain language** | No paraphrased framework jargon: `world model`, `capability stack`, `intelligence layer`, `piece to build`, `moat`, `judgment density`, etc. |
 | **Decision anchoring** | At least three items in `decisions[]`, each ≥ 60 chars in `answer`, each citing a non-empty `source`. |
-| **Audit grounded** | Every capability / interface / failure-signal that claims a `_structure_id` resolves to a real file under `org/`. |
+| **Audit grounded** | Every capability / interface / piece to build that claims a `_structure_id` resolves to a real file under `org/`. |
 | **LLM judge** *(opt-in: `--llm`)* | Claude Sonnet 4.6 scores each decision on `actionable` (yes/no), `distinctive` (high/medium/low), `readable` (yes/no). Skipped when `ANTHROPIC_API_KEY` is not set. |
 
-The play's primary interpretive surface is the top-level `decisions[]` array — the leader-facing reading of which capabilities are moat vs commodity, which interfaces are real vs aspirational, and which failure-signals indicate a missing capability the org should build. The agent fills this array as the final step of the playbook, then iterates against the autoresearch output until every dimension passes.
+The play's primary interpretive surface is the top-level `decisions[]` array — the leader-facing reading of which capabilities are moat vs commodity, which interfaces are real vs aspirational, and which pieces to build indicate a missing capability the org should build. The agent fills this array as the final step of the playbook, then iterates against the autoresearch output until every dimension passes.
 
 **Reference example** — the canonical artefact for this skill is the Outline & Co. sample-org play:
 
-- `mcp-server/test-fixtures/sample-org/plays/data/world-model-outline-2026-05-07.json` — the source JSON with capabilities, interfaces, intelligence-layer compositions, world-model observations, failure-signals, and `decisions[]`
+- `mcp-server/test-fixtures/sample-org/plays/data/world-model-outline-2026-05-07.json` — the source JSON with capabilities, interfaces, intelligence-layer compositions, world-model observations, pieces to build, and `decisions[]`
 - `mcp-server/test-fixtures/sample-org/plays/data/world-model-outline-2026-05-07.html` — the rendered viewer
 
-Open the HTML in a browser to see exactly what this skill produces. The play covers the studio's whole-org structure: 7 capabilities (3 differentiated, 4 standard), 4 touchpoints, 3 currently-human-mediated compositions + 2 potentially automatic, knowledge observations on the org and on each stakeholder type, and 3 failure-signals that all converge on the same missing capability — a context-keeping practice the studio doesn't yet have anyone owning. Three leader-facing decisions name Marco, Lena, and Tomás by role and the studio's units by name.
+Open the HTML in a browser to see exactly what this skill produces. The play covers the studio's whole-org structure: 7 capabilities (3 differentiated, 4 standard), 4 touchpoints, 3 currently-human-mediated compositions + 2 potentially automatic, knowledge observations on the org and on each stakeholder type, and 3 pieces to build that all converge on the same missing capability — a context-keeping practice the studio doesn't yet have anyone owning. Three leader-facing decisions name Marco, Lena, and Tomás by role and the studio's units by name.

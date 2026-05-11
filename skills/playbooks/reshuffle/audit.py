@@ -80,14 +80,16 @@ def audit_components(comps: list[dict]) -> list[str]:
         elif ac not in ALLOWED_AI_CLASS:
             issues.append(f"  [{cid} {label}] ai_classification='{ac}' not in allowed set {sorted(ALLOWED_AI_CLASS)}")
         elif ac == "engine":
-            # engine requires rich AEI evidence + km_cost_dominant != 'none'
-            if not has_rich_aei(c):
-                issues.append(f"  [{cid} {label}] ai_classification='engine' requires rich AEI match (autonomy data); none found in _aei")
+            # engine requires either rich AEI match data embedded OR a
+            # citation chain in ai_evidence pointing at the AEI source. The
+            # citation itself is the evidence; the embedded match data is a
+            # nice-to-have when running the play in the same context as
+            # ai-exposure. Plus knowledge-management cost must be named.
+            ev = c.get("ai_evidence") or []
+            if not (has_rich_aei(c) or ev):
+                issues.append(f"  [{cid} {label}] ai_classification='engine' must include either rich AEI match data in _aei or at least one citation in ai_evidence")
             if km == "none":
                 issues.append(f"  [{cid} {label}] ai_classification='engine' requires km_cost_dominant != 'none' (must specify which knowledge-management cost it changes)")
-            ev = c.get("ai_evidence") or []
-            if not ev:
-                issues.append(f"  [{cid} {label}] ai_classification='engine' must include ai_evidence (citation chain to AEI)")
         elif ac == "tool":
             # tool can be set without rich AEI (defaults are allowed) but the audit doesn't require evidence
             pass

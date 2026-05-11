@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""Mechanical lint for Playable Org. Tier 1 — deterministic checks, no LLM."""
+"""Mechanical lint for Playable Org. Tier 1 — deterministic checks, no LLM.
+
+Defaults to linting `<repo-root>/org/`. Pass `--org-dir <path>` to lint a
+different directory (useful for forks that mount their structure under a
+different name, or for linting the bundled sample-org fixture from this
+template's CI). The report is written next to the org dir's parent by
+default (`<parent>/lint-report-<date>.md`); pass `--report <path>` to
+override.
+"""
+import argparse
 import os
 import re
 import sys
@@ -8,8 +17,10 @@ from collections import defaultdict
 import datetime
 
 ROOT = Path(__file__).parent
-ORG = ROOT / "org"
-REPORT = ROOT / f"lint-report-{datetime.date.today()}.md"
+
+# Resolved at the bottom of the file from CLI args, before any walking.
+ORG: Path = ROOT / "org"
+REPORT: Path = ROOT / f"lint-report-{datetime.date.today()}.md"
 
 
 def all_md_files():
@@ -344,5 +355,37 @@ def main():
     print(f"Orphan nodes: {len(orphans)}")
 
 
+def _resolve_paths_from_argv() -> None:
+    """Apply --org-dir / --report to the module-level ORG and REPORT
+    before main() walks the filesystem."""
+    global ORG, REPORT
+    parser = argparse.ArgumentParser(
+        description="Tier-1 mechanical lint of an org/ directory.",
+    )
+    parser.add_argument(
+        "--org-dir",
+        type=Path,
+        default=ROOT / "org",
+        help="Directory to lint (default: <repo-root>/org).",
+    )
+    parser.add_argument(
+        "--report",
+        type=Path,
+        default=None,
+        help="Where to write the markdown report (default: <repo-root>/lint-report-<date>.md).",
+    )
+    args = parser.parse_args()
+    ORG = args.org_dir.resolve()
+    if not ORG.is_dir():
+        sys.stderr.write(f"lint: org dir not found: {ORG}\n")
+        sys.exit(2)
+    REPORT = (
+        args.report.resolve()
+        if args.report
+        else ROOT / f"lint-report-{datetime.date.today()}.md"
+    )
+
+
 if __name__ == "__main__":
+    _resolve_paths_from_argv()
     main()

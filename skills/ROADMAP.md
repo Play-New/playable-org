@@ -15,11 +15,11 @@ Author names appear here because `skills/` is the productizable layer. They neve
 | 5 | graph          | topology — read structure as itself  | (no source — mechanical render of the corpus) | done    |
 | 6 | new-playbook   | meta — author your own skill         | (no source — composition of the other five)   | done    |
 
-The first four form a sequence: observe where AI presses (1) → map where each component sits in evolution (2) → propose new bundles around the constraints that remain (3) → recompose around capabilities and co-creators (4). The fifth (graph) reads the structure as itself, with no interpretive frame in between — it's the picture you can run earliest, after the first ingest, to see the shape of the corpus.
+The first four read the structure through an analytical framework borrowed from outside (Anthropic AEI, Wardley, Choudary, Dorsey/Botha). The fifth (graph) reads the structure as the structure declares itself, with no analytical framework layered on top — it's the picture you can run earliest, after the first ingest, to see the shape of the corpus before any interpretation.
 
 ## Order of composition
 
-**graph first (lightest).** Run after the first ingest. Walks every node and every relation declared in the structure and renders the whole org as one force-directed picture. No interpretive frame, no AEI dependency. The output answers "what does the corpus look like as a connected thing" before anything reads it through a frame.
+**graph first (lightest).** Run after the first ingest. Walks every node and every relation declared in the structure and renders the whole org as one force-directed picture. No analytical framework, no AEI dependency. The output answers "what does the corpus look like as a connected thing" before anything reads it through a framework.
 
 **ai-exposure next.** It's the broadest analytical survey: every activity scored against the Anthropic AEI dataset. Tells you which activities are AI-amenable in observed terms, before any normative interpretation.
 
@@ -27,7 +27,7 @@ The first four form a sequence: observe where AI presses (1) → map where each 
 
 **Then reshuffle.** Once you have a map and an exposure scoring, the unbundle / componentize / rebundle loop becomes operational rather than rhetorical. You can name the constraint that holds each bundle together (scarcity, risk, coordination) and propose what changes when AI dissolves one.
 
-**Then world-model.** The capability frame overlays on top of activities once you've already done the work-decomposition implicit in reshuffle. Co-creator boundaries are a redesign of stakeholder commitments. The structure for that already exists in `commitments/`.
+**Then world-model.** The capability framework overlays on top of activities once you've already done the work-decomposition implicit in reshuffle. Co-creator boundaries are a redesign of stakeholder commitments. The structure for that already exists in `commitments/`.
 
 ## 2 — value-map
 
@@ -94,7 +94,7 @@ The first four form a sequence: observe where AI presses (1) → map where each 
 
 ## 4 — world-model
 
-**What it does.** Reads the organization as the model in Dorsey/Botha's "From Hierarchy to Intelligence" (Block, March 2026): the org is the set of its capabilities (atomic primitives), a world model of its own operations + its customers, an intelligence layer that composes capabilities into solutions, and interfaces that deliver them. The skill maps the organization in these four parts and surfaces what's missing — particularly the "failure signals" that constitute the future roadmap.
+**What it does.** Reads the organization through the loop in Dorsey/Botha's *From Hierarchy to Intelligence* (Block, March 2026). Today the org has interfaces, capabilities, and a world model. Interfaces deliver outputs but don't capture signal. Capabilities are crafts embedded in named people. The world model is implicit, fragmented across heads and files. The move is to insert intelligence (typically AI-mediated) that transforms the three: interfaces become signal collection points; capabilities become invocable systems with the person staying as DRI; the world model auto-updates from the signals. The skill maps where the org is along this move and surfaces the roadmap as the subset of captured signals that no current composition can fulfil.
 
 **Inputs.**
 - The full activity registry and unit registry.
@@ -103,28 +103,30 @@ The first four form a sequence: observe where AI presses (1) → map where each 
 
 **Outputs.**
 - A frozen play in `org/plays/world-model-<scope>-<date>.md`.
-- A JSON map in `org/plays/data/world-model-<scope>-<date>.json` with four sections: capabilities, world-model (company-side + customer-side), intelligence layer, interfaces. Plus a "failure signals" section for compositions the layer can't yet produce.
-- An interactive HTML viewer following the project style charter, with click-to-detail on each capability and intelligence-layer composition.
+- A JSON map in `org/plays/data/world-model-<scope>-<date>.json` with three layer sections: interfaces, capabilities, and world-model (which now includes operational picture, per-caller picture, and captured-signals log). Plus a roadmap section that holds the queryable subset of captured signals with no current composition.
+- An interactive HTML viewer rendering the three layers + the runtime as a connective annotation + the loop as overlay. Click-to-detail on each card via popover. Editorial-column layout per [SKILL.md](playbooks/world-model/SKILL.md) §8.
 
-**Key concepts borrowed.**
+**Key concepts borrowed (from the source).**
 - Capabilities as atomic primitives that are hard to acquire (regulation, network effects, expertise) and have no UI of their own.
-- World model: the organization's continuously-updated understanding of its own operations and of its users; the structure the intelligence layer queries.
-- Intelligence layer: what composes capabilities into solutions for specific users at specific moments. Not "AI as productivity tool"; AI as the coordination mechanism that replaces middle-management information routing.
-- The roadmap is what the intelligence layer fails to compose. User signal — not PM hypothesis — generates the backlog.
+- World model split: company side (replaces information that flowed through layers of management) + customer side (per-caller, transaction-derived).
+- Intelligence layer: composes capabilities into solutions for specific callers at specific moments. AI in this layer is the coordination mechanism that replaces middle-management information routing.
+- The roadmap is what the intelligence layer fails to compose. Captured signal generates the backlog, not a PM hypothesis.
 - Three roles emerge: ICs who build capabilities, DRIs who own outcomes, player-coaches who develop people. No permanent middle layer.
+
+**Operational extensions (ours, not in source).** The five-property test, four-question pragmatic test, three-actors rule, users-and-contributors framing, seven-step transition sequence, and the five-criteria wrapper for making a capability invocable. Developed for this template to apply the source's frame to organizations that aren't Block. Marked as such in [CAPABILITIES.md](CAPABILITIES.md).
 
 **Anti-hallucination discipline.**
 - A "capability" must be reachable from at least three activities in different units OR be a regulated/credentialed primitive (notarial, legal, banking).
-- The world-model section must cite which structure observations feed it — no hand-wave "we have data".
-- Intelligence-layer compositions are conditional: each cites the capabilities composed and the user signal that would trigger composition.
-- Failure signals must cite a specific user need that no current composition addresses.
+- The world-model section must cite where each piece of memory lives today (a structure file, a system, a person's head). No hand-wave "we have data".
+- Intelligence-layer compositions are conditional: each cites the capabilities chained and the captured signal that would trigger composition.
+- Each roadmap entry must name a missing capability in verb-object form and cite a concrete observation that says the request arises.
 
 **Open question.**
-- Calibration of the four-part model to a non-profit foundation. Block's frame is built on transactional businesses where money is "the most honest signal in the world". For an organization, the equivalent honest signals are donation patterns, grant outcomes, testator pre-mortem behavior. The skill should adapt the customer-world-model section to whatever signals the structure actually has.
+- Calibration of the loop to a non-profit foundation. The source's framework leans on transactional density (Block has millions of transactions/day). For an organization with thinner signal, the captured-signals log is sparser; the customer-side world model has to be built from non-transactional honest signals (donation history, grant outcomes, testator pre-mortem behaviour). The skill adapts the layer to the signal density the structure already has.
 
 ## 5 — graph
 
-**What it does.** Walks the whole `org/` corpus and renders it as a single force-directed picture: every node (units, activities, people, stakeholders, commitments, sources, identity, financial summaries) and every typed relation declared in frontmatter or in body links. The lightest of the playbooks — no AEI dependency, no interpretive frame, just the structure as the structure is written.
+**What it does.** Walks the whole `org/` corpus and renders it as a single force-directed picture: every node (units, activities, people, stakeholders, commitments, sources, identity, financial summaries) and every typed relation declared in frontmatter or in body links. The lightest of the playbooks — no AEI dependency, no interpretive theory, just the structure as the structure is written.
 
 **Inputs.**
 - The whole `org/` directory.
@@ -132,7 +134,7 @@ The first four form a sequence: observe where AI presses (1) → map where each 
 
 **Outputs.**
 - `org/plays/data/graph-<scope>-<date>.json` — typed nodes + edges + topology summary (degree-sorted top connected, isolates, by-kind counts).
-- `org/plays/data/graph-<scope>-<date>.html` — interactive force-directed viewer with the same Play New chrome as the other four playbooks. Click a node → popover with outgoing + incoming relations and the structure file path.
+- `org/plays/data/graph-<scope>-<date>.html` — interactive force-directed viewer (App-pure: full-bleed canvas, floating dateline + Analysis CTA + kinds ribbon, no editorial column). Click a node → Inspect card slides in from the right with outgoing + incoming dependencies grouped by verb. The viewer renders the *operational* layer of the graph (six load-bearing kinds); corpus / declarative kinds and body-markdown link edges stay in the JSON for other tools but are stripped from the picture. See `skills/playbooks/graph/SKILL.md` §2 for the full contract.
 
 **Key concepts.**
 - Topology is not interpretation. The play surfaces what is connected; whether a region of the structure being thin is a problem or a deliberate choice is a question the leader answers — the play poses it.
@@ -142,7 +144,7 @@ The first four form a sequence: observe where AI presses (1) → map where each 
 **Anti-hallucination discipline.**
 - Every edge endpoint must resolve to a real node (audit gate).
 - Decisions cite a node id or a relative path under `org/`; the autoresearch's `audit_grounded` check verifies any `node_ids` referenced.
-- Plain-language gate forbids `node degree`, `degree centrality`, `betweenness`, `clustering coefficient`, `hub`, `subgraph` in user-visible prose, plus the framework names of the other four playbooks (capability stack, world model, value chain, bundle, moat).
+- Plain-language gate forbids `node degree`, `degree centrality`, `betweenness`, `clustering coefficient`, `hub`, `subgraph` in user-visible prose, plus the framework primitives of the other four playbooks (capability stack, world model, value chain, bundle, moat).
 
 **Open question.**
 - Per-unit scoping. The current build walks the whole org. A `--scope <unit-id>` mode that produces a subgraph centred on one Direzione (its activities, the stakeholders it touches, the sources its activities cite, the people in it) would be a useful narrower read. Reserved as a future flag — the topology of the whole graph is the more useful first pass.
@@ -200,15 +202,15 @@ It is not a commitment to build all five playbooks for every organization. The o
 
 Tracked here so a fork merging upstream sees what changed:
 
-- **Visual chrome unified across all five playbooks.** One container width (1240px), 820px centered editorial column on every block (graph extends the canvas to 1160px because the topology genuinely needs the width, with editorial bookends still at 820px), full-bordered cards (no left-rule), popover replacing the previous full-screen modal, eyebrow + h1 + lead header pattern, decisions section as the load-bearing interpretive surface. Frozen in each playbook's SKILL.md §Visualize so future iterations have a clear contract.
+- **`graph` viewer redesigned to App-pure (May 2026).** Full-bleed canvas, floating editorial chrome (dateline top-left, `Analysis →` outline button top-right, kinds ribbon bottom-left, zoom + Reset focus bottom-right), floating Inspect card sliding in from the right on focus, *Carta sbiadita* paper palette (slate / sage / ink / lilac / terracotta / sand). Mobile-first: Pointer Events for mouse + touch through one path, two-finger pinch zoom, safe-area insets for the iPhone notch. Replaces the editorial-column shell that the other four playbooks still use. Locked by 28 regression checks in `mcp-server/test-e2e.py`. The other four playbooks (`ai-exposure`, `value-map`, `reshuffle`, `world-model`) still use the editorial-column chrome — propagation to them is a separate decision.
 - **Conditional voice rule for emerging items.** Anything `is_new` (component / stakeholder / piece-to-build / candidate role) is written with `if / would / could / depends on`, never `when / will / makes`. Lives in `STYLE.md` with examples.
-- **Plain-language jargon avoid-list.** Framework primitive names are fine as labels; paraphrased into prose they become jargon. Avoid-list grows in `STYLE.md`: moat, commodity (in body), commoditize, judgment density, capability stack, coordination tax, failure-signal, thin (metaphor), see-saw, flywheel, engine candidate, rebundle, production-tier, rich subset, O\*NET, AEI, embedding, cosine similarity, top-K, p25/p75, JSON field-name leaks (evolution_target, ai_effect, ai_autonomy_mean).
-- **Autoresearch as a 5-dimension gate**, four deterministic + one LLM judge. Per-playbook `autoresearch.py` with shared `skills/autoresearch_lib.py`. Each playbook tunes its own jargon blacklist + judge rubric. Promoted to a wiki feature via `org_autoresearch_run` mcp tool — agent can score a play right after rendering it without shelling out.
+- **Plain-language jargon avoid-list.** Framework primitive names are fine as labels; paraphrased into prose they become jargon. Avoid-list grows in `STYLE.md`: moat, commodity (in body), commoditize, judgment density, capability stack, coordination tax, piece to build, thin (metaphor), see-saw, flywheel, engine candidate, rebundle, production-tier, rich subset, O\*NET, AEI, embedding, cosine similarity, top-K, p25/p75, JSON field-name leaks (evolution_target, ai_effect, ai_autonomy_mean).
+- **Autoresearch as a 5-dimension gate**, four deterministic + one LLM judge. Per-playbook `autoresearch.py` with shared `skills/autoresearch_lib.py`. Each playbook tunes its own jargon blacklist + judge rubric. Surfaced as a property of the structure itself via the `org_autoresearch_run` mcp tool — agent can score a play right after rendering it without shelling out.
 - **`init` Path B (interview-first).** When the user has no founding documents, a structured ten-question interview becomes the founding source. The transcript is saved verbatim and cited by every node it generates. Combines with Path A (documents-first) for partial-document orgs.
 - **`org_autoresearch_run` mcp tool.** 13 tools total now (was 12). Same surface as `org_lint_run`.
 - **DRI as a distinct role** in `CAPABILITIES.md`. Three roles, not interchangeable: DRI (single accountable person, throat-to-choke), IC (executes), player-coach (hybrid, on capabilities large enough to need both building and people development).
 - **Activity density layer** documented in `org/AGENTS.md`. Optional fields (trigger, quality_gates, decision_criteria, output_format, fallback, handoff) that turn an activity into something a Claude skill can be compiled from. Filled by interviewing the performer; the transcript becomes a source citation.
-- **`graph` playbook (May 2026).** Reads the structure as itself: every node and every typed relation declared in frontmatter or in body links, rendered as one force-directed picture. The lightest of the playbooks — no AEI dependency, no interpretive frame, run after the first ingest. Five playbooks total now (was four). Vanilla-JS force simulation, no D3 dependency.
+- **`graph` playbook (May 2026).** Reads the structure as the operational dependency layer: the six load-bearing kinds (unit, activity, person, role, stakeholder, commitment) and the typed relations between them, rendered as one force-directed picture. The lightest of the bundled playbooks — no AEI dependency, no interpretive theory layered on top, run after the first ingest. Five playbooks total now (was four). Vanilla-JS force simulation on HTML5 canvas, no D3 dependency.
 
 ## Future (deferred)
 

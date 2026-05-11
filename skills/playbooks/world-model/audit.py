@@ -4,7 +4,7 @@ world-model / audit.py — Verify a world-model JSON.
 
 Checks each capability against the five-property test (CAPABILITIES.md),
 verifies structure evidence exists, enforces the three-actors rule, and
-checks failure signals are concrete and cited.
+checks pieces to build are concrete and cited.
 
 Usage:
     python3 audit.py --map <world-model.json> --org-dir <path>
@@ -49,15 +49,30 @@ def audit_capabilities(caps: list[dict], org_dir: Path) -> list[str]:
             if not v or (isinstance(v, list) and len(v) == 0):
                 issues.append(f"  capability '{name}' missing or empty contract field '{field}'")
 
-        # is_callable_by — three-actors rule
+        # Three-actors rule (CAPABILITIES.md): capability must be callable
+        # by at least 3 distinct actor TYPES. The three canonical types are:
+        #   1. External stakeholder — at least one entry in is_callable_by
+        #   2. Another capability of the org — at least one entry in composes_with
+        #   3. Intelligence layer — counted implicitly when the capability has
+        #      a contract (input + output present)
+        # Note: this is the rule from the source distilled into operational
+        # form. Earlier versions of this check counted only is_callable_by;
+        # that interpretation was wrong (it's "actor types", not "stakeholder
+        # types").
         callers = c.get("is_callable_by") or []
-        if len(callers) < 3:
-            issues.append(f"  capability '{name}' has only {len(callers)} stakeholder types in is_callable_by; rule requires at least 3")
-
-        # composes_with — at least one composition (otherwise it's a standalone product, not a building block)
         composes = c.get("composes_with") or []
-        if len(composes) == 0:
-            issues.append(f"  capability '{name}' has empty composes_with; capabilities should compose with at least one other (otherwise it's a standalone product, not a building block)")
+        has_contract = bool(c.get("input")) and bool(c.get("output"))
+        n_actor_types = (
+            (1 if callers else 0)        # external stakeholder
+            + (1 if composes else 0)     # composing capability
+            + (1 if has_contract else 0) # intelligence layer (implicit; needs a contract to be invokable by it)
+        )
+        if n_actor_types < 3:
+            missing = []
+            if not callers:     missing.append("no external stakeholder in is_callable_by")
+            if not composes:    missing.append("no composing capability in composes_with (capability is a standalone product, not a building block)")
+            if not has_contract: missing.append("no contract (input/output) so the intelligence layer cannot invoke it")
+            issues.append(f"  capability '{name}' fails three-actors rule, only {n_actor_types}/3 actor types satisfied: {'; '.join(missing)}")
 
         # current_owners
         owners = c.get("current_owners") or []
@@ -147,27 +162,27 @@ def audit_intelligence_layer(d: dict) -> list[str]:
     return issues
 
 
-def audit_failure_signals(d: dict, capability_names: set[str]) -> list[str]:
+def audit_pieces_to_build(d: dict, capability_names: set[str]) -> list[str]:
     issues: list[str] = []
-    fs = d.get("failure_signals") or []
+    fs = d.get("pieces_to_build") or []
     if len(fs) < 3:
-        issues.append(f"  failure_signals has only {len(fs)} entries; the section is the roadmap, surface at least 3")
+        issues.append(f"  pieces_to_build has only {len(fs)} entries; the section is the roadmap, surface at least 3")
 
     for i, f in enumerate(fs):
         if not f.get("trigger"):
-            issues.append(f"  failure_signals[{i}] missing 'trigger'")
+            issues.append(f"  pieces_to_build[{i}] missing 'trigger'")
         if not f.get("composition_attempted"):
-            issues.append(f"  failure_signals[{i}] missing 'composition_attempted'")
+            issues.append(f"  pieces_to_build[{i}] missing 'composition_attempted'")
         if not f.get("missing_capability"):
-            issues.append(f"  failure_signals[{i}] missing 'missing_capability' (verb-object name of the capability that doesn't exist)")
+            issues.append(f"  pieces_to_build[{i}] missing 'missing_capability' (verb-object name of the capability that doesn't exist)")
         if not f.get("structure_evidence"):
-            issues.append(f"  failure_signals[{i}] missing 'structure_evidence' (citation that the request would actually arise)")
+            issues.append(f"  pieces_to_build[{i}] missing 'structure_evidence' (citation that the request would actually arise)")
         # composition_attempted should reference existing capabilities
         comp = f.get("composition_attempted") or []
         if isinstance(comp, list):
             for cname in comp:
                 if cname not in capability_names:
-                    issues.append(f"  failure_signals[{i}] composition_attempted references '{cname}' which is not in capabilities")
+                    issues.append(f"  pieces_to_build[{i}] composition_attempted references '{cname}' which is not in capabilities")
 
     return issues
 
@@ -205,20 +220,20 @@ def main() -> int:
     issues.extend(audit_capabilities(caps, org_dir))
     issues.extend(audit_world_model(d))
     issues.extend(audit_intelligence_layer(d))
-    issues.extend(audit_failure_signals(d, cap_names))
+    issues.extend(audit_pieces_to_build(d, cap_names))
     issues.extend(audit_interfaces(d, cap_names))
 
     # Distribution summary
     moat = sum(1 for c in caps if c.get("moat_grade") == "moat")
     commodity = sum(1 for c in caps if c.get("moat_grade") == "commodity")
-    n_signals = len(d.get("failure_signals") or [])
+    n_signals = len(d.get("pieces_to_build") or [])
     n_interfaces = len(d.get("interfaces") or [])
 
     print("=== World-model audit ===\n")
     print(f"  scope: {d.get('_scope', '?')}")
     print(f"  capabilities: {len(caps)} (moat={moat}, commodity={commodity})")
     print(f"  interfaces: {n_interfaces}")
-    print(f"  failure signals: {n_signals}")
+    print(f"  pieces to build: {n_signals}")
     print(f"  intelligence layer current human-mediated compositions: {len(d.get('intelligence_layer', {}).get('current_human_compositions', []))}")
     print(f"  intelligence layer potential automatable compositions: {len(d.get('intelligence_layer', {}).get('potential_compositions', []))}")
     print()
