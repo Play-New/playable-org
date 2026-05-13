@@ -12,6 +12,45 @@ The pattern was articulated by Andrej Karpathy in May 2026 ([gist](https://gist.
 2. **Citations are mandatory.** Every assertion carries an inline `(source-id)`. The lint refuses citations to non-existent sources. The agent cannot invent without breaking the rule mechanically.
 3. **The agent maintains, the human curates.** Writes are proposed, the human confirms. The audit log is prepend-only. There is no "automatic update" path that bypasses confirmation.
 
+## System layers
+
+Four layers, bottom-up. The cited corpus is the foundation; everything else either reads from it, writes to it, or freezes a reading of it.
+
+```
+       ┌─────────────────────────────────────────────────┐
+LAYER 4 │ agent  (Claude Desktop / Claude Code)            │
+       │   reads + writes the graph via the mcp surface   │
+       └─────────────────────────────────────────────────┘
+                          ▲ ▼
+       ┌─────────────────────────────────────────────────┐
+LAYER 3 │ mcp-server/  — 13 typed primitives               │
+       │   read   (read, search, list, neighbors)         │
+       │   write  (write_node, save_source, log_append)   │
+       │   meta   (skills_list, skill_read)               │
+       │   exec   (lint_run, play_run, autoresearch_run,  │
+       │           open)                                  │
+       └─────────────────────────────────────────────────┘
+                          ▲ ▼
+       ┌──────────────────────┬──────────────────────────┐
+LAYER 2 │ skills/              │ org/plays/                │
+       │ recipes the agent    │ frozen read-models        │
+       │ follows (SKILL.md +  │ produced by skills on a   │
+       │ optional py: build,  │ slice of the structure;   │
+       │ audit, viewer)       │ HTML + JSON, citable      │
+       └──────────────────────┴──────────────────────────┘
+                          │ ▲
+                          ▼ │  cite
+       ┌─────────────────────────────────────────────────┐
+LAYER 1 │ org/  — cited structure                          │
+       │   units / activities / people / roles            │
+       │   stakeholders / commitments / sources           │
+       │   each markdown file: frontmatter (typed)        │
+       │   + body (prose). Every claim cites a source.    │
+       └─────────────────────────────────────────────────┘
+```
+
+The separation matters. Layer 1 is what an organization actually *is* (cited facts). Layer 2 splits the verbs (`skills/`) from the read-models they produce (`plays/`). Layer 3 is the only place that knows about files on disk; everything above goes through it. Layer 4 is the human-in-the-loop client — Claude Desktop for chat-style reading sessions, Claude Code for terminal-native maintenance sessions, the same mcp surface in both.
+
 ## Why files instead of a database
 
 Three practical reasons.
@@ -63,7 +102,7 @@ Two reasons:
 
 ## The mcp server
 
-The bridge from Claude Desktop to the graph. TypeScript, stdio-based, exposes 13 tools. Read tools (read, search, list, neighbors). Write tools (write_node, save_source, log_append). Meta tools (skills_list, skill_read). Executors (lint_run, play_run, autoresearch_run, open).
+The bridge from a Claude client (Desktop or Code) to the graph. TypeScript, stdio-based, exposes 13 tools. Read tools (read, search, list, neighbors). Write tools (write_node, save_source, log_append). Meta tools (skills_list, skill_read). Executors (lint_run, play_run, autoresearch_run, open).
 
 The server is intentionally thin. It does not know about playbooks. It does not know about specific analytical methods. It exposes primitives. The agent (Claude) composes them by following recipes in `skills/`.
 

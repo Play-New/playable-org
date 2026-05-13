@@ -14,42 +14,62 @@ The lineage is Andrej Karpathy's [*Building an LLM Wiki*](https://gist.github.co
 
 `org/` is a directory of markdown files. Each file is one node — a unit, an activity, a person, a role, a stakeholder, a commitment, a source, an identity declaration, a glossary term, a financial summary. The frontmatter is typed YAML; the body is prose. Every claim in the body cites a `(source-id)`. The mcp server (in `mcp-server/`) exposes thirteen typed primitives that an agent uses to read, write, and lint the corpus. On top, `skills/` holds recipes the agent follows: three for keeping the corpus honest (`init`, `ingest`, `lint`), a **starter kit of playbooks** (`graph`, `ai-exposure`, `value-map`, `reshuffle`, `world-model`) that produce frozen analyses on top of the graph, a `new-playbook` meta-skill that scaffolds your own, and a few helpers for deploying an agent against a specific scope. Each playbook produces an HTML + JSON pair under `org/plays/data/` that you open in a browser. The artefacts you see in this README are real — they come from a fictional sample organization (Outline & Co., a creative studio) that ships with the public template.
 
-## The four layers
+## What `org/` looks like
 
 ```
-       ┌─────────────────────────────────────────────────┐
-LAYER 4 │ agent  (Claude Code / Claude Desktop)            │
-       │   reads + writes the graph via the mcp surface   │
-       └─────────────────────────────────────────────────┘
-                          ▲ ▼
-       ┌─────────────────────────────────────────────────┐
-LAYER 3 │ mcp-server/  — 13 typed primitives               │
-       │   read   (read, search, list, neighbors)         │
-       │   write  (write_node, save_source, log_append)   │
-       │   meta   (skills_list, skill_read)               │
-       │   exec   (lint_run, play_run, autoresearch_run,  │
-       │           open)                                  │
-       └─────────────────────────────────────────────────┘
-                          ▲ ▼
-       ┌──────────────────────┬──────────────────────────┐
-LAYER 2 │ skills/              │ org/plays/                │
-       │ recipes the agent    │ frozen read-models        │
-       │ follows (SKILL.md +  │ produced by skills on a   │
-       │ optional py: build,  │ slice of the structure;   │
-       │ audit, viewer)       │ HTML + JSON, citable      │
-       └──────────────────────┴──────────────────────────┘
-                          │ ▲
-                          ▼ │  cite
-       ┌─────────────────────────────────────────────────┐
-LAYER 1 │ org/  — cited structure                          │
-       │   units / activities / people / roles            │
-       │   stakeholders / commitments / sources           │
-       │   each markdown file: frontmatter (typed)        │
-       │   + body (prose). Every claim cites a source.    │
-       └─────────────────────────────────────────────────┘
+org/
+│
+├── AGENTS.md              operational contract — the agent reads this before any write
+├── README.md              entry point for whoever opens the folder
+├── index.md               catalog of every node, one line each, kept in sync on every ingest
+├── log.md                 prepend-only audit; most recent write on top
+├── open-questions.md      ambiguities the agent surfaces for a human to resolve
+│
+├── identity/              who the organization is
+│   ├── mission.md           what the studio is for
+│   ├── limits.md            what it explicitly does not do
+│   └── rules.md             the governance principles
+│
+├── nodes/                 the entities that make up the structure
+│   ├── units/               areas, divisions, functions
+│   ├── people/              named individuals
+│   ├── activities/          the work the org actually does
+│   ├── roles/               named roles when they exist independently of a person
+│   └── stakeholders/        who the org serves and who it depends on
+│
+├── commitments/           typed relations between nodes — the promise chains
+├── financials/            yearly summaries (revenue, costs, headcount)
+├── language/              glossary of org-specific terms when needed
+│
+├── sources/               immutable raw documents — every claim in the structure cites here
+│
+└── plays/data/            frozen analytical artefacts produced by playbooks
+                             graph-<scope>-<date>.{json,html}
+                             ai-exposure-<scope>-<date>.{json,html}
+                             value-map-<scope>-<date>.{json,html,svg}
+                             reshuffle-<scope>-<date>.{json,html}
+                             world-model-<scope>-<date>.{json,html}
 ```
 
-Two invariants hold across all four:
+Every node is one markdown file. Frontmatter is typed YAML; body is prose; every claim cites a source.
+
+````markdown
+---
+id: audience-research
+type: activity
+parent: strategy
+performer: marco-bellini
+sources: [outline-charter-2024]
+---
+
+# Audience research
+
+Interview client customers, transcribe, synthesise into an insights document.
+Runs at the start of every mid-market engagement (outline-charter-2024).
+Output: 8–15 page insights document, signed off by the strategy lead.
+````
+
+Two invariants hold across the artefact:
 
 - **Every claim in `org/` cites a source under `sources/`.** No exceptions. The lint script refuses commits that violate this. This is the citation invariant — the defence against agent hallucination. Without it, the agent makes things up; with it, every answer points back to a real document.
 - **Plays are frozen at creation.** A play asserts the world at time T. Re-running the same playbook at T+N produces a new play; the old one stays as the historical reading. No mutation in place. "What did we conclude in May" keeps meaning that way.
