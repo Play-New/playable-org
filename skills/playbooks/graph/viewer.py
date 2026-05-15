@@ -785,6 +785,175 @@ HTML_TEMPLATE = """<!doctype html>
 
 
 # ----------------------------------------------------------------------
+# Localized UI strings
+# ----------------------------------------------------------------------
+# Every viewer-emitted user-visible string lives here so non-English forks
+# (e.g. AIRC, an Italian foundation) can pass `--lang it` and get the
+# chrome + About modal in their working language. The pattern matches
+# ai-exposure's STRINGS dict — keep keys consistent across viewers.
+#
+# Decisions, source citations, and any prose that comes from the agent
+# stay in whatever language the agent wrote them; this dict is for the
+# scaffolding around them only.
+STRINGS = {
+    "en": {
+        # Chrome
+        "analysis_btn": "Analysis",
+        "help_btn_label": "What is this map?",
+        "inspect_eyebrow": "Inspect",
+        "inspect_close_title": "Reset focus",
+        "analysis_kicker": "Reading the structure",
+        # Decision anchor
+        "show_on_canvas": "show <em>{label}</em> on the canvas →",
+        # Headline (count of decisions surfaced)
+        "headline_four": "Four decisions sit on the desk after one pass through the graph.",
+        "headline_one": "1 decision surfaces from one pass through the graph.",
+        "headline_n": "{n} decisions surface from one pass through the graph.",
+        # About modal — body
+        "about_lede": (
+            "The operational structure as it has been written down — "
+            "every node, every typed dependency, no interpretive framework "
+            "layered on top."
+        ),
+        "about_intro": (
+            "The picture above is the operational structure of the organisation, "
+            "drawn from the cited markdown corpus under <code>org/</code>. Every "
+            "dot is a node the corpus declares; every line is a typed dependency "
+            "declared in frontmatter (an activity belongs to a unit, a person "
+            "performs an activity, a commitment binds a party, ...)."
+        ),
+        "about_h2_shows": "What this map shows",
+        "about_shows_kinds": (
+            "<strong>The six load-bearing kinds.</strong> Units (containers of "
+            "work), activities (the work that gets done), people (who does it), "
+            "roles (named accountability slots), stakeholders (who the work is "
+            "for), commitments (the obligations that bind parties together)."
+        ),
+        "about_shows_pills": (
+            "Pills at the bottom-left toggle each kind on or off. Hovering a node "
+            "highlights it; clicking focuses it — first-degree neighbours stay "
+            "bright, the rest dims, and the Inspect card on the right fills with "
+            "the node's incoming and outgoing dependencies, grouped by verb."
+        ),
+        "about_h2_not_shows": "What it does not show",
+        "about_not_shows_corpus": (
+            "<strong>Sources, identity, glossary, financial summaries</strong> "
+            "are part of the JSON but stripped from this picture. They are "
+            "corpus-level metadata (provenance, mission, vocabulary, money "
+            "flows), not operational dependencies. Other tools read them; this "
+            "view doesn't."
+        ),
+        "about_not_shows_links": (
+            "<strong>Body-markdown links</strong> (a node's prose mentioning "
+            "another node by name) are also stripped. They are cross-references "
+            "in writing, not dependencies in the structure. Including them "
+            "would muddy the load picture without adding signal."
+        ),
+        "about_h2_read": "How to read it",
+        "about_read_sizes": (
+            'Bigger circles = more first-degree neighbours in the currently '
+            'visible kinds. The size is a directly-readable proxy for "how '
+            'much load this node is carrying right now". Toggle a kind off '
+            'and sizes recompute to reflect the slimmer picture.'
+        ),
+        "about_read_controls": (
+            "<strong>Drag</strong> a node to reposition it · <strong>scroll</strong> "
+            "to zoom · <strong>drag empty space</strong> to pan · <strong>two-finger "
+            "pinch</strong> on touch · <strong>?focus=&lt;node-id&gt;</strong> in "
+            "the URL is a permalink to a focused view."
+        ),
+        "about_h2_source": "Where it comes from",
+        "about_source": (
+            "Unlike the other four bundled playbooks (ai-exposure, value-map, "
+            "reshuffle, world-model), <em>graph</em> has no external source "
+            "theory: it renders the structure as the structure declares itself, "
+            "with no analytical framework layered on top. It is the lightest "
+            "read — useful right after the first ingest, before any of the "
+            "framed analyses."
+        ),
+    },
+    "it": {
+        "analysis_btn": "Analisi",
+        "help_btn_label": "Cos'è questa mappa?",
+        "inspect_eyebrow": "Ispeziona",
+        "inspect_close_title": "Reimposta focus",
+        "analysis_kicker": "Lettura della struttura",
+        "show_on_canvas": "mostra <em>{label}</em> sulla mappa →",
+        "headline_four": "Quattro decisioni emergono da una lettura del grafo.",
+        "headline_one": "1 decisione emerge da una lettura del grafo.",
+        "headline_n": "{n} decisioni emergono da una lettura del grafo.",
+        "about_lede": (
+            "La struttura operativa come è stata scritta — "
+            "ogni nodo, ogni dipendenza tipizzata, senza framework "
+            "interpretativo sopra."
+        ),
+        "about_intro": (
+            "La figura qui sopra è la struttura operativa dell'organizzazione, "
+            "letta dal corpus markdown citato sotto <code>org/</code>. Ogni "
+            "punto è un nodo che il corpus dichiara; ogni linea è una "
+            "dipendenza tipizzata dichiarata nel frontmatter (un'attività "
+            "appartiene a un'unità, una persona svolge un'attività, un "
+            "commitment lega due parti, ...)."
+        ),
+        "about_h2_shows": "Cosa mostra la mappa",
+        "about_shows_kinds": (
+            "<strong>I sei tipi portanti.</strong> Unità (contenitori di "
+            "lavoro), attività (il lavoro che viene fatto), persone (chi lo "
+            "fa), ruoli (slot nominati di responsabilità), stakeholder (per "
+            "chi viene fatto), commitment (le obbligazioni che legano le "
+            "parti)."
+        ),
+        "about_shows_pills": (
+            "I pill in basso a sinistra accendono o spengono ogni tipo. "
+            "Passare sopra un nodo lo evidenzia; cliccarlo lo mette a fuoco "
+            "— i vicini di primo grado restano accesi, gli altri si "
+            "attenuano, e la card Ispeziona a destra si riempie con le "
+            "dipendenze in entrata e in uscita del nodo, raggruppate per "
+            "verbo."
+        ),
+        "about_h2_not_shows": "Cosa non mostra",
+        "about_not_shows_corpus": (
+            "<strong>Sources, identity, glossary, financial summaries</strong> "
+            "sono nel JSON ma vengono rimossi da questa figura. Sono "
+            "metadati a livello di corpus (provenienza, missione, vocabolario, "
+            "flussi finanziari), non dipendenze operative. Altri strumenti "
+            "li leggono; questa vista no."
+        ),
+        "about_not_shows_links": (
+            "<strong>I link nel testo dei nodi</strong> (la prosa di un nodo "
+            "che ne nomina un altro) sono anch'essi rimossi. Sono "
+            "cross-reference di scrittura, non dipendenze nella struttura. "
+            "Includerli sporcherebbe la figura del carico senza aggiungere "
+            "segnale."
+        ),
+        "about_h2_read": "Come si legge",
+        "about_read_sizes": (
+            'Cerchi più grandi = più vicini di primo grado fra i tipi '
+            'attualmente visibili. La dimensione è una proxy diretta di '
+            '"quanto carico sta portando questo nodo adesso". Spegnere un '
+            "tipo e le dimensioni si ricalcolano sulla figura più snella."
+        ),
+        "about_read_controls": (
+            "<strong>Trascina</strong> un nodo per spostarlo · "
+            "<strong>scroll</strong> per zoomare · <strong>trascina uno "
+            "spazio vuoto</strong> per traslare · <strong>pinch con due "
+            "dita</strong> su touch · <strong>?focus=&lt;node-id&gt;</strong> "
+            "nell'URL è un permalink a una vista focalizzata."
+        ),
+        "about_h2_source": "Da dove viene",
+        "about_source": (
+            "A differenza degli altri quattro playbook (ai-exposure, "
+            "value-map, reshuffle, world-model), <em>graph</em> non ha una "
+            "fonte teorica esterna: rende la struttura come la struttura si "
+            "dichiara, senza framework interpretativo sopra. È la lettura "
+            "più leggera — utile subito dopo il primo ingest, prima di "
+            "qualsiasi analisi framework-driven."
+        ),
+    },
+}
+
+
+# ----------------------------------------------------------------------
 # Adapter — our schema → the JS data shape
 # ----------------------------------------------------------------------
 def _adapt_data(d: dict, org_name: str) -> dict:
@@ -854,7 +1023,7 @@ def _adapt_data(d: dict, org_name: str) -> dict:
     }
 
 
-def _build_modal_html(d: dict, org_name: str, dated: str) -> str:
+def _build_modal_html(d: dict, org_name: str, dated: str, *, S: dict) -> str:
     decisions = d.get("decisions") or []
     if not decisions:
         return ""
@@ -873,9 +1042,10 @@ def _build_modal_html(d: dict, org_name: str, dated: str) -> str:
         if node_ids:
             first = node_ids[0]
             label = node_label.get(first, first)
+            anchor_inner = S["show_on_canvas"].format(label=escape(label))
             anchor_html = (
                 f'<span class="anchor" data-focus="{escape(first)}">'
-                f'show <em>{escape(label)}</em> on the canvas →'
+                f'{anchor_inner}'
                 f'</span>'
             )
         source = (dec.get("source") or "").strip()
@@ -889,11 +1059,13 @@ def _build_modal_html(d: dict, org_name: str, dated: str) -> str:
     # decisions. The agent that populates `decisions[]` can override
     # by including a top-level `_headline` / `_lede` in the JSON.
     n = len(decisions)
-    headline = d.get("_headline") or (
-        f"Four decisions sit on the desk after one pass through the graph."
-        if n == 4
-        else f"{n} decision{'s' if n != 1 else ''} surface{'s' if n == 1 else ''} from one pass through the graph."
-    )
+    if n == 4:
+        default_headline = S["headline_four"]
+    elif n == 1:
+        default_headline = S["headline_one"]
+    else:
+        default_headline = S["headline_n"].format(n=n)
+    headline = d.get("_headline") or default_headline
     lede_text = d.get("_lede") or ""
     lede_html = ""
     if lede_text:
@@ -906,7 +1078,7 @@ def _build_modal_html(d: dict, org_name: str, dated: str) -> str:
         org_name=org_name,
         dated=dated,
         decisions_html="".join(items),
-        kicker="Reading the structure",
+        kicker=S["analysis_kicker"],
         lede=lede_html,
     )
 
@@ -914,7 +1086,7 @@ def _build_modal_html(d: dict, org_name: str, dated: str) -> str:
 # ----------------------------------------------------------------------
 # render_html — the public entry point
 # ----------------------------------------------------------------------
-def render_html(d: dict, title: str, *, org_name: str = "") -> str:
+def render_html(d: dict, title: str, *, org_name: str = "", lang: str = "en") -> str:
     # Resolution order for the org name in the dateline:
     # 1. --org-name CLI flag (explicit override)
     # 2. JSON `_org` field (populated by build.py from identity/mission.md
@@ -922,9 +1094,10 @@ def render_html(d: dict, title: str, *, org_name: str = "") -> str:
     # 3. The page title — last resort so the chrome never goes blank.
     org = org_name or d.get("_org") or title
     dated = d.get("_dated", "—")
+    S = STRINGS.get(lang, STRINGS["en"])
 
     js_data = _adapt_data(d, org)
-    modal_html = _build_modal_html(d, org, dated)
+    modal_html = _build_modal_html(d, org, dated, S=S)
     has_decisions = bool(d.get("decisions"))
 
     # About modal — plain-language explanation of what this picture is,
@@ -934,32 +1107,28 @@ def render_html(d: dict, title: str, *, org_name: str = "") -> str:
     # itself. The about-modal makes that explicit.
     n_nodes = len(js_data.get("nodes") or [])
     n_edges = len(js_data.get("edges") or [])
-    about_body = """
-  <p>The picture above is the operational structure of the organisation, drawn from the cited markdown corpus under <code>org/</code>. Every dot is a node the corpus declares; every line is a typed dependency declared in frontmatter (an activity belongs to a unit, a person performs an activity, a commitment binds a party, ...).</p>
+    about_body = f"""
+  <p>{S["about_intro"]}</p>
 
-  <h2>What this map shows</h2>
-  <p><strong>The six load-bearing kinds.</strong> Units (containers of work), activities (the work that gets done), people (who does it), roles (named accountability slots), stakeholders (who the work is for), commitments (the obligations that bind parties together).</p>
-  <p>Pills at the bottom-left toggle each kind on or off. Hovering a node highlights it; clicking focuses it — first-degree neighbours stay bright, the rest dims, and the Inspect card on the right fills with the node's incoming and outgoing dependencies, grouped by verb.</p>
+  <h2>{S["about_h2_shows"]}</h2>
+  <p>{S["about_shows_kinds"]}</p>
+  <p>{S["about_shows_pills"]}</p>
 
-  <h2>What it does not show</h2>
-  <p><strong>Sources, identity, glossary, financial summaries</strong> are part of the JSON but stripped from this picture. They are corpus-level metadata (provenance, mission, vocabulary, money flows), not operational dependencies. Other tools read them; this view doesn't.</p>
-  <p><strong>Body-markdown links</strong> (a node's prose mentioning another node by name) are also stripped. They are cross-references in writing, not dependencies in the structure. Including them would muddy the load picture without adding signal.</p>
+  <h2>{S["about_h2_not_shows"]}</h2>
+  <p>{S["about_not_shows_corpus"]}</p>
+  <p>{S["about_not_shows_links"]}</p>
 
-  <h2>How to read it</h2>
-  <p>Bigger circles = more first-degree neighbours in the currently visible kinds. The size is a directly-readable proxy for "how much load this node is carrying right now". Toggle a kind off and sizes recompute to reflect the slimmer picture.</p>
-  <p><strong>Drag</strong> a node to reposition it · <strong>scroll</strong> to zoom · <strong>drag empty space</strong> to pan · <strong>two-finger pinch</strong> on touch · <strong>?focus=&lt;node-id&gt;</strong> in the URL is a permalink to a focused view.</p>
+  <h2>{S["about_h2_read"]}</h2>
+  <p>{S["about_read_sizes"]}</p>
+  <p>{S["about_read_controls"]}</p>
 
-  <h2>Where it comes from</h2>
-  <p>Unlike the other four bundled playbooks (ai-exposure, value-map, reshuffle, world-model), <em>graph</em> has no external source theory: it renders the structure as the structure declares itself, with no analytical framework layered on top. It is the lightest read — useful right after the first ingest, before any of the framed analyses.</p>
+  <h2>{S["about_h2_source"]}</h2>
+  <p>{S["about_source"]}</p>
 """
     about_modal_html_str = app_pure_about_modal_html(
         kicker=f"№ {n_nodes:02d} · graph",
         headline=org,
-        lede=(
-            "The operational structure as it has been written down — "
-            "every node, every typed dependency, no interpretive framework "
-            "layered on top."
-        ),
+        lede=S["about_lede"],
         body_html=about_body,
     )
 
@@ -972,8 +1141,17 @@ def render_html(d: dict, title: str, *, org_name: str = "") -> str:
         head_meta=app_pure_head_meta(page_title),
         css=app_pure_css(layout="canvas") + EXTRA_CSS,
         dateline=app_pure_dateline_html(org),
-        top_right=app_pure_top_right_html(dated, show_analysis=has_decisions, show_help=True),
-        inspect_aside=app_pure_inspect_aside_html(),
+        top_right=app_pure_top_right_html(
+            dated,
+            show_analysis=has_decisions,
+            show_help=True,
+            analysis_label=S["analysis_btn"],
+            help_label=S["help_btn_label"],
+        ),
+        inspect_aside=app_pure_inspect_aside_html(
+            eyebrow_label=S["inspect_eyebrow"],
+            close_title=S["inspect_close_title"],
+        ),
         modal_html=modal_html + about_modal_html_str,
         # Escape "</" inside embedded JSON so a stray "</script>" in
         # the data cannot close the wrapping <script> tag. JSON allows
@@ -994,6 +1172,12 @@ def main() -> int:
     parser.add_argument("--title", default="The whole graph", help="Page title")
     parser.add_argument("--org-name", default="", help="Organization name for the masthead")
     parser.add_argument(
+        "--lang",
+        default="en",
+        choices=sorted(STRINGS.keys()),
+        help="Language for the chrome and About modal (en, it). Default en.",
+    )
+    parser.add_argument(
         "--decisions",
         help="Optional JSON list merged into the map under 'decisions[]' before render.",
     )
@@ -1006,7 +1190,7 @@ def main() -> int:
     # Pass the CLI override through verbatim (may be empty). render_html
     # resolves the dateline org name in this order: --org-name > JSON
     # `_org` > page title. Don't shortcut to title here.
-    html = render_html(d, args.title, org_name=args.org_name)
+    html = render_html(d, args.title, org_name=args.org_name, lang=args.lang)
     Path(args.html).write_text(html, encoding="utf-8")
     print(f"Wrote {Path(args.html).resolve()} ({len(html):,} bytes)")
     return 0

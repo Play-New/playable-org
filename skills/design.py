@@ -2090,22 +2090,28 @@ def app_pure_top_right_html(
     *,
     show_analysis: bool = True,
     show_help: bool = False,
+    analysis_label: str = "Analysis",
+    help_label: str = "What is this map?",
 ) -> str:
     """Top-right: italic date + optional outline `?` help button +
     optional outline Analysis CTA. Click handlers are wired in JS
-    (button ids: `open-help`, `open-analysis`)."""
+    (button ids: `open-help`, `open-analysis`).
+
+    `analysis_label` and `help_label` exist so viewers can localize
+    the chrome (the public template defaults are English; AIRC and
+    other Italian forks pass the Italian equivalent)."""
     out = f'<div class="date-tr"><em>{escape(dated)}</em></div>'
     if show_help:
         out += (
             '\n<button class="help-btn" id="open-help" type="button" '
-            'aria-label="What is this map?" title="What is this map?">'
+            f'aria-label="{escape(help_label)}" title="{escape(help_label)}">'
             '?'
             '</button>'
         )
     if show_analysis:
         out += (
             '\n<button class="analysis" id="open-analysis" type="button">'
-            'Analysis'
+            f'{escape(analysis_label)}'
             '<span class="arrow">→</span>'
             '</button>'
         )
@@ -2136,14 +2142,21 @@ def app_pure_about_modal_html(
 </div>"""
 
 
-def app_pure_inspect_aside_html() -> str:
+def app_pure_inspect_aside_html(
+    *,
+    eyebrow_label: str = "Inspect",
+    close_title: str = "Reset focus",
+) -> str:
     """Floating Inspect card (right side). Body is empty — populated
-    by the playbook's JS via document.getElementById('inspect-body')."""
+    by the playbook's JS via document.getElementById('inspect-body').
+
+    `eyebrow_label` and `close_title` exist so localized viewers can
+    pass the right strings."""
     return (
         '<aside class="inspect" id="inspect">\n'
         '  <div class="inspect-head">\n'
-        '    <span class="inspect-eyebrow">Inspect</span>\n'
-        '    <button class="inspect-close" id="inspect-close" title="Reset focus">×</button>\n'
+        f'    <span class="inspect-eyebrow">{escape(eyebrow_label)}</span>\n'
+        f'    <button class="inspect-close" id="inspect-close" title="{escape(close_title)}">×</button>\n'
         '  </div>\n'
         '  <div id="inspect-body"></div>\n'
         '</aside>'

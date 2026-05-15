@@ -919,6 +919,53 @@ def test_design_inline_md():
     assertion("inline_md: HTML special chars escaped", lines[4] == "escape &lt;script&gt;", lines[4])
 
 
+def test_graph_viewer_lang_it():
+    """`graph/viewer.py --lang it` swaps the chrome + About modal copy
+    into Italian, leaving decisions in whatever language the agent wrote
+    them. Default `--lang en` is unchanged (the design-regression test
+    above locks the English snapshot).
+
+    Defect-to-test: AIRC's first re-render on 2026-05-15 showed English
+    chrome ("Analysis", "Inspect", "Reset focus", "Reading the
+    structure", the whole About modal copy) on an Italian foundation.
+    """
+    fixture = REPO_ROOT / "mcp-server" / "test-fixtures" / "sample-org" / "plays" / "data" / "graph-outline-2026-05-09.json"
+    viewer = REPO_ROOT / "skills" / "playbooks" / "graph" / "viewer.py"
+    out_html = Path(tempfile.mkdtemp(prefix="graph-viewer-lang-it-")) / "out.html"
+    try:
+        proc = subprocess.run(
+            ["python3", str(viewer),
+             "--map", str(fixture),
+             "--html", str(out_html),
+             "--lang", "it",
+             "--title", "test",
+             "--org-name", "Test Org"],
+            capture_output=True, text=True, timeout=15,
+        )
+        assertion("graph viewer --lang it runs",
+                  proc.returncode == 0, proc.stderr[:300])
+        html = out_html.read_text()
+        # Chrome buttons
+        assertion("--lang it: Analysis button reads 'Analisi'",
+                  ">Analisi<" in html and ">Analysis<" not in html)
+        assertion("--lang it: Inspect eyebrow reads 'Ispeziona'",
+                  ">Ispeziona<" in html and ">Inspect<" not in html)
+        assertion("--lang it: help button title reads italian",
+                  "Cos&#x27;è questa mappa?" in html or "Cos'è questa mappa?" in html)
+        # Analysis modal kicker
+        assertion("--lang it: Analysis modal kicker is Italian",
+                  "Lettura della struttura" in html and "Reading the structure" not in html)
+        # About modal body
+        assertion("--lang it: about modal lede is Italian",
+                  "La struttura operativa come è stata scritta" in html)
+        assertion("--lang it: 'Cosa mostra la mappa' h2 present",
+                  "Cosa mostra la mappa" in html)
+        assertion("--lang it: English About-modal h2 'What this map shows' is gone",
+                  "What this map shows" not in html)
+    finally:
+        shutil.rmtree(out_html.parent, ignore_errors=True)
+
+
 def test_graph_build_skips_readme_stubs():
     """`graph/build.py` walks every `<subdir>/*.md`. The public template ships
     a folder-doc `README.md` inside each org subfolder (commitments/, financials/,
@@ -1132,6 +1179,7 @@ def main():
     run_section("reshuffle viewer design regression", test_reshuffle_viewer_design_regression)
     run_section("world-model viewer design regression", test_world_model_viewer_design_regression)
     run_section("design.inline_md (markdown in agent prose)", test_design_inline_md)
+    run_section("graph viewer --lang it (chrome + About modal in Italian)", test_graph_viewer_lang_it)
     run_section("graph build skips README folder-doc stubs", test_graph_build_skips_readme_stubs)
     run_section("Repo-root tooling (skills_list, skill_read, lint_run, open)", test_repo_root_tooling)
     run_section("Concurrent safety", test_concurrent_safety)
