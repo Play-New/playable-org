@@ -193,7 +193,7 @@ Detailed walkthrough with prerequisites and troubleshooting for both flows: [`SE
 
 ## What ships in the public template
 
-- **mcp-server/** — TypeScript stdio mcp server. Thirteen tools, full e2e suite at `mcp-server/test-e2e.py` (229/229 pass, covering pipeline tests + design-regression checks for each viewer), ~30KB compiled.
+- **mcp-server/** — TypeScript stdio mcp server. Thirteen tools, full e2e suite at `mcp-server/test-e2e.py` (238/238 pass, covering pipeline tests + design-regression checks for each viewer), ~30KB compiled.
 - **skills/** — eleven recipes. Three operational (`init`, `ingest`, `lint`); five playbooks (`graph`, `ai-exposure`, `value-map`, `reshuffle`, `world-model`); two deployment skills (`compile-agent` for scope-limited agents, `interview-activity` for filling the activity density layer); one meta-skill (`new-playbook`).
 - **mcp-server/test-fixtures/sample-org/** — a fully populated test fixture: Outline & Co., a fictional creative studio (5 units, 14 activities, 5 people, 4 stakeholders, 4 commitments, 3 sources). Ships with the five canonical playbook artefacts (HTML + JSON + judge verdicts). Open `plays/data/*.html` in a browser to see exactly what each playbook produces.
 - **install.command** / **install.bat** — clickable installers (no admin required). Build the mcp server, register it in Claude Desktop's config.

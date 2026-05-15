@@ -71,6 +71,7 @@ fully offline-portable.
 from __future__ import annotations
 
 import base64
+import re
 from html import escape
 from pathlib import Path
 from typing import Iterable
@@ -1018,6 +1019,32 @@ def base_css() -> str:
     if _CSS_CACHE is None:
         _CSS_CACHE = _base_css()
     return _CSS_CACHE
+
+
+# ----------------------------------------------------------------------
+# Inline markdown (for agent-authored prose in plays)
+# ----------------------------------------------------------------------
+
+def inline_md(s: str) -> str:
+    """Render a single paragraph of inline markdown safely.
+
+    Supports the three inline forms the agent reaches for in decision
+    bodies: ``**bold**``, ``*italic*``, and ``` `code` ```. Anything
+    else is left as escaped plain text. Block-level markdown (headings,
+    lists, blockquotes) is not supported on purpose — paragraphs are
+    split by the caller, and the only inline emphasis a leader-facing
+    decision should need is bold for the rare label.
+
+    Order of operations is escape-first, then regex substitution on the
+    escaped string. That keeps the renderer XSS-safe: any raw HTML the
+    author wrote becomes entity-escaped before the markdown patterns
+    can match it.
+    """
+    s = escape(s)
+    s = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', s)
+    s = re.sub(r'(?<!\*)\*([^*]+)\*(?!\*)', r'<em>\1</em>', s)
+    s = re.sub(r'`([^`]+)`', r'<code>\1</code>', s)
+    return s
 
 
 # ----------------------------------------------------------------------

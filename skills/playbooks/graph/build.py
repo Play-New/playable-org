@@ -128,6 +128,12 @@ def collect_nodes(org_dir: Path) -> tuple[list[dict], dict[Path, str]]:
         if not d.exists():
             continue
         for f in sorted(d.glob(glob)):
+            # Skip folder-doc stubs (each org/<subdir>/README.md is template
+            # documentation, not a node). Without this filter every kind gets
+            # one extra pseudo-node with id="README" and the audit fails on
+            # duplicate ids.
+            if f.name == "README.md":
+                continue
             text = f.read_text(encoding="utf-8")
             fm = parse_frontmatter(text)
             node_id = fm.get("id") or f.stem
@@ -200,6 +206,10 @@ def collect_edges(
         if not d.exists():
             continue
         for f in sorted(d.glob(glob)):
+            # Same skip as in `collect_nodes` above — folder-doc README.md
+            # stubs are not nodes and have no edges to declare.
+            if f.name == "README.md":
+                continue
             text = f.read_text(encoding="utf-8")
             fm = parse_frontmatter(text)
             node_id = fm.get("id") or f.stem

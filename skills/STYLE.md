@@ -105,7 +105,9 @@ Reason: emerging items are analyses, not roadmaps. The reader needs to feel the 
 
 ## Structural patterns to avoid
 
-- Rhetorical formulas: "Not X, but Y", "It's not... but...", "X isn't... it's..." — never use these structures.
+- Rhetorical formulas: "Not X, but Y", "It's not... but...", "X isn't... it's...", "Significa X, non Y", "Non X, ma Y" — never use these structures, in any direction or language. They sound aphoristic and obscure the actual claim. Rewrite as a single declarative sentence.
+- Meta-rhetorical questions in the agent's voice that anthropomorphise the data: "where does the graph declare not to know?", "what does the structure say?", "il grafo dichiara di non sapere", "la struttura racconta". The graph does not declare. The structure does not say. The agent reads it and writes a finding. Use plain leader-facing questions instead ("what is missing here?", "cosa non torna nella struttura?").
+- Graph-theory and network-science jargon in user-visible prose: *degree*, *centrality*, *isolate*, *topology*, *edge*, *node* (where "unit" / "activity" / "person" / "connection" would do), *anchor* / *anchoring* (use "starting point" or the concrete node name). The data is graph-shaped under the hood; the prose talks about the org, not the data structure.
 - Forced triads of verbs or concepts.
 - Manual-style numbered lists ("3 strategies for...", "5 ways to...").
 - Generic subheadings ("The Challenges", "The Solution", "Le sfide", "La soluzione").
@@ -122,6 +124,7 @@ Reason: emerging items are analyses, not roadmaps. The reader needs to feel the 
 - Lists work poorly when fragmenting continuous argument, replacing natural prose flow, or used decoratively.
 - Bold key terms, critical distinctions, or section labels — not generic emphasis.
 - No emojis, no em dashes, no multiple punctuation (!!, ??), no hashtags. Use a regular hyphen or a comma where you would have written em dash.
+- Inline markdown rendered in viewers. Decision answers, rebundle narrations, and other agent-authored prose pass through `design.inline_md()` at render time, which renders `**bold**`, `*italic*`, and `` `code` `` and escapes everything else. Block-level markdown (headings, bullet lists, blockquotes) is not rendered inside these fields — split into paragraphs separated by blank lines, use `**bold**` for the rare label, and write the rest as prose.
 
 ## Openings
 
@@ -207,6 +210,29 @@ The default failure mode of AI writing: uniform medium-short sentences (10–15 
 - Be direct when evidence is solid.
 - State uncertainty explicitly when relevant.
 
+## Writing decisions
+
+Every playbook output ends in a small set of decisions (3–5 typically). Each decision is read by a leader who has thirty seconds to ninety seconds. The shape that earns those seconds:
+
+1. **Question.** One short, plain leader-facing question. Direct, not aphoristic. Avoid the agent's voice ("what does the graph say?"). Prefer the leader's voice ("where is the work concentrated?", "what does it mean that the org is organised in five Divisions?", "what doesn't add up here?").
+
+2. **Answer, in three moves, in this order:**
+   - **What we see.** State the observation in plain prose. Name the specific units / activities / people / commitments by name. No graph-theory vocabulary; the reader doesn't care that a node has high degree, they care that this specific area is the busiest.
+   - **The numbers, used as evidence.** Cite the counts, ratios, degrees that support the observation. Numbers go *after* the claim, not before. "The most connected area has 78 dependencies; the most connected division has 20" is fine. Leading with "Degree centrality of the most connected node is 78" is jargon.
+   - **The concrete next move.** One sentence that names what the leader could do with this. Not vague ("worth investigating"), specific ("thirty minutes with the four area heads will tell us which of the two readings is true").
+
+3. **Length.** Two to four short paragraphs per decision. Read aloud in under a minute. If a decision spills into five paragraphs of analysis, it has become a report; split it or cut it.
+
+4. **Source field.** Every decision lists the node files it cites, by relative path (`nodes/units/<id>.md`, `commitments/<id>.md`, ...). The audit script checks every cited id resolves; if a path is dead, the decision fails the gate.
+
+5. **Two readings, when honest.** When the data supports more than one interpretation and only one is true, say so and name the test that picks between them. ("Either A or B. Thirty minutes with X tells us which.") Don't hedge with "perhaps" or "potentially" when a concrete test exists.
+
+Quick before/after examples on the same observation:
+
+> **Bad.** *Dove il grafo dichiara di non sapere ancora?* Sei nodi isolati nella vista di default. Cinque sono dichiarati come tali nei loro file: commissione-consultiva-ricerca (organo statutario senza membri né attività registrate), e le quattro voci finanziarie in `financials/` che non hanno una relazione tipizzata verso una Direzione. (anthropomorphises the graph, uses *isolate / nodo / relazione tipizzata*, no concrete next move)
+
+> **Good.** *Cosa nella struttura non torna ancora?* La commissione consultiva ricerca è nominata nello statuto e nel chart, ma nessun membro è registrato e nessuna attività è collegata. Domanda binaria a chi conosce AIRC dall'interno: è dormiente nella realtà, o esiste e i suoi membri non sono stati ancora ingeriti? (leader voice, names the unit, names the test that closes the question)
+
 ## Self-check before finalizing output
 
 Run this checklist before saving any consumer-facing text.
@@ -214,12 +240,15 @@ Run this checklist before saving any consumer-facing text.
 1. Sentence length: at least one 30+ word sentence and one 5–8 word sentence every 3–4 paragraphs?
 2. Opening: could the first paragraph be deleted without losing essential content?
 3. Banned words: scan for hyperbolic adjectives, weak intensifiers, business jargon. Cut them.
-4. Rhetorical formulas: any "Not X, but Y" or "It's not... but..." structures? Eliminate.
-5. Mechanical patterns: 3+ consecutive sentences structured the same way?
-6. Formatting: bold and lists used only where they serve clarity?
-7. Punctuation: any em dashes, multiple punctuation, emojis, hashtags? Remove.
-8. Examples: specific (names, numbers, dates) or generic placeholders?
-9. Closing: drifts into vague philosophy or ties to concrete next step?
+4. Rhetorical formulas: any "Not X, but Y" / "It's not... but..." / "Significa X, non Y" structures? Eliminate, in any language.
+5. Meta-rhetorical questions: any "what does the graph say / declare / not know"? Anthropomorphises the data. Rewrite as a leader-voice question.
+6. Graph-theory jargon: any *degree*, *centrality*, *isolate*, *topology*, *edge*, *node* (where a domain word would do), *anchor / anchoring*? Replace with the concrete unit/activity/connection name.
+7. Mechanical patterns: 3+ consecutive sentences structured the same way?
+8. Formatting: bold and lists used only where they serve clarity?
+9. Punctuation: any em dashes, multiple punctuation, emojis, hashtags? Remove.
+10. Examples: specific (names, numbers, dates) or generic placeholders?
+11. Closing: drifts into vague philosophy or ties to concrete next step?
+12. Decisions specifically: each one follows the shape in "Writing decisions" — leader-voice question, observation first then numbers, one concrete next move, two paragraphs to four.
 
 ## Where this charter applies
 

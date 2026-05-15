@@ -29,6 +29,7 @@ from design import (  # noqa: E402
     app_pure_inspect_aside_html,
     app_pure_modal_html,
     app_pure_top_right_html,
+    inline_md,
 )
 
 # Plain-language labels (no metaphors, no framework jargon).
@@ -974,11 +975,11 @@ def render_html(d: dict) -> str:
 
         if rb.get("what_changes"):
             parts.append('<div class="rebundle-section-label">What would change for the people in the process</div>')
-            parts.append(f'<div class="rebundle-narration">{escape(rb["what_changes"])}</div>')
+            parts.append(f'<div class="rebundle-narration">{inline_md(rb["what_changes"])}</div>')
 
         if rb.get("risk_of_rebundle"):
             parts.append('<div class="rebundle-section-label">How risky the move would be</div>')
-            parts.append(f'<div class="rebundle-narration">{escape(rb["risk_of_rebundle"])}</div>')
+            parts.append(f'<div class="rebundle-narration">{inline_md(rb["risk_of_rebundle"])}</div>')
 
         return f'<div class="rebundle-card{mode_class}">{"".join(parts)}</div>'
 
@@ -1014,7 +1015,7 @@ def render_html(d: dict) -> str:
         for dec in decisions:
             q = escape(dec.get("question", ""))
             ans_paragraphs = "".join(
-                f'<p class="answer">{escape(p)}</p>'
+                f'<p class="answer">{inline_md(p)}</p>'
                 for p in (dec.get("answer", "") or "").split("\n\n") if p.strip()
             )
             src = escape(dec.get("source", ""))
@@ -1076,7 +1077,7 @@ def render_html(d: dict) -> str:
         for dec in decisions:
             q = escape(dec.get("question", ""))
             ans = "".join(
-                f"<p>{escape(p)}</p>"
+                f"<p>{inline_md(p)}</p>"
                 for p in (dec.get("answer", "") or "").split("\n\n")
                 if p.strip()
             )

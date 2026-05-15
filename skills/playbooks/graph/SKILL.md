@@ -176,15 +176,19 @@ Decisions are reviewed by `autoresearch.py` against the deterministic jargon lis
 
 ### 3. Author the decisions
 
-The decisions are the load-bearing interpretive surface of this playbook. Without them the graph is just a picture. Three rules for writing them:
+The decisions are the load-bearing interpretive surface of this playbook. Without them the graph is just a picture.
 
-1. **Anchor on what the graph shows, not on an abstract claim.** The form is: "the topology shows X (load-bearing node Y, sparse region Z); for the leader this means W". Each decision should pass the test: a reader who saw only the graph and not the structure could read the decision and recognize what they're looking at.
-2. **Name nodes by name.** "Lena", "design area", "studio-mid-market-baseline", "outline-charter-2024" — the recognizability gate fails decisions that read as generic.
-3. **Conditional voice for emerging items.** If a region of the structure is thin (few edges, few mentions), the decision says "the structure has not been written down here yet" or "the org would have to author X for the picture to fill in" — not "the org is missing X". Topology silence is not the same as organizational absence; the playbook reads the writing, not the org.
+**Read [skills/STYLE.md → "Writing decisions"](../../STYLE.md) before drafting.** That section is the canonical shape every decision in every playbook follows: leader-voice question, observation first then numbers, one concrete next move, two to four short paragraphs. The before/after examples there are the test cases — if the draft you wrote sounds like the "Bad" example, rewrite it before saving.
+
+Three additional rules specific to `graph` (because the temptation here is the strongest):
+
+1. **Name units / activities / commitments by name.** "Marco", "design area", "studio-mid-market-baseline", "outline-charter-2024" — the recognizability gate fails decisions that read as generic.
+2. **Conditional voice for emerging items.** If a region of the structure is sparsely written (few connections, few mentions), the decision says "the structure has not been written down here yet" or "the org would have to author X for the picture to fill in" — not "the org is missing X". Sparse writing is not the same as organizational absence; the playbook reads the writing, not the org.
+3. **No graph-theory vocabulary in the prose.** *Degree*, *centrality*, *isolate*, *topology*, *anchor / anchoring* never appear. The numbers are fine ("78 connections", "20 connections"); the names for those numbers are not. STYLE.md self-check item 6 catches this; the autoresearch jargon gate catches it too.
 
 Author 3 to 5 decisions. Each:
-- `question`: the leader-facing question the decision answers (e.g. "Where does the documentation actually live?", "Which nodes is the structure most reliant on?", "Where is the structure written most thinly?").
-- `answer`: the answer, ≥ 60 chars, named anchors.
+- `question`: the leader-facing question the decision answers (plain Italian/English, no agent-voice meta-rhetoric).
+- `answer`: the answer, ≥ 60 chars, named anchors. Inline `**bold**`, `*italic*`, and `` `code` `` render at viewer time via `design.inline_md()` — use bold sparingly for the rare label.
 - `source`: a node id or a path under `org/`, citing the part of the structure the answer anchors on.
 - `node_ids` (optional): list of node ids referenced; if provided, the audit-grounded gate verifies they all resolve.
 

@@ -51,6 +51,7 @@ from design import (  # noqa: E402
     app_pure_head_meta,
     app_pure_modal_html,
     app_pure_top_right_html,
+    inline_md,
 )
 
 
@@ -918,7 +919,7 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
         for d in decisions:
             q = _esc(d.get("question", ""))
             ans_paragraphs = "".join(
-                f"<p>{_esc(p)}</p>"
+                f"<p>{inline_md(p)}</p>"
                 for p in (d.get("answer", "") or "").split("\n\n")
                 if p.strip()
             )

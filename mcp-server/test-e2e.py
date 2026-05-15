@@ -882,6 +882,75 @@ def test_world_model_viewer_design_regression():
               len(unfilled) == 0, f"found: {unfilled[:5]}")
 
 
+def test_design_inline_md():
+    """`design.inline_md(s)` is the single helper every viewer uses to render
+    agent-authored prose (decision answers, rebundle narrations, area notes).
+    The bug it fixes: viewers used to `html.escape()` the whole paragraph,
+    so `**bold**` and `*italic*` written by the agent leaked as literal
+    asterisks. The helper escapes first then applies the three inline forms
+    (bold, italic, code) on the escaped string, keeping it XSS-safe.
+
+    Defect-to-test: AIRC's first graph play in 2026-05 showed `**Acronimi
+    sciolti e zone bianche.**` as literal text in the Analysis modal.
+    """
+    skills_path = REPO_ROOT / "skills"
+    code = (
+        "import sys; sys.path.insert(0, %r); from design import inline_md;"
+        "print(inline_md(%r));"
+        "print(inline_md(%r));"
+        "print(inline_md(%r));"
+        "print(inline_md(%r));"
+        "print(inline_md(%r));"
+    ) % (
+        str(skills_path),
+        "**bold** word",
+        "an *italic* word",
+        "use `code` here",
+        "plain text only",
+        "escape <script>",
+    )
+    proc = subprocess.run(["python3", "-c", code], capture_output=True, text=True, timeout=10)
+    assertion("inline_md script runs", proc.returncode == 0, proc.stderr[:300])
+    lines = proc.stdout.strip().splitlines()
+    assertion("inline_md: **bold** -> <strong>", lines[0] == "<strong>bold</strong> word", lines[0])
+    assertion("inline_md: *italic* -> <em>", lines[1] == "an <em>italic</em> word", lines[1])
+    assertion("inline_md: `code` -> <code>", lines[2] == "use <code>code</code> here", lines[2])
+    assertion("inline_md: plain text passes through", lines[3] == "plain text only", lines[3])
+    assertion("inline_md: HTML special chars escaped", lines[4] == "escape &lt;script&gt;", lines[4])
+
+
+def test_graph_build_skips_readme_stubs():
+    """`graph/build.py` walks every `<subdir>/*.md`. The public template ships
+    a folder-doc `README.md` inside each org subfolder (commitments/, financials/,
+    language/, sources/, nodes/units/, nodes/people/, nodes/roles/,
+    nodes/activities/, nodes/stakeholders/). Those are documentation, not
+    nodes. Earlier versions of build.py picked them up as nodes with
+    id="README", producing 9 duplicate ids and an audit failure the first
+    time a populated fork ran the graph play. The build now filters them.
+
+    Defect-to-test: AIRC migration on 2026-05-15 surfaced this on the very
+    first audit.
+    """
+    real_org = REPO_ROOT / "org"
+    build = REPO_ROOT / "skills" / "playbooks" / "graph" / "build.py"
+    out_json = Path(tempfile.mkdtemp(prefix="graph-build-readme-")) / "graph.json"
+    try:
+        proc = subprocess.run(
+            ["python3", str(build), "--org-dir", str(real_org), "--out", str(out_json)],
+            capture_output=True, text=True, timeout=15,
+        )
+        assertion("graph build runs on empty template", proc.returncode == 0, proc.stderr[:300])
+        g = json.loads(out_json.read_text())
+        ids = [n["id"] for n in g.get("nodes", [])]
+        assertion("graph build: no README pseudo-node in nodes",
+                  "README" not in ids)
+        assertion("graph build: no duplicate ids on empty template",
+                  len(ids) == len(set(ids)),
+                  f"duplicates: {[i for i in ids if ids.count(i) > 1][:5]}")
+    finally:
+        shutil.rmtree(out_json.parent, ignore_errors=True)
+
+
 def test_repo_root_tooling():
     """Tools that resolve via dirname(dataDir) need dataDir to be a direct
     child of the repo root. Use the empty org/ starter for those.
@@ -1062,6 +1131,8 @@ def main():
     run_section("value-map viewer design regression", test_value_map_viewer_design_regression)
     run_section("reshuffle viewer design regression", test_reshuffle_viewer_design_regression)
     run_section("world-model viewer design regression", test_world_model_viewer_design_regression)
+    run_section("design.inline_md (markdown in agent prose)", test_design_inline_md)
+    run_section("graph build skips README folder-doc stubs", test_graph_build_skips_readme_stubs)
     run_section("Repo-root tooling (skills_list, skill_read, lint_run, open)", test_repo_root_tooling)
     run_section("Concurrent safety", test_concurrent_safety)
     run_section("Unicode payloads", test_unicode_payload)

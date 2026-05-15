@@ -44,6 +44,7 @@ from design import (  # noqa: E402
     app_pure_inspect_aside_html,
     app_pure_modal_html,
     app_pure_top_right_html,
+    inline_md,
 )
 
 
@@ -829,7 +830,7 @@ def _build_modal_html(map_data: dict, org_name: str, dated: str) -> str:
             )
         source = (dec.get("source") or "").strip()
         source_html = f'<p class="source">{escape(source)}</p>' if source else ""
-        ps_html = "".join(f"<p>{escape(p)}</p>" for p in answer_paragraphs)
+        ps_html = "".join(f"<p>{inline_md(p)}</p>" for p in answer_paragraphs)
         items.append(
             f'<li><h3>{escape(question)}</h3>{ps_html}{source_html}{anchor_html}</li>'
         )
