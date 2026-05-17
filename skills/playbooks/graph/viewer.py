@@ -653,7 +653,7 @@ JS = r"""
     return order.map(v => ({verb: v, items: groups.get(v)}));
   }
   function renderRelSection(label, count, groups) {
-    if (!count) return `<div class="rel-group"><h3>${label} <span class="count">0</span></h3><div class="rel-empty">no ${label.toLowerCase()} ties</div></div>`;
+    if (!count) return '';
     const body = groups.map(g => `
       <div class="rel-verb"><span>${escapeHtml(g.verb)}</span><span class="rel-verb-count">${g.items.length}</span></div>
       ${g.items.map(a => `<div class="rel" data-id="${escapeHtml(a.other)}">
@@ -661,7 +661,7 @@ JS = r"""
         <span class="name">${escapeHtml(NODE[a.other].label)}</span>
       </div>`).join('')}
     `).join('');
-    return `<div class="rel-group"><h3>${label} <span class="count">${count}</span></h3>${body}</div>`;
+    return `<div class="rel-group"><h3>${escapeHtml(label)} <span class="count">${count}</span></h3>${body}</div>`;
   }
   function renderInspect() {
     const body = document.getElementById('inspect-body');
@@ -677,14 +677,29 @@ JS = r"""
     const outGroups = groupByVerb(out, verbOut);
     const innGroups = groupByVerb(inn, verbIn);
 
+    const outLabel = DATA.inspect_outgoing || 'Outgoing';
+    const innLabel = DATA.inspect_incoming || 'Incoming';
+
+    // `n.blurb_html` is pre-rendered HTML from inline_md() at build
+    // time, so we set innerHTML directly. Internal links inside it are
+    // <a class="anchor" data-focus="<id>"> elements; we wire them to
+    // setFocus below.
     body.innerHTML = `
       <div class="kind-tag" style="--tagcolor:${k.color}"><span class="swatch"></span><span>${escapeHtml(k.label)}</span></div>
       <h2>${escapeHtml(n.label)}</h2>
-      ${n.path ? `<p class="path"><em>_path</em>  ${escapeHtml(n.path)}</p>` : ''}
-      ${n.blurb ? `<p class="blurb">${escapeHtml(n.blurb)}</p>` : ''}
-      ${renderRelSection('Outgoing', out.length, outGroups)}
-      ${renderRelSection('Incoming', inn.length, innGroups)}`;
+      ${n.blurb_html ? `<div class="blurb">${n.blurb_html}</div>` : ''}
+      ${renderRelSection(outLabel, out.length, outGroups)}
+      ${renderRelSection(innLabel, inn.length, innGroups)}`;
     body.querySelectorAll('.rel[data-id]').forEach(li => li.addEventListener('click', () => setFocus(li.dataset.id)));
+    // Inline links inside the blurb (rendered by inline_md at build
+    // time) navigate the canvas to the target node when clicked.
+    body.querySelectorAll('.anchor[data-focus]').forEach(a => {
+      a.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        const id = a.dataset.focus;
+        if (id && NODE[id]) setFocus(id);
+      });
+    });
   }
 
   function setFocus(id) {
@@ -803,6 +818,47 @@ STRINGS = {
         "inspect_eyebrow": "Inspect",
         "inspect_close_title": "Reset focus",
         "analysis_kicker": "Reading the structure",
+        # Inspect panel
+        "inspect_outgoing": "Outgoing",
+        "inspect_incoming": "Incoming",
+        "kind_labels": {
+            "unit": "Unit",
+            "activity": "Activity",
+            "person": "Person",
+            "role": "Role",
+            "stakeholder": "Stakeholder",
+            "commitment": "Commitment",
+        },
+        # Per-edge-kind verb labels grouped by direction in the inspect
+        # panel. OUT = the focused node's relation expressed in the
+        # direction it points; IN = the relation as seen from the
+        # focused node when others point at it.
+        "rel_out": {
+            "parent":           "is part of",
+            "unit":             "in",
+            "performer":        "performed by",
+            "head_role":        "led by",
+            "holds_role":       "holds",
+            "covers":           "responsible for",
+            "party_committing": "binds",
+            "party_benefiting": "benefits",
+            "touches":          "involves",
+            "cite":             "cites",
+            "link":             "links to",
+        },
+        "rel_in": {
+            "parent":           "contains",
+            "unit":             "groups",
+            "performer":        "performs",
+            "head_role":        "leads",
+            "holds_role":       "filled by",
+            "covers":           "owned by",
+            "party_committing": "bound by",
+            "party_benefiting": "benefits from",
+            "touches":          "involved in",
+            "cite":             "cited by",
+            "link":             "linked from",
+        },
         # Decision anchor
         "show_on_canvas": "show <em>{label}</em> on the canvas →",
         # Headline (count of decisions surfaced)
@@ -878,6 +934,42 @@ STRINGS = {
         "inspect_eyebrow": "Ispeziona",
         "inspect_close_title": "Reimposta focus",
         "analysis_kicker": "Lettura della struttura",
+        "inspect_outgoing": "In uscita",
+        "inspect_incoming": "In entrata",
+        "kind_labels": {
+            "unit": "Unità",
+            "activity": "Attività",
+            "person": "Persona",
+            "role": "Ruolo",
+            "stakeholder": "Stakeholder",
+            "commitment": "Commitment",
+        },
+        "rel_out": {
+            "parent":           "appartiene a",
+            "unit":             "fa parte di",
+            "performer":        "eseguito da",
+            "head_role":        "guidato da",
+            "holds_role":       "occupa il ruolo",
+            "covers":           "responsabile per",
+            "party_committing": "vincola",
+            "party_benefiting": "beneficia",
+            "touches":          "coinvolge",
+            "cite":             "cita",
+            "link":             "rimanda a",
+        },
+        "rel_in": {
+            "parent":           "contiene",
+            "unit":             "raggruppa",
+            "performer":        "esegue",
+            "head_role":        "guida",
+            "holds_role":       "occupato da",
+            "covers":           "di responsabilità di",
+            "party_committing": "vincolato a",
+            "party_benefiting": "beneficia di",
+            "touches":          "coinvolto in",
+            "cite":             "citato da",
+            "link":             "linkato da",
+        },
         "show_on_canvas": "mostra <em>{label}</em> sulla mappa →",
         "headline_four": "Quattro decisioni emergono da una lettura del grafo.",
         "headline_one": "1 decisione emerge da una lettura del grafo.",
@@ -956,7 +1048,7 @@ STRINGS = {
 # ----------------------------------------------------------------------
 # Adapter — our schema → the JS data shape
 # ----------------------------------------------------------------------
-def _adapt_data(d: dict, org_name: str) -> dict:
+def _adapt_data(d: dict, org_name: str, *, S: dict) -> dict:
     # Filter to load-bearing kinds only. Sources / identity / language /
     # financial summaries belong to other readings (provenance, mission,
     # money flow) — they pollute the dependency picture if rendered here.
@@ -976,14 +1068,27 @@ def _adapt_data(d: dict, org_name: str) -> dict:
         and e.get("to") in valid_ids
     ]
 
+    # Pre-render each node's description (markdown) into HTML at Python
+    # side. `inline_md` handles **bold**, *italic*, `code`, and markdown
+    # links. Internal links — those whose target is another node id in
+    # the corpus — render as <a class="anchor" data-focus="<id>">label</a>
+    # so clicking re-focuses the canvas on the linked node, the same
+    # behaviour the Analysis modal anchors have. External URLs render as
+    # plain <a href>. The pre-rendering pushes the markdown parser to
+    # the build side, leaving the JS to set innerHTML on a trusted
+    # string.
+    node_ids = valid_ids
+    def _link_resolver(target: str) -> str | None:
+        return target if target in node_ids else None
+
     js_nodes = []
     for n in nodes_in:
+        blurb = (n.get("description") or "").strip()
         js_nodes.append({
-            "id":    n["id"],
-            "kind":  n["kind"],
-            "label": n.get("label") or n["id"],
-            "path":  n.get("_path", ""),
-            "blurb": (n.get("description") or "").strip(),
+            "id":         n["id"],
+            "kind":       n["kind"],
+            "label":      n.get("label") or n["id"],
+            "blurb_html": inline_md(blurb, link_resolver=_link_resolver) if blurb else "",
         })
 
     js_edges = [
@@ -991,6 +1096,7 @@ def _adapt_data(d: dict, org_name: str) -> dict:
         for e in edges_in
     ]
 
+    kind_labels = S.get("kind_labels", {}) or {}
     present_kinds = {n["kind"] for n in nodes_in}
     js_kinds = []
     for k in KIND_ORDER:
@@ -998,7 +1104,7 @@ def _adapt_data(d: dict, org_name: str) -> dict:
             continue
         js_kinds.append({
             "id":      k,
-            "label":   KIND_LABEL_DISPLAY.get(k, k),
+            "label":   kind_labels.get(k, k),
             "color":   KIND_COLORS.get(k, "#888"),
             "default": k in DEFAULT_ON,
         })
@@ -1008,18 +1114,20 @@ def _adapt_data(d: dict, org_name: str) -> dict:
     for k in sorted(present_kinds - set(KIND_ORDER)):
         js_kinds.append({
             "id":      k,
-            "label":   k,
+            "label":   kind_labels.get(k, k),
             "color":   "#888",
             "default": False,
         })
 
     return {
-        "org":     org_name,
-        "kinds":   js_kinds,
-        "nodes":   js_nodes,
-        "edges":   js_edges,
-        "rel_out": REL_LABELS_OUT,
-        "rel_in":  REL_LABELS_IN,
+        "org":              org_name,
+        "kinds":            js_kinds,
+        "nodes":            js_nodes,
+        "edges":            js_edges,
+        "rel_out":          S.get("rel_out", REL_LABELS_OUT),
+        "rel_in":           S.get("rel_in",  REL_LABELS_IN),
+        "inspect_outgoing": S.get("inspect_outgoing", "Outgoing"),
+        "inspect_incoming": S.get("inspect_incoming", "Incoming"),
     }
 
 
@@ -1028,8 +1136,15 @@ def _build_modal_html(d: dict, org_name: str, dated: str, *, S: dict) -> str:
     if not decisions:
         return ""
 
-    # Build node label lookup once.
+    # Build node label + id lookups once.
     node_label = {n["id"]: (n.get("label") or n["id"]) for n in d.get("nodes", []) or []}
+    node_ids = set(node_label.keys())
+
+    # Internal-node markdown links written inside decision answers
+    # (`[label](node-id)`) get rewritten as focus anchors at render
+    # time, the same shape the inspect-panel descriptions use.
+    def _link_resolver(target: str) -> str | None:
+        return target if target in node_ids else None
 
     items = []
     for dec in decisions:
@@ -1050,7 +1165,10 @@ def _build_modal_html(d: dict, org_name: str, dated: str, *, S: dict) -> str:
             )
         source = (dec.get("source") or "").strip()
         source_html = f'<p class="source">{escape(source)}</p>' if source else ""
-        ps_html = "".join(f"<p>{inline_md(p)}</p>" for p in answer_paragraphs)
+        ps_html = "".join(
+            f"<p>{inline_md(p, link_resolver=_link_resolver)}</p>"
+            for p in answer_paragraphs
+        )
         items.append(
             f'<li><h3>{escape(question)}</h3>{ps_html}{source_html}{anchor_html}</li>'
         )
@@ -1096,7 +1214,7 @@ def render_html(d: dict, title: str, *, org_name: str = "", lang: str = "en") ->
     dated = d.get("_dated", "—")
     S = STRINGS.get(lang, STRINGS["en"])
 
-    js_data = _adapt_data(d, org)
+    js_data = _adapt_data(d, org, S=S)
     modal_html = _build_modal_html(d, org, dated, S=S)
     has_decisions = bool(d.get("decisions"))
 

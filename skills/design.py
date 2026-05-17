@@ -1025,25 +1025,72 @@ def base_css() -> str:
 # Inline markdown (for agent-authored prose in plays)
 # ----------------------------------------------------------------------
 
-def inline_md(s: str) -> str:
+def inline_md(s: str, *, link_resolver=None) -> str:
     """Render a single paragraph of inline markdown safely.
 
-    Supports the three inline forms the agent reaches for in decision
-    bodies: ``**bold**``, ``*italic*``, and ``` `code` ```. Anything
-    else is left as escaped plain text. Block-level markdown (headings,
-    lists, blockquotes) is not supported on purpose — paragraphs are
-    split by the caller, and the only inline emphasis a leader-facing
-    decision should need is bold for the rare label.
+    Supports four inline forms the agent reaches for in decision bodies
+    and node descriptions:
 
-    Order of operations is escape-first, then regex substitution on the
-    escaped string. That keeps the renderer XSS-safe: any raw HTML the
-    author wrote becomes entity-escaped before the markdown patterns
-    can match it.
+    - ``**bold**``    → ``<strong>``
+    - ``*italic*``    → ``<em>``
+    - ``` `code` ```  → ``<code>``
+    - ``[label](target)`` → ``<a>`` (clickable link)
+
+    Anything else is left as escaped plain text. Block-level markdown
+    (headings, lists, blockquotes) is not supported on purpose: callers
+    split paragraphs at blank lines, and the inline forms above are all
+    a leader-facing prose needs.
+
+    Link handling depends on the optional ``link_resolver`` callable:
+
+    - If provided, it's called with each link target. When it returns a
+      non-empty string (a node id), the link renders as
+      ``<a class="anchor" data-focus="<id>" href="#"><label></a>``,
+      hooking into the viewer's existing focus-on-canvas JS.
+    - When ``link_resolver`` returns falsy (external URL, unresolvable
+      target), the link renders as a plain ``<a href="<target>">``.
+    - If ``link_resolver`` is ``None``, every link renders as plain
+      ``<a href="<target>">`` (legacy callers stay XSS-safe).
+
+    The renderer is XSS-safe: links are stashed before HTML escape, the
+    rest of the string is escaped, the inline forms are applied, and
+    the links are restored last with both label and target escaped at
+    insertion time.
     """
+    # 1. Stash markdown links behind NUL-delimited placeholders so the
+    #    HTML escape on the body text doesn't mangle the brackets.
+    stashed_links: list[tuple[str, str]] = []
+
+    def _stash_link(m: 're.Match[str]') -> str:
+        stashed_links.append((m.group(1), m.group(2)))
+        return f"\x00LINK{len(stashed_links) - 1}\x00"
+
+    s = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', _stash_link, s)
+
+    # 2. Escape everything else.
     s = escape(s)
+
+    # 3. Apply inline emphasis on the escaped text.
     s = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', s)
     s = re.sub(r'(?<!\*)\*([^*]+)\*(?!\*)', r'<em>\1</em>', s)
     s = re.sub(r'`([^`]+)`', r'<code>\1</code>', s)
+
+    # 4. Restore links as either focus anchors (internal nodes) or
+    #    plain hrefs (external / unresolvable).
+    def _restore_link(m: 're.Match[str]') -> str:
+        idx = int(m.group(1))
+        label, target = stashed_links[idx]
+        label_html = escape(label)
+        if link_resolver is not None:
+            node_id = link_resolver(target)
+            if node_id:
+                return (
+                    f'<a class="anchor" data-focus="{escape(node_id)}" '
+                    f'href="#">{label_html}</a>'
+                )
+        return f'<a href="{escape(target)}">{label_html}</a>'
+
+    s = re.sub(r'\x00LINK(\d+)\x00', _restore_link, s)
     return s
 
 
@@ -1773,6 +1820,32 @@ body {{
   line-height: 1.55;
   margin: 0 0 16px;
   text-wrap: pretty;
+}}
+.inspect .blurb p {{ margin: 0 0 8px; }}
+.inspect .blurb p:last-child {{ margin-bottom: 0; }}
+/* Inline links inside the blurb (from inline_md() at build time). Same
+   register as the Analysis-modal anchors: subtle hairline underline,
+   ink on hover. The data-focus variant clicks back to setFocus on the
+   canvas. Plain hrefs (external URLs) inherit the same look so the
+   blurb reads consistently. */
+.inspect .blurb a {{
+  color: var(--ink-60);
+  text-decoration: none;
+  border-bottom: 0.5px solid var(--ink-25);
+  cursor: pointer;
+}}
+.inspect .blurb a:hover {{
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}}
+.inspect .blurb strong {{ font-weight: 500; color: var(--ink); }}
+.inspect .blurb em {{ font-style: italic; }}
+.inspect .blurb code {{
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--surface-2);
+  padding: 1px 4px;
+  border-radius: 3px;
 }}
 .rel-group {{
   margin-top: 14px;

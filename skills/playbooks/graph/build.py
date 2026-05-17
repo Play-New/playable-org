@@ -95,6 +95,59 @@ def strip_frontmatter(text: str) -> str:
     return text[m.end():] if m else text
 
 
+# Strip leading and trailing whitespace from a paragraph, collapse internal
+# runs of whitespace (newlines inside the paragraph) into single spaces so
+# the description renders on a single visual line if the original was wrapped.
+_WS = re.compile(r"\s+")
+
+
+def extract_description(text: str, *, max_chars: int = 480) -> str:
+    """Pull a short narrative description from a node markdown file.
+
+    Strategy: walk the body after the frontmatter, skip the first H1 (the
+    title — already captured by `get_title`), then take the first paragraph
+    that follows. Skip blockquotes (lines starting with `>`) and any other
+    non-prose blocks (lists, code, sub-headings) until we find prose. Inline
+    markdown is preserved as-is so the viewer can render links + emphasis.
+
+    A node without a written-out paragraph (e.g. an early stub or a
+    governance-body file that only declares frontmatter and a title) yields
+    an empty string; the viewer falls back to the bare label in that case.
+
+    `max_chars` caps the length so the inspect card stays scannable.
+    Truncation happens at the last whole word before the cap, with an
+    ellipsis appended.
+    """
+    body = strip_frontmatter(text)
+
+    # Drop the leading H1 line if present so we start reading prose.
+    body = re.sub(r"^#\s+.+?\n", "", body, count=1).lstrip()
+
+    # Split on blank lines into blocks; first prose block wins.
+    blocks = [b.strip() for b in re.split(r"\n\s*\n", body) if b.strip()]
+    for block in blocks:
+        first_line = block.splitlines()[0].lstrip()
+        # Skip non-prose blocks: sub-headings, lists, code fences, blockquotes,
+        # tables, horizontal rules.
+        if first_line.startswith(("#", "-", "*", "+", "1.", "```", ">", "|", "---")):
+            continue
+        # Skip frontmatter-style key:value lines if any leaked through.
+        if re.match(r"^[A-Za-z_]+:\s", first_line):
+            continue
+        # Collapse internal whitespace so the paragraph fits one visual line.
+        paragraph = _WS.sub(" ", block).strip()
+        if len(paragraph) <= max_chars:
+            return paragraph
+        # Truncate at the last whole word inside the cap.
+        cut = paragraph[: max_chars + 1]
+        last_space = cut.rfind(" ")
+        if last_space > 0:
+            cut = cut[:last_space]
+        return cut.rstrip(",.;:—-") + "…"
+
+    return ""
+
+
 # ----------------------------------------------------------------------
 # Node collection — one pass over org/ produces the node table and a
 # filename → id map so edges can resolve markdown links to ids.
@@ -146,9 +199,14 @@ def collect_nodes(org_dir: Path) -> tuple[list[dict], dict[Path, str]]:
             elif kind == "person":
                 state = fm.get("status", "")
 
+            # Description: frontmatter `description` wins (curated). Falls
+            # back to the first prose paragraph of the body (extracted so
+            # markdown links + emphasis survive into the inspect panel).
             description = ""
             if isinstance(fm.get("description"), str):
                 description = fm["description"]
+            else:
+                description = extract_description(text)
 
             unit = fm.get("unit") if isinstance(fm.get("unit"), str) else ""
             performer = fm.get("performer") if isinstance(fm.get("performer"), str) else ""
@@ -158,12 +216,44 @@ def collect_nodes(org_dir: Path) -> tuple[list[dict], dict[Path, str]]:
                 "kind": kind,
                 "label": label,
                 "description": description,
+                "_source_dir": str(f.parent.relative_to(org_dir)),
                 "state": state,
                 "unit": unit,
                 "performer": performer,
                 "_path": str(f.relative_to(org_dir)),
             })
             path_to_id[f.resolve()] = node_id
+
+    # Second pass: rewrite each description's markdown link targets from
+    # relative file paths (e.g. `../units/foo.md`) to bare node ids
+    # (`foo`) when the target resolves to a node in the corpus. External
+    # URLs and unresolvable targets stay as-is. This lets the viewer use
+    # a trivial link_resolver (`lambda t: t if t in node_ids else None`)
+    # without having to replicate path arithmetic at render time.
+    node_ids = {n["id"] for n in nodes}
+    for n in nodes:
+        if not n["description"]:
+            n.pop("_source_dir", None)
+            continue
+        source_dir = org_dir / n["_source_dir"]
+
+        def _rewrite_target(m: re.Match) -> str:
+            label, target = m.group(1), m.group(2)
+            # External URLs and anchors pass through unchanged.
+            if target.startswith(("http://", "https://", "//", "mailto:", "#")):
+                return f"[{label}]({target})"
+            # Resolve relative to the source file's directory.
+            try:
+                resolved = (source_dir / target).resolve()
+            except (OSError, ValueError):
+                return f"[{label}]({target})"
+            target_id = path_to_id.get(resolved)
+            if target_id and target_id in node_ids:
+                return f"[{label}]({target_id})"
+            return f"[{label}]({target})"
+
+        n["description"] = LINK_RE.sub(_rewrite_target, n["description"])
+        n.pop("_source_dir", None)
 
     return nodes, path_to_id
 
