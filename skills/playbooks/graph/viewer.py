@@ -867,7 +867,7 @@ STRINGS = {
         "headline_n": "{n} decisions surface from one pass through the graph.",
         # About modal — body
         "about_lede": (
-            "The operational structure as it has been written down — "
+            "The operational structure as it has been written down: "
             "every node, every typed dependency, no interpretive framework "
             "layered on top."
         ),
@@ -887,7 +887,7 @@ STRINGS = {
         ),
         "about_shows_pills": (
             "Pills at the bottom-left toggle each kind on or off. Hovering a node "
-            "highlights it; clicking focuses it — first-degree neighbours stay "
+            "highlights it; clicking focuses it. First-degree neighbours stay "
             "bright, the rest dims, and the Inspect card on the right fills with "
             "the node's incoming and outgoing dependencies, grouped by verb."
         ),
@@ -924,7 +924,7 @@ STRINGS = {
             "reshuffle, world-model), <em>graph</em> has no external source "
             "theory: it renders the structure as the structure declares itself, "
             "with no analytical framework layered on top. It is the lightest "
-            "read — useful right after the first ingest, before any of the "
+            "read, useful right after the first ingest, before any of the "
             "framed analyses."
         ),
     },
@@ -975,7 +975,7 @@ STRINGS = {
         "headline_one": "1 decisione emerge da una lettura del grafo.",
         "headline_n": "{n} decisioni emergono da una lettura del grafo.",
         "about_lede": (
-            "La struttura operativa come è stata scritta — "
+            "La struttura operativa come è stata scritta: "
             "ogni nodo, ogni dipendenza tipizzata, senza framework "
             "interpretativo sopra."
         ),
@@ -997,8 +997,8 @@ STRINGS = {
         ),
         "about_shows_pills": (
             "I pill in basso a sinistra accendono o spengono ogni tipo. "
-            "Passare sopra un nodo lo evidenzia; cliccarlo lo mette a fuoco "
-            "— i vicini di primo grado restano accesi, gli altri si "
+            "Passare sopra un nodo lo evidenzia; cliccarlo lo mette a fuoco: "
+            "i vicini di primo grado restano accesi, gli altri si "
             "attenuano, e la card Ispeziona a destra si riempie con le "
             "dipendenze in entrata e in uscita del nodo, raggruppate per "
             "verbo."
@@ -1038,7 +1038,7 @@ STRINGS = {
             "value-map, reshuffle, world-model), <em>graph</em> non ha una "
             "fonte teorica esterna: rende la struttura come la struttura si "
             "dichiara, senza framework interpretativo sopra. È la lettura "
-            "più leggera — utile subito dopo il primo ingest, prima di "
+            "più leggera, utile subito dopo il primo ingest, prima di "
             "qualsiasi analisi framework-driven."
         ),
     },
@@ -1152,10 +1152,13 @@ def _build_modal_html(d: dict, org_name: str, dated: str, *, S: dict) -> str:
         answer_paragraphs = [
             p.strip() for p in (dec.get("answer") or "").split("\n\n") if p.strip()
         ]
-        node_ids = dec.get("node_ids") or []
+        # Per-decision list. Named distinctly from the corpus-wide
+        # `node_ids` (line 1141) so the link_resolver closure keeps
+        # seeing the full set instead of this slice.
+        dec_node_ids = dec.get("node_ids") or []
         anchor_html = ""
-        if node_ids:
-            first = node_ids[0]
+        if dec_node_ids:
+            first = dec_node_ids[0]
             label = node_label.get(first, first)
             anchor_inner = S["show_on_canvas"].format(label=escape(label))
             anchor_html = (
