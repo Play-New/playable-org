@@ -231,7 +231,43 @@ Quick before/after examples on the same observation:
 
 > **Bad.** *Dove il grafo dichiara di non sapere ancora?* Sei nodi isolati nella vista di default. Cinque sono dichiarati come tali nei loro file: commissione-consultiva-ricerca (organo statutario senza membri né attività registrate), e le quattro voci finanziarie in `financials/` che non hanno una relazione tipizzata verso una Direzione. (anthropomorphises the graph, uses *isolate / nodo / relazione tipizzata*, no concrete next move)
 
-> **Good.** *Cosa nella struttura non torna ancora?* La commissione consultiva ricerca è nominata nello statuto e nel chart, ma nessun membro è registrato e nessuna attività è collegata. Domanda binaria a chi conosce AIRC dall'interno: è dormiente nella realtà, o esiste e i suoi membri non sono stati ancora ingeriti? (leader voice, names the unit, names the test that closes the question)
+> **Good.** *Cosa nella struttura non torna ancora?* La [commissione consultiva ricerca](commissione-consultiva-ricerca) è nominata nello statuto e nel chart, ma nessun membro è registrato e nessuna attività è collegata. Domanda secca a chi conosce AIRC dall'interno: è dormiente nella realtà, o esiste e va documentata? (leader voice, names and links the unit so the reader can click it, names the test that closes the question)
+
+### Worked example: one decision through five iterations
+
+The decision below was rewritten five times on the AIRC instance (2026-05-15 → 2026-05-18) before reaching the version that the user, who was the leader being addressed, accepted. The same observation underneath in every version. The cleanups that landed in each pass are the textbook examples of what to avoid the next time around.
+
+**Observation.** The eight units with the most typed dependencies in AIRC's structure are all donor-facing, public-facing, volunteer-facing, or HR. The four internal back-office functions (procurement, legal, finance, IT) have an order of magnitude fewer connections.
+
+**v1 — graph-theorist's report.** Topology-first, jargon-heavy.
+
+> *Where does the operational weight insist?* In the default view (units, activities, people, stakeholders, commitments) the heaviest nodes are the eight discipline units with degree 78, 77, 67, 66, 60, 58, 58, 57 in order. The first cluster of four (Divulgazione, Comunicazione, drm, Personale) carries degree centrality above 65 and accounts for most of the edge density in the customer-facing region of the graph.
+
+What's wrong: *operational weight*, *degree 78*, *degree centrality*, *edge density*, *customer-facing region of the graph*. Five graph-theory terms in one paragraph; the leader stops on each one.
+
+**v3 — observation up front, but still abstract.** Removed the topology metric names, but the prose still anthropomorphises the data.
+
+> *Dove insiste il peso operativo dell'organizzazione?* La forma che emerge è quella di un'organizzazione orientata interamente verso fuori. Le otto aree con più dipendenze documentate parlano con donatori, pubblico, volontari sul territorio, oppure tengono le persone che lo fanno: divulgazione di missione, comunicazione esterna, drm, personale, corporate fundraising, grandi donatori, coordinamento manifestazioni di piazza, gestione rete territoriale.
+
+What's wrong: *forma che emerge*, *orientata interamente verso fuori*, *dipendenze documentate*. The construction *parlano con X, oppure tengono le persone che lo fanno* is also bad Italian: *tengono le persone* doesn't mean *they are HR for those people*, which is what the agent intended. And the eight units are listed by name but not linked, so a reader who wants to inspect *divulgazione di missione* has to find it on the canvas manually.
+
+**v5 — leader voice, plain Italian, clickable nodes.**
+
+> *Quando guardi questa figura, riconosci la tua organizzazione?* Quasi tutte le aree con più collegamenti nella struttura parlano con qualcuno fuori da AIRC. Le otto, in ordine: [divulgazione di missione](divulgazione-di-missione), [comunicazione esterna](comunicazione-esterna), [drm](drm), [personale](personale), [corporate fundraising](corporate-fundraising), [grandi donatori](grandi-donatori), [coordinamento manifestazioni di piazza](coordinamento-manifestazioni-di-piazza), [gestione rete territoriale](gestione-rete-territoriale).
+>
+> Sette su otto parlano con donatori, pubblico o volontari sul territorio. L'ottava è il Personale, che gestisce le persone interne delle 21 aree. Le altre quattro funzioni interne ([acquisti logistica](acquisti-logistica), [affari legali](affari-legali), [amministrazione finanza](amministrazione-finanza), [information technology](information-technology)) ci sono, ma hanno circa un decimo dei collegamenti delle prime otto.
+>
+> Per il leader: è questa la forma che ti aspettavi? Se sì, è AIRC, e la lettura del grafo è coerente con come la racconti. Se no, vale la pena trenta minuti con chi gestisce le quattro funzioni interne, per scegliere fra "sono davvero compatte" e "mancano i documenti che descrivono cosa fanno".
+
+What changed between v3 and v5, point by point:
+- *La forma che emerge è quella di…* — abstract opener, removed. The first sentence now states the observation directly: *Quasi tutte le aree con più collegamenti nella struttura parlano con qualcuno fuori da AIRC.*
+- *dipendenze documentate* — graph jargon, replaced with *collegamenti nella struttura*.
+- *tengono le persone che lo fanno* — bad Italian, replaced with a clear sentence: *L'ottava è il Personale, che gestisce le persone interne delle 21 aree.*
+- Every named unit is now a clickable markdown link. Twelve in this decision; the reader can navigate to any of them from inside the analysis.
+- The leader-facing question is now leader-voice (*Quando guardi questa figura, riconosci la tua organizzazione?*), not agent-voice (*Dove insiste il peso operativo dell'organizzazione?*).
+- The next move is concrete and bounded (*trenta minuti con chi gestisce le quattro funzioni interne*), not aspirational.
+
+The autoresearch gate flags the v1 and v3 versions automatically: v1 fails on `plain language` (degree, centrality, edge density); v3 fails on `plain language` (dipendenze documentate) plus `linked references` (eight unit names mentioned, zero markdown links). Only v5 passes all five dimensions.
 
 ## Self-check before finalizing output
 

@@ -10,6 +10,7 @@ Run: python3 test-e2e.py
 
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -966,6 +967,94 @@ def test_graph_viewer_lang_it():
         shutil.rmtree(out_html.parent, ignore_errors=True)
 
 
+def test_graph_autoresearch_failure_modes():
+    """`autoresearch.py` is the deterministic gate that refuses bad
+    decisions. This locks in the five specific failure modes the AIRC
+    instance surfaced through five iterations of decision rewrites
+    (May 2026). For each, a minimal synthetic JSON triggers exactly
+    one dimension to fail; the clean control passes all five.
+
+    Defect-to-test: each failure mode is one a user had to flag by
+    hand before; from now on the gate catches them mechanically.
+    """
+    fixture = REPO_ROOT / "mcp-server" / "test-fixtures" / "sample-org" / "plays" / "data" / "graph-outline-2026-05-09.json"
+    autoresearch = REPO_ROOT / "skills" / "playbooks" / "graph" / "autoresearch.py"
+
+    # Load the clean play once; mutate copies of it per case.
+    clean = json.loads(fixture.read_text(encoding="utf-8"))
+
+    def run_with(decisions_patch, expect_fail_dim=None):
+        """Write a tmp JSON with patched decisions[] and run autoresearch.
+        If `expect_fail_dim` is None, expect PASS overall. Otherwise
+        expect FAIL with the named dimension failing."""
+        patched = dict(clean)
+        patched["decisions"] = decisions_patch
+        d = Path(tempfile.mkdtemp(prefix="ar-test-"))
+        try:
+            p = d / "play.json"
+            p.write_text(json.dumps(patched, ensure_ascii=False, indent=2))
+            proc = subprocess.run(
+                ["python3", str(autoresearch), "--map", str(p)],
+                capture_output=True, text=True, timeout=15,
+            )
+            out = proc.stdout + proc.stderr
+            return proc.returncode, out
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+
+    # Build a baseline good decision triple to mutate, derived from
+    # the existing fixture so it already passes recognizability +
+    # audit-grounded. Each case below changes ONE thing.
+    base = clean["decisions"]
+
+    # --- case 1: em dash in answer triggers plain-language fail ---
+    bad_emdash = json.loads(json.dumps(base))
+    bad_emdash[0]["answer"] = bad_emdash[0]["answer"] + " — bonus aside."
+    rc, out = run_with(bad_emdash, expect_fail_dim="plain language")
+    assertion("autoresearch fails on em dash in decision",
+              rc != 0 and "plain language" in out and "—" in out)
+
+    # --- case 2: rhetorical formula 'Significa X, non Y' ---
+    bad_formula = json.loads(json.dumps(base))
+    bad_formula[0]["answer"] = "Significa governance, non lavoro. " + bad_formula[0]["answer"]
+    rc, out = run_with(bad_formula, expect_fail_dim="plain language")
+    assertion("autoresearch fails on 'Significa X, non Y' formula",
+              rc != 0 and "plain language" in out)
+
+    # --- case 3: meta-rhetorical 'il grafo dichiara' ---
+    bad_meta = json.loads(json.dumps(base))
+    bad_meta[0]["answer"] = "Il grafo dichiara che le aree pesano. " + bad_meta[0]["answer"]
+    rc, out = run_with(bad_meta, expect_fail_dim="plain language")
+    assertion("autoresearch fails on 'il grafo dichiara' meta-rhetoric",
+              rc != 0 and "plain language" in out)
+
+    # --- case 4: Italian graph jargon 'dipendenze documentate' ---
+    bad_jargon = json.loads(json.dumps(base))
+    bad_jargon[0]["answer"] = "Le aree con più dipendenze documentate. " + bad_jargon[0]["answer"]
+    rc, out = run_with(bad_jargon, expect_fail_dim="plain language")
+    assertion("autoresearch fails on 'dipendenze documentate' jargon",
+              rc != 0 and "plain language" in out)
+
+    # --- case 5: node_id listed but not linked in answer ---
+    bad_unlinked = json.loads(json.dumps(base))
+    # Pick a node already in node_ids that we can strip the link to.
+    target_id = bad_unlinked[0]["node_ids"][0]
+    bad_unlinked[0]["answer"] = re.sub(
+        rf"\[([^\]]+)\]\({re.escape(target_id)}\)",
+        r"\1",  # keep the label, drop the link
+        bad_unlinked[0]["answer"],
+    )
+    rc, out = run_with(bad_unlinked, expect_fail_dim="linked references")
+    assertion("autoresearch fails when a node_id is named but not linked",
+              rc != 0 and "linked references" in out and target_id in out)
+
+    # --- case 6: clean control passes ---
+    rc, out = run_with(base)
+    assertion("autoresearch passes on the clean baseline",
+              rc == 0 and "AUTORESEARCH PASS" in out,
+              out[-300:] if rc != 0 else "")
+
+
 def test_graph_build_skips_readme_stubs():
     """`graph/build.py` walks every `<subdir>/*.md`. The public template ships
     a folder-doc `README.md` inside each org subfolder (commitments/, financials/,
@@ -1180,6 +1269,7 @@ def main():
     run_section("world-model viewer design regression", test_world_model_viewer_design_regression)
     run_section("design.inline_md (markdown in agent prose)", test_design_inline_md)
     run_section("graph viewer --lang it (chrome + About modal in Italian)", test_graph_viewer_lang_it)
+    run_section("graph autoresearch failure modes (locks 5 leaks from AIRC iteration)", test_graph_autoresearch_failure_modes)
     run_section("graph build skips README folder-doc stubs", test_graph_build_skips_readme_stubs)
     run_section("Repo-root tooling (skills_list, skill_read, lint_run, open)", test_repo_root_tooling)
     run_section("Concurrent safety", test_concurrent_safety)

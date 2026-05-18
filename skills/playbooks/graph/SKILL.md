@@ -188,9 +188,25 @@ Three additional rules specific to `graph` (because the temptation here is the s
 
 Author 3 to 5 decisions. Each:
 - `question`: the leader-facing question the decision answers (plain Italian/English, no agent-voice meta-rhetoric).
-- `answer`: the answer, ≥ 60 chars, named anchors. Inline `**bold**`, `*italic*`, and `` `code` `` render at viewer time via `design.inline_md()` — use bold sparingly for the rare label.
+- `answer`: the answer, ≥ 60 chars, named anchors. Inline markdown is rendered at viewer time via `design.inline_md()`. Use:
+  - `**bold**` for the rare label,
+  - `*italic*` for emphasis,
+  - `` `code` `` for verbatim,
+  - `[label](node-id)` for **every node mentioned by name** — internal links resolve to focus anchors and become clickable on the canvas. The `linked references` autoresearch gate fails if a node listed in `node_ids` is not also linked in the answer prose.
 - `source`: a node id or a path under `org/`, citing the part of the structure the answer anchors on.
-- `node_ids` (optional): list of node ids referenced; if provided, the audit-grounded gate verifies they all resolve.
+- `node_ids` (recommended): list of node ids referenced in this decision. The `audit-grounded` gate verifies they all resolve; the `linked references` gate verifies every one of them appears as a markdown link in the answer.
+
+### 3a. Pre-save checklist (run before saving)
+
+The autoresearch gate will catch most violations, but five mechanical checks save a render cycle. Run them on every decision before writing the JSON.
+
+1. **Em dashes — zero tolerance.** Search the question + answer for the `—` character. If present, replace with a comma, a colon, or a period. STYLE.md bans them universally; the autoresearch jargon detector flags every one.
+2. **Rhetorical formulas.** No "Significa X, non Y" / "Non X, ma Y" / "Not X, but Y" / "X isn't, it's Y" in any direction or language. These read aphoristic and obscure the actual claim. Rewrite as a single declarative sentence.
+3. **Meta-rhetorical voice.** No "il grafo dichiara", "la struttura mostra che", "the graph shows that", "what the data says". The graph does not declare; the agent reads it and the leader interprets. Use plain leader-voice questions ("dove si concentra il lavoro?", "what is missing here?").
+4. **Graph-theory jargon and repo jargon.** No *grado di centralità*, *isolate*, *topology*, *ancorato a*, *dipendenze documentate*, *edge tipizzato*. No *ingest* / *ingerita*, *playbook*, *frontmatter*, *_path*. The numbers are welcome ("78 collegamenti", "ne ha 20"); the names for those numbers are not.
+5. **Linked references.** Every node listed in `node_ids` appears at least once as `[label](node-id)` in the answer text. If you list a node and don't link it, the reader sees a name they can't click.
+
+Worked before/after examples for the same observation live in [STYLE.md → Writing decisions](../../STYLE.md). Read them when in doubt about register.
 
 ### 4. Audit
 
