@@ -38,10 +38,21 @@ from autoresearch_lib import (  # noqa: E402
 # Playbook-specific deterministic checks
 # ----------------------------------------------------------------------
 
-# Wardley vocabulary that should not appear in the decisions text — when
-# it does, the agent has paraphrased rather than translated.
+# Vocabulary that should not appear in the decisions text. Two groups.
+#
+# (a) Wardley primitive names paraphrased into prose. The framework
+#     stage labels (Genesis / Custom / Product / Commodity) are fine
+#     when they are the label of a UI element; phrases like "genesis
+#     stage" or "commodity tier" embedded in prose are not.
+#
+# (b) Universal style bans from STYLE.md (added 2026-05-18 after the
+#     AIRC graph-decision iteration): em dashes, "Significa X, non Y"
+#     / "Not X, but Y" formulas, meta-rhetorical "the data says /
+#     la mappa dichiara" voice, repo and pipeline jargon leaking
+#     into user prose.
 WARDLEY_JARGON = re.compile(
     "|".join([
+        # --- Wardley internals ---
         r"\bevolution\s+0\.\d+",
         r"\bvisibility\s+0\.\d+",
         r"\bevolution_target\b",
@@ -49,6 +60,24 @@ WARDLEY_JARGON = re.compile(
         r"\bgenesis\s+stage\b",
         r"\bcommodity\s+tier\b",
         r"\bproduct\s+tier\b",
+        # --- meta-rhetorical (the data speaks) ---
+        r"\b(?:la\s+)?(?:mappa|catena|struttura)\s+(?:dichiar[ao]|mostr[ao]|dic[ea]|racconta)\b",
+        r"\bthe\s+(?:map|chain|structure)\s+(?:declares?|says?|knows?|shows?\s+us)\b",
+        # --- rhetorical formulas (in any language) ---
+        r"\bsignifica\s+\w+(?:\s+\w+){0,2},\s+non\s+\w+",
+        r"\bè\s+\w+(?:\s+\w+){0,2},\s+non\s+\w+",
+        r"\bnot\s+\w+(?:\s+\w+){0,2},\s+but\s+\w+",
+        r"\bisn'?t\s+\w+(?:\s+\w+){0,2},\s+it'?s\s+\w+",
+        # --- repo / pipeline jargon leaking into prose ---
+        r"\bpassata\s+di\s+ingest\b",
+        r"\bingerit[oaie]\b",
+        r"\bplaybook\b",
+        r"\bfrontmatter\b",
+        r"\b_path\b",
+        r"\b_structure_id\b",
+        r"\b_structure_evidence\b",
+        # --- punctuation banned by STYLE.md ---
+        r"—",
     ]),
     re.IGNORECASE,
 )

@@ -807,92 +807,148 @@ def _build_nodes_index(map_data: dict) -> dict[str, dict]:
     return index
 
 
-def _build_modal_html(map_data: dict, org_name: str, dated: str) -> str:
+def _build_modal_html(map_data: dict, org_name: str, dated: str, *, S: dict) -> str:
     decisions = map_data.get("decisions") or []
     if not decisions:
         return ""
     nodes_idx = _build_nodes_index(map_data)
+    node_ids_set = set(nodes_idx.keys())
+
+    # Internal-node markdown links written inside decision answers
+    # (`[label](node-id)`) become focus anchors at render time.
+    def _link_resolver(target: str) -> str | None:
+        return target if target in node_ids_set else None
+
     items = []
     for dec in decisions:
         question = (dec.get("question") or "").strip()
         answer_paragraphs = [
             p.strip() for p in (dec.get("answer") or "").split("\n\n") if p.strip()
         ]
-        node_ids = dec.get("node_ids") or []
+        # Per-decision list. Renamed from the corpus-wide `node_ids`
+        # used by the link_resolver closure (graph viewer pattern).
+        dec_node_ids = dec.get("node_ids") or []
         anchor_html = ""
-        if node_ids:
-            first = node_ids[0]
+        if dec_node_ids:
+            first = dec_node_ids[0]
             label = (nodes_idx.get(first) or {}).get("label") or first
             anchor_html = (
                 f'<span class="anchor" data-focus="{escape(first)}">'
-                f'show <em>{escape(label)}</em> on the map →'
+                f'{S["show_on_map"].format(label=escape(label))}'
                 f'</span>'
             )
         source = (dec.get("source") or "").strip()
         source_html = f'<p class="source">{escape(source)}</p>' if source else ""
-        ps_html = "".join(f"<p>{inline_md(p)}</p>" for p in answer_paragraphs)
+        ps_html = "".join(
+            f"<p>{inline_md(p, link_resolver=_link_resolver)}</p>"
+            for p in answer_paragraphs
+        )
         items.append(
             f'<li><h3>{escape(question)}</h3>{ps_html}{source_html}{anchor_html}</li>'
         )
     n = len(decisions)
-    headline = map_data.get("_headline") or (
-        f"{n} decision{'s' if n != 1 else ''} surface{'s' if n == 1 else ''} from the value map."
-    )
+    if n == 1:
+        default_headline = S["headline_one"]
+    else:
+        default_headline = S["headline_n"].format(n=n)
+    headline = map_data.get("_headline") or default_headline
     lede_text = map_data.get("_lede") or ""
     return app_pure_modal_html(
         headline=headline,
         org_name=org_name,
         dated=dated,
         decisions_html="".join(items),
-        kicker="Reading the chain",
+        kicker=S["analysis_kicker"],
         lede=escape(lede_text) if lede_text else "",
     )
 
 
 # ----------------------------------------------------------------------
-# render_html
+# Localized UI strings — same pattern as graph and ai-exposure.
+# Decisions, source citations, and any prose written by the agent stay
+# in whatever language the agent wrote them; this dict is for the
+# chrome + About modal scaffolding only.
 # ----------------------------------------------------------------------
-def render_html(map_data: dict, *, org_name: str = "") -> str:
-    inner, H = render_svg_inner(map_data, interactive=True)
-    anchor = map_data.get("_anchor") or {}
-    anchor_label = anchor.get("title") or anchor.get("label") or anchor.get("id") or ""
-    # The dateline org slot. Falls back to JSON `_org` if the caller
-    # didn't pass --org-name. Generic "Value map" as last resort so
-    # the chrome never collapses.
-    if not org_name:
-        org_name = map_data.get("_org") or "Value map"
-    dated = map_data.get("_dated", "—")
-    nodes_index = _build_nodes_index(map_data)
-    nodes_json = json.dumps(nodes_index, ensure_ascii=False).replace("</", "<\\/")
-    modal_html = _build_modal_html(map_data, org_name, dated)
-    has_decisions = bool(map_data.get("decisions"))
+STRINGS = {
+    "en": {
+        "analysis_btn": "Analysis",
+        "help_btn_label": "What is this map?",
+        "analysis_kicker": "Reading the chain",
+        "show_on_map": "show <em>{label}</em> on the map →",
+        "headline_n": "{n} decisions surface from the value map.",
+        "headline_one": "1 decision surfaces from the value map.",
+        "what_anchored": "the chain anchored on <em>{label}</em>",
+        "what_generic": "the chain",
+        "default_org": "Value map",
+        "about_lede": (
+            "A read of the chain that fulfills this user need. "
+            "Every component placed by how mature it is and how visible "
+            "it is to the user, with the direction AI is pushing it."
+        ),
+    },
+    "it": {
+        "analysis_btn": "Analisi",
+        "help_btn_label": "Cos'è questa mappa?",
+        "analysis_kicker": "Lettura della catena del valore",
+        "show_on_map": "mostra <em>{label}</em> sulla mappa →",
+        "headline_n": "{n} decisioni emergono dalla mappa del valore.",
+        "headline_one": "1 decisione emerge dalla mappa del valore.",
+        "what_anchored": "la catena ancorata su <em>{label}</em>",
+        "what_generic": "la catena",
+        "default_org": "Mappa del valore",
+        "about_lede": (
+            "Una lettura della catena che soddisfa questo bisogno utente. "
+            "Ogni componente è posizionato per quanto è maturo e per quanto è "
+            "visibile all'utente, con la direzione verso cui l'AI lo sta spingendo."
+        ),
+    },
+}
 
-    title = f"value-map · {anchor_label}" if anchor_label else "value-map"
-    what_html = (
-        f"the chain anchored on <em>{escape(anchor_label)}</em>"
-        if anchor_label
-        else "the chain"
-    )
 
-    # About modal — plain-language explanation of the four stages and
-    # the visual system. Same shape as the other viewers' "?" content.
-    n_components = len(map_data.get("components") or [])
-    about_body = """
+def _build_about_body(lang: str) -> str:
+    """About-modal body for the value-map viewer. Hand-written for each
+    language. No em dashes, no 'X, non Y' rhetorical formulas (STYLE.md
+    bans both in user-visible prose)."""
+    if lang == "it":
+        return """
+  <p>La figura qui sopra è una <strong>mappa del valore</strong> della catena che soddisfa un bisogno utente. Si legge dall'alto verso il basso: in cima sta l'utente, sotto i pezzi della catena che gli consegnano valore.</p>
+
+  <h2>I quattro stadi di evoluzione</h2>
+  <p><strong>Genesis, territorio nuovo.</strong> Nessuno sa ancora come si fa bene. Ogni organizzazione lo inventa da zero, il lavoro è esplorativo, il costo di sbagliare è soprattutto tempo di ricerca.</p>
+  <p><strong>Custom, costruito in casa.</strong> Ognuno fa la sua versione. La competenza esiste, ma è artigianato: ogni implementazione è su misura, richiede una persona senior, e non è riusabile altrove.</p>
+  <p><strong>Prodotto, comprabile.</strong> Esistono pattern e fornitori. Si può assumere chi l'ha già fatto, oppure comprarlo come prodotto. Le diverse organizzazioni producono output comparabili.</p>
+  <p><strong>Commodity, standard di mercato.</strong> Indistinguibile fra fornitori. Il valore di farlo in casa è sceso quasi a zero; la mossa razionale è comprare la versione più economica e affidabile.</p>
+  <p>Nel tempo ogni componente scivola verso destra. Quello che era custom ieri diventa prodotto oggi; quello che è prodotto oggi diventa standard di mercato domani. La mappa dice dove ogni componente sta <em>ora</em>, e una freccia tratteggiata coral segnala dove l'AI lo sta spingendo.</p>
+
+  <h2>I simboli</h2>
+  <p><strong>● Stakeholder</strong>: le persone che la catena serve in ultima istanza (disco pieno nero in cima).</p>
+  <p><strong>◇ Valore (bisogno utente)</strong>: la promessa che la catena deve consegnare, espressa come bisogno (rombo vuoto).</p>
+  <p><strong>○ Nodo (pezzo della catena)</strong>: un componente che contribuisce a consegnare il valore (cerchio vuoto, colorato per stadio).</p>
+  <p><strong>● Nuovo / emergente</strong>: un pezzo che non esiste ancora in questa forma; nominato in voce condizionale (pieno terracotta).</p>
+  <p><strong>--→ Dove l'AI sta spingendo</strong>: una freccia tratteggiata coral su un componente indica la direzione della pressione: verso destra significa "diventa più standardizzato, più in fretta".</p>
+
+  <h2>Cosa vuol dire l'asse verticale</h2>
+  <p>L'asse verticale è la <strong>visibilità</strong>: i componenti in alto sono visibili all'utente (modellano direttamente la sua esperienza); quelli in basso sono infrastruttura invisibile (necessari, ma l'utente non li vede mai).</p>
+
+  <h2>Da dove viene</h2>
+  <p>Il framework è di Simon Wardley, dalla sua pratica di value-mapping. Click su qualunque componente per la motivazione del posizionamento e le citazioni alle fonti.</p>
+"""
+    return """
   <p>The picture above is a <strong>value-mapping</strong> of the chain that fulfills one user need. Read it bottom-up: the user sits at the top, the parts of the chain that deliver value sit below.</p>
 
   <h2>The four evolution stages</h2>
-  <p><strong>Genesis — new territory.</strong> Nobody knows yet how to do this well. Each shop figures it out from scratch, the work is exploratory, and the cost of getting it wrong is mostly research time.</p>
-  <p><strong>Custom — built in-house.</strong> Every shop builds its own version. The skill exists, but it's craft: each implementation is bespoke, takes a senior person, and isn't reusable across organisations.</p>
-  <p><strong>Product — buyable.</strong> Patterns and vendors exist. You can hire someone who's done it before, or you can purchase it as a product. Different shops produce roughly comparable outputs.</p>
-  <p><strong>Commodity — market standard.</strong> Indistinguishable across providers. The value of doing it in-house has dropped to near zero; the rational move is to buy the cheapest reliable version.</p>
-  <p>Over time, every component drifts rightward — what was custom yesterday becomes a product today, and what was a product today becomes market-standard tomorrow. The map says where each component sits <em>now</em>, and a dashed coral arrow marks where AI is pushing it.</p>
+  <p><strong>Genesis, new territory.</strong> Nobody knows yet how to do this well. Each shop figures it out from scratch, the work is exploratory, and the cost of getting it wrong is mostly research time.</p>
+  <p><strong>Custom, built in-house.</strong> Every shop builds its own version. The skill exists, but it's craft: each implementation is bespoke, takes a senior person, and isn't reusable across organisations.</p>
+  <p><strong>Product, buyable.</strong> Patterns and vendors exist. You can hire someone who's done it before, or you can purchase it as a product. Different shops produce roughly comparable outputs.</p>
+  <p><strong>Commodity, market standard.</strong> Indistinguishable across providers. The value of doing it in-house has dropped to near zero; the rational move is to buy the cheapest reliable version.</p>
+  <p>Over time, every component drifts rightward. What was custom yesterday becomes a product today, and what was a product today becomes market-standard tomorrow. The map says where each component sits <em>now</em>, and a dashed coral arrow marks where AI is pushing it.</p>
 
   <h2>The visual system</h2>
-  <p><strong>● Stakeholder</strong> — the people the chain ultimately serves (filled black disk at the top).</p>
-  <p><strong>◇ Value (user need)</strong> — the promise the chain has to deliver, stated as a need (outline diamond).</p>
-  <p><strong>○ Node (part of the chain)</strong> — a piece of the chain that contributes to delivering the value (outline circle, coloured by stage).</p>
-  <p><strong>● New / emerging</strong> — a piece that doesn't yet exist as such; named in conditional voice (terracotta fill).</p>
-  <p><strong>--→ Where AI is pushing</strong> — a dashed coral arrow on a component shows the direction of pressure: rightward = becoming standardised, faster.</p>
+  <p><strong>● Stakeholder</strong>: the people the chain ultimately serves (filled black disk at the top).</p>
+  <p><strong>◇ Value (user need)</strong>: the promise the chain has to deliver, stated as a need (outline diamond).</p>
+  <p><strong>○ Node (part of the chain)</strong>: a piece of the chain that contributes to delivering the value (outline circle, coloured by stage).</p>
+  <p><strong>● New / emerging</strong>: a piece that doesn't yet exist as such; named in conditional voice (terracotta fill).</p>
+  <p><strong>--→ Where AI is pushing</strong>: a dashed coral arrow on a component shows the direction of pressure: rightward means "becoming standardised, faster".</p>
 
   <h2>What the Y axis means</h2>
   <p>The vertical axis is <strong>visibility</strong>: components at the top are visible to the user (they shape what the user actually experiences); components at the bottom are invisible plumbing (necessary, but the user never sees them).</p>
@@ -900,14 +956,46 @@ def render_html(map_data: dict, *, org_name: str = "") -> str:
   <h2>Where it comes from</h2>
   <p>The framework is from Simon Wardley's value-mapping practice. Click any component for its placement rationale and the cited evidence behind it.</p>
 """
+
+
+# ----------------------------------------------------------------------
+# render_html
+# ----------------------------------------------------------------------
+def render_html(map_data: dict, *, org_name: str = "", lang: str = "en") -> str:
+    S = STRINGS.get(lang, STRINGS["en"])
+    inner, H = render_svg_inner(map_data, interactive=True)
+    anchor = map_data.get("_anchor") or {}
+    anchor_label = anchor.get("title") or anchor.get("label") or anchor.get("id") or ""
+    # The dateline org slot. Falls back to JSON `_org` if the caller
+    # didn't pass --org-name. Generic "Value map" as last resort so
+    # the chrome never collapses.
+    if not org_name:
+        org_name = map_data.get("_org") or S["default_org"]
+    # Fallback to today's date so the chrome never renders the literal
+    # em dash placeholder STYLE.md bans.
+    from datetime import date as _date
+    dated = map_data.get("_dated") or _date.today().isoformat()
+    nodes_index = _build_nodes_index(map_data)
+    nodes_json = json.dumps(nodes_index, ensure_ascii=False).replace("</", "<\\/")
+    modal_html = _build_modal_html(map_data, org_name, dated, S=S)
+    has_decisions = bool(map_data.get("decisions"))
+
+    title = f"value-map · {anchor_label}" if anchor_label else "value-map"
+    what_html = (
+        S["what_anchored"].format(label=escape(anchor_label))
+        if anchor_label
+        else S["what_generic"]
+    )
+
+    # About modal — plain-language explanation of the four stages and
+    # the visual system. Same shape as the other viewers' "?" content,
+    # localized via the STRINGS dict.
+    n_components = len(map_data.get("components") or [])
+    about_body = _build_about_body(lang)
     about_modal_html_str = app_pure_about_modal_html(
         kicker=f"№ {n_components:02d} · value map",
         headline=anchor_label or title,
-        lede=(
-            "A read of the chain that fulfills this user need — "
-            "every component placed by how mature it is and how visible "
-            "it is to the user, with the direction AI is pushing it."
-        ),
+        lede=S["about_lede"],
         body_html=about_body,
     )
 
@@ -915,7 +1003,13 @@ def render_html(map_data: dict, *, org_name: str = "") -> str:
         head_meta=app_pure_head_meta(title),
         css=app_pure_css(layout="canvas") + EXTRA_CSS,
         dateline=app_pure_dateline_html(org_name, what=what_html),
-        top_right=app_pure_top_right_html(dated, show_analysis=has_decisions, show_help=True),
+        top_right=app_pure_top_right_html(
+            dated,
+            show_analysis=has_decisions,
+            show_help=True,
+            analysis_label=S["analysis_btn"],
+            help_label=S["help_btn_label"],
+        ),
         inspect_aside=app_pure_inspect_aside_html(),
         modal_html=(modal_html or "") + about_modal_html_str,
         W=W, H=H,
@@ -937,10 +1031,12 @@ def main() -> int:
     parser.add_argument("--html", required=True, help="HTML out")
     parser.add_argument("--svg", help="standalone SVG out (optional, for markdown embedding)")
     parser.add_argument("--org-name", default="", help="Organization name for the dateline (default: JSON `_org`, else 'Value map')")
+    parser.add_argument("--lang", default="en", choices=["en", "it"],
+                        help="Language for chrome + About modal copy. Default en.")
     args = parser.parse_args()
 
     map_data = json.loads(Path(args.map).read_text(encoding="utf-8"))
-    html = render_html(map_data, org_name=args.org_name)
+    html = render_html(map_data, org_name=args.org_name, lang=args.lang)
     Path(args.html).write_text(html, encoding="utf-8")
     print(f"Wrote {Path(args.html).resolve()} ({len(html):,} bytes)")
     if args.svg:
