@@ -94,38 +94,44 @@ def stage_color(evolution: float) -> str:
     return {"genesis": GENESIS, "custom": CUSTOM, "product": PRODUCT, "commodity": COMMODITY}[stage_name(evolution)]
 
 
-def _normalize_end_users(raw) -> list[str]:
-    """Coerce the user-facing end_user field to a list of label strings.
+def _normalize_end_users(raw) -> list[dict]:
+    """Coerce the user-facing end_user field to a list of dicts with
+    at minimum a `label`, optionally a `description`.
 
-    Three legitimate input shapes:
-      - str: a single label, e.g. "Ricercatori finanziati".
-      - list[str]: multiple labels.
-      - dict {id, label}: a single user with extra metadata; the
-        renderer only needs the human-readable label.
+    Four legitimate input shapes:
+      - str: a single label.
+      - list[str]: labels only.
+      - dict {id, label, description?}: a single user.
+      - list[dict]: multiple users with metadata.
 
-    A dict was a real defect-to-test on the first AIRC value-map
-    render (2026-05-18): the agent set `end_user = {'id': 'c21',
-    'label': '...'}` and the viewer, treating dicts as iterables of
-    keys, drew two black disks labelled "id" and "label" at the top
-    of the chain. Coercing here makes the bug impossible.
+    Returns always `[{label, description?}]`. Downstream rendering
+    can ignore `description` if absent.
     """
     if raw is None:
         return []
     if isinstance(raw, str):
-        return [raw] if raw else []
+        return [{"label": raw}] if raw else []
     if isinstance(raw, dict):
         label = raw.get("label") or raw.get("id") or ""
-        return [label] if label else []
+        if not label:
+            return []
+        out = {"label": label}
+        if raw.get("description"):
+            out["description"] = raw["description"]
+        return [out]
     if isinstance(raw, list):
-        out: list[str] = []
+        out_list: list[dict] = []
         for item in raw:
             if isinstance(item, str) and item:
-                out.append(item)
+                out_list.append({"label": item})
             elif isinstance(item, dict):
                 lab = item.get("label") or item.get("id") or ""
                 if lab:
-                    out.append(lab)
-        return out
+                    e = {"label": lab}
+                    if item.get("description"):
+                        e["description"] = item["description"]
+                    out_list.append(e)
+        return out_list
     return []
 
 
@@ -142,10 +148,10 @@ def build_positions(map_data: dict) -> tuple[dict[str, dict], list[str], int]:
 
     # End user(s) at the top, evenly spread
     user_ids: list[str] = []
-    for i, label in enumerate(end_users):
+    for i, eu in enumerate(end_users):
         uid = f"__user_{i}__"
         x = PAD["left"] + plot_w * (0.5 if len(end_users) == 1 else i / max(1, len(end_users) - 1) * 0.8 + 0.1)
-        positions[uid] = {"label": label, "px": x, "py": USER_NODE_Y, "_kind": "user"}
+        positions[uid] = {"label": eu["label"], "px": x, "py": USER_NODE_Y, "_kind": "user"}
         user_ids.append(uid)
 
     # New end users — extra circles, coral filled, placed slightly
@@ -432,15 +438,30 @@ def render_svg_inner(map_data: dict, interactive: bool) -> tuple[str, int]:
                 f'stroke="{ACCENT}" stroke-width="1.2" stroke-dasharray="3,3" '
                 f'marker-end="url(#arrow-accent)"/>'
             )
-        # Wrap label at 22 chars, max 2 lines.
+        # Wrap label at LABEL_TRUNCATE chars, max 2 lines, strict
+        # left-to-right. The old loop went BACK to line1 after a word
+        # had spilled to line2 (because there was still room in
+        # line1), which scrambled the reading order: "Intelligence di
+        # portafoglio della ricerca" rendered as "Intelligence di
+        # della" / "portafoglio ricerca". Once line2 has accepted a
+        # word, line1 is closed.
         label = truncate(p["label"], 44)
         words = label.split()
         line1, line2 = "", ""
+        on_line2 = False
         for w in words:
-            test = (line1 + " " + w).strip()
+            target = "line2" if on_line2 else "line1"
+            current = line2 if on_line2 else line1
+            test = (current + " " + w).strip()
             if len(test) <= LABEL_TRUNCATE:
-                line1 = test
+                if on_line2:
+                    line2 = test
+                else:
+                    line1 = test
             else:
+                if on_line2:
+                    break
+                on_line2 = True
                 test2 = (line2 + " " + w).strip()
                 if len(test2) <= LABEL_TRUNCATE:
                     line2 = test2
@@ -870,9 +891,12 @@ def _build_nodes_index(map_data: dict) -> dict[str, dict]:
 
     index: dict[str, dict] = {}
     end_users = _normalize_end_users(map_data.get("end_user"))
-    for i, label in enumerate(end_users):
+    for i, eu in enumerate(end_users):
         uid = f"__user_{i}__"
-        index[uid] = {"id": uid, "_kind": "user", "label": label}
+        node = {"id": uid, "_kind": "user", "label": eu["label"]}
+        if eu.get("description"):
+            node["blurb_html"] = _render_blurb(eu["description"])
+        index[uid] = node
     for j, eu in enumerate(map_data.get("new_end_users") or []):
         nuid = f"__new_user_{j}__"
         index[nuid] = {

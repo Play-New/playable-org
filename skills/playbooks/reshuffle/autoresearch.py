@@ -38,6 +38,7 @@ from autoresearch_lib import (  # noqa: E402
 # decisions, the leader is being asked to read jargon.
 RESHUFFLE_JARGON = re.compile(
     "|".join([
+        # --- Reshuffle framework internals ---
         r"\bsee[-\s]saw\b",
         r"\bflywheel\b",
         r"\bcoordination\s+paradox\b",
@@ -47,6 +48,20 @@ RESHUFFLE_JARGON = re.compile(
         r"\brebundling\b",
         r"\bconstraint\s+distribution\b",
         r"\bdissolves?\s+(the\s+)?constraint\b",
+        # --- Universal STYLE.md bans (added 2026-05-18) ---
+        r"\b(?:il\s+)?(?:dato|i\s+dati|il\s+modello|il\s+campione|il\s+bundle)\s+(?:dice|dichiara|mostra|racconta)\b",
+        r"\bthe\s+(?:data|model|sample|bundle)\s+(?:declares?|says?|knows?|shows?\s+us)\b",
+        r"\bsignifica\s+\w+(?:\s+\w+){0,2},\s+non\s+\w+",
+        r"\bè\s+\w+(?:\s+\w+){0,2},\s+non\s+\w+",
+        r"\bnot\s+\w+(?:\s+\w+){0,2},\s+but\s+\w+",
+        r"\bisn'?t\s+\w+(?:\s+\w+){0,2},\s+it'?s\s+\w+",
+        r"\bpassata\s+di\s+ingest\b",
+        r"\bingerit[oaie]\b",
+        r"\bplaybook\b",
+        r"\bfrontmatter\b",
+        r"\b_path\b",
+        r"\b_structure_id\b",
+        r"—",
     ]),
     re.IGNORECASE,
 )

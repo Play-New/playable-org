@@ -908,13 +908,15 @@ def test_value_map_end_user_normalization():
     proc = subprocess.run(["python3", "-c", code], capture_output=True, text=True, timeout=10)
     assertion("_normalize_end_users script runs", proc.returncode == 0, proc.stderr[:300])
     lines = proc.stdout.strip().splitlines()
-    assertion("normalize str -> list[str]", lines[0] == "['a']", lines[0])
-    assertion("normalize list[str] passes through", lines[1] == "['a', 'b']", lines[1])
-    assertion("normalize dict {id,label} -> ['label']",
-              lines[2] == "['Ricercatori finanziati']", lines[2])
-    assertion("normalize dict {id only} -> [id]", lines[3] == "['only-id']", lines[3])
-    assertion("normalize list[dict] -> list[labels]",
-              lines[4] == "['x', 'y']", lines[4])
+    assertion("normalize str -> [{label}]", lines[0] == "[{'label': 'a'}]", lines[0])
+    assertion("normalize list[str] -> [{label},...]",
+              lines[1] == "[{'label': 'a'}, {'label': 'b'}]", lines[1])
+    assertion("normalize dict {id,label} -> [{label}]",
+              lines[2] == "[{'label': 'Ricercatori finanziati'}]", lines[2])
+    assertion("normalize dict {id only} -> [{label:id}]",
+              lines[3] == "[{'label': 'only-id'}]", lines[3])
+    assertion("normalize list[dict] -> list[{label}]",
+              lines[4] == "[{'label': 'x'}, {'label': 'y'}]", lines[4])
     assertion("normalize None -> []", lines[5] == "[]", lines[5])
     assertion("normalize empty string -> []", lines[6] == "[]", lines[6])
 
