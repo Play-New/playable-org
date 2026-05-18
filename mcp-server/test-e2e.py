@@ -883,6 +883,42 @@ def test_world_model_viewer_design_regression():
               len(unfilled) == 0, f"found: {unfilled[:5]}")
 
 
+def test_value_map_end_user_normalization():
+    """`value-map/viewer.py` accepts `end_user` as a string, a list of
+    strings, or a single dict {id, label}. A dict naively iterated
+    yields the dict's KEYS as labels — on the first AIRC value-map
+    render (2026-05-18) the agent passed `{'id': 'c21', 'label':
+    'Ricercatori finanziati'}` and the viewer drew two black disks
+    labelled 'id' and 'label' at the top of the chain.
+
+    `_normalize_end_users` coerces every accepted shape to a list of
+    label strings. This test pins each shape so the bug stays fixed.
+    """
+    skills_path = REPO_ROOT / "skills" / "playbooks" / "value-map"
+    code = (
+        "import sys; sys.path.insert(0, %r); from viewer import _normalize_end_users as N;"
+        "print(N('a'));"
+        "print(N(['a','b']));"
+        "print(N({'id': 'c21', 'label': 'Ricercatori finanziati'}));"
+        "print(N({'id': 'only-id'}));"
+        "print(N([{'label':'x'},{'id':'y'}]));"
+        "print(N(None));"
+        "print(N(''));"
+    ) % str(skills_path)
+    proc = subprocess.run(["python3", "-c", code], capture_output=True, text=True, timeout=10)
+    assertion("_normalize_end_users script runs", proc.returncode == 0, proc.stderr[:300])
+    lines = proc.stdout.strip().splitlines()
+    assertion("normalize str -> list[str]", lines[0] == "['a']", lines[0])
+    assertion("normalize list[str] passes through", lines[1] == "['a', 'b']", lines[1])
+    assertion("normalize dict {id,label} -> ['label']",
+              lines[2] == "['Ricercatori finanziati']", lines[2])
+    assertion("normalize dict {id only} -> [id]", lines[3] == "['only-id']", lines[3])
+    assertion("normalize list[dict] -> list[labels]",
+              lines[4] == "['x', 'y']", lines[4])
+    assertion("normalize None -> []", lines[5] == "[]", lines[5])
+    assertion("normalize empty string -> []", lines[6] == "[]", lines[6])
+
+
 def test_design_inline_md():
     """`design.inline_md(s)` is the single helper every viewer uses to render
     agent-authored prose (decision answers, rebundle narrations, area notes).
@@ -1267,6 +1303,7 @@ def main():
     run_section("value-map viewer design regression", test_value_map_viewer_design_regression)
     run_section("reshuffle viewer design regression", test_reshuffle_viewer_design_regression)
     run_section("world-model viewer design regression", test_world_model_viewer_design_regression)
+    run_section("value-map end_user normalization (dict / str / list)", test_value_map_end_user_normalization)
     run_section("design.inline_md (markdown in agent prose)", test_design_inline_md)
     run_section("graph viewer --lang it (chrome + About modal in Italian)", test_graph_viewer_lang_it)
     run_section("graph autoresearch failure modes (locks 5 leaks from AIRC iteration)", test_graph_autoresearch_failure_modes)

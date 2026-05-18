@@ -94,10 +94,43 @@ def stage_color(evolution: float) -> str:
     return {"genesis": GENESIS, "custom": CUSTOM, "product": PRODUCT, "commodity": COMMODITY}[stage_name(evolution)]
 
 
+def _normalize_end_users(raw) -> list[str]:
+    """Coerce the user-facing end_user field to a list of label strings.
+
+    Three legitimate input shapes:
+      - str: a single label, e.g. "Ricercatori finanziati".
+      - list[str]: multiple labels.
+      - dict {id, label}: a single user with extra metadata; the
+        renderer only needs the human-readable label.
+
+    A dict was a real defect-to-test on the first AIRC value-map
+    render (2026-05-18): the agent set `end_user = {'id': 'c21',
+    'label': '...'}` and the viewer, treating dicts as iterables of
+    keys, drew two black disks labelled "id" and "label" at the top
+    of the chain. Coercing here makes the bug impossible.
+    """
+    if raw is None:
+        return []
+    if isinstance(raw, str):
+        return [raw] if raw else []
+    if isinstance(raw, dict):
+        label = raw.get("label") or raw.get("id") or ""
+        return [label] if label else []
+    if isinstance(raw, list):
+        out: list[str] = []
+        for item in raw:
+            if isinstance(item, str) and item:
+                out.append(item)
+            elif isinstance(item, dict):
+                lab = item.get("label") or item.get("id") or ""
+                if lab:
+                    out.append(lab)
+        return out
+    return []
+
+
 def build_positions(map_data: dict) -> tuple[dict[str, dict], list[str], int]:
-    end_users = map_data["end_user"]
-    if isinstance(end_users, str):
-        end_users = [end_users] if end_users else []
+    end_users = _normalize_end_users(map_data.get("end_user"))
 
     anchors = map_data["anchors"]
     components = map_data["components"]
@@ -285,9 +318,7 @@ def render_svg_inner(map_data: dict, interactive: bool) -> tuple[str, int]:
     # should always render; we infer those edges here so the value-map
     # is connected even if the agent forgot them.
     edges = list(map_data.get("edges") or [])
-    end_users = map_data["end_user"]
-    if isinstance(end_users, str):
-        end_users = [end_users] if end_users else []
+    end_users = _normalize_end_users(map_data.get("end_user"))
     components = map_data.get("components") or []
     anchors = map_data.get("anchors") or []
 
@@ -787,9 +818,7 @@ HTML_TEMPLATE = """<!doctype html>
 # ----------------------------------------------------------------------
 def _build_nodes_index(map_data: dict) -> dict[str, dict]:
     index: dict[str, dict] = {}
-    end_users = map_data.get("end_user") or []
-    if isinstance(end_users, str):
-        end_users = [end_users] if end_users else []
+    end_users = _normalize_end_users(map_data.get("end_user"))
     for i, label in enumerate(end_users):
         uid = f"__user_{i}__"
         index[uid] = {"id": uid, "_kind": "user", "label": label}
