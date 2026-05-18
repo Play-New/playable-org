@@ -2022,6 +2022,27 @@ body {{
 }}
 .decisions .anchor:hover {{ color: var(--ink); border-bottom-color: var(--ink); }}
 .decisions .anchor em {{ font-style: normal; color: var(--ink); font-weight: 500; }}
+/* Override for inline <a class="anchor"> emitted by inline_md() inside
+   decision answer paragraphs. The rule above was sized for the
+   "show on canvas →" <span>, italic and 12px; an <a> with the same
+   class also got the border-bottom hairline AND the browser's default
+   underline, producing a visible double line. Reset text-decoration,
+   match the surrounding prose register (not italic, inherit size),
+   keep the single hairline that signals "clickable". */
+.decisions p a.anchor {{
+  display: inline;
+  font-size: inherit;
+  font-style: normal;
+  color: var(--ink-60);
+  text-decoration: none;
+  border-bottom: 0.5px solid var(--ink-25);
+  padding-bottom: 0;
+  cursor: pointer;
+}}
+.decisions p a.anchor:hover {{
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}}
 .modal-foot {{
   margin-top: 18px;
   padding-top: 14px;
