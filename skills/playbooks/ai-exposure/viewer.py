@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-ai-exposure / viewer.py — Generate a static HTML viewer for match results.
+ai-exposure / viewer.py: Generate a static HTML viewer for match results.
 
 Visual style inspired by Anthropic's Job Explorer (anthropic.com/economic-index).
-Each activity is a card with a grid of small colored squares — one square per
-top-K match — colored by classification.
+Each activity is a card with a grid of small colored squares: one square per
+top-K match: colored by classification.
 
 Output: a single self-contained HTML file (vanilla HTML/CSS/JS, no external deps).
 
@@ -21,7 +21,7 @@ Without it, only id is shown on each card.
 
 The optional --task-translations file is a JSON dict {english_task: translated_task}
 that lets the viewer display O*NET task names in the target UI language.
-Translations can be produced by any pipeline (manual, LLM-assisted, MT) — the
+Translations can be produced by any pipeline (manual, LLM-assisted, MT): the
 viewer just consumes the dict.
 
 Color scheme per match:
@@ -40,7 +40,7 @@ from html import escape
 from pathlib import Path
 from typing import Any
 
-# Shared App-pure shell — palette, body, mobile baseline, chrome
+# Shared App-pure shell: palette, body, mobile baseline, chrome
 # helpers, modal, favicon, font. The viewer composes on top.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from design import (  # noqa: E402
@@ -56,7 +56,7 @@ from design import (  # noqa: E402
 
 
 EXTRA_CSS = """
-/* ai-exposure viewer — App-pure scroll-on-paper. The shared shell in
+/* ai-exposure viewer: App-pure scroll-on-paper. The shared shell in
    skills/design.py provides palette, typography, mobile baseline,
    dateline + Analysis CTA + modal + colophon + safe-area + favicon.
    This file adds only the playbook-specific viz: heatmap squares
@@ -64,7 +64,7 @@ EXTRA_CSS = """
    activity cards, popover-on-click, and the bottom legend. */
 
 :root {
-  /* Category colours — ai-exposure's four levels mapped onto the
+  /* Category colours: ai-exposure's four levels mapped onto the
      Carta sbiadita data-viz palette (sage / lilac / slate / sand). */
   --automated: var(--k-activity);   /* sage  · mostly automated */
   --augmented: var(--k-stakeholder);/* lilac · mostly augmented */
@@ -73,7 +73,7 @@ EXTRA_CSS = """
   --low-conf:  var(--ink-25);
 }
 
-/* Filter row — sits directly below the chrome (dateline + ? +
+/* Filter row: sits directly below the chrome (dateline + ? +
    Analysis CTA) and above the dashboard. Carries the unit pills
    and the live "N of M activities" counter on the right. */
 .filter-row {
@@ -94,7 +94,7 @@ EXTRA_CSS = """
   white-space: nowrap;
 }
 
-/* Dashboard — full viewport width, fills the rest of the screen
+/* Dashboard: full viewport width, fills the rest of the screen
    with activity cards. The "?" popover holds the explanatory
    chrome. */
 .dashboard {
@@ -110,7 +110,7 @@ EXTRA_CSS = """
     padding: 0 14px;
     gap: 8px;
   }
-  /* Pills scroll horizontally on narrow viewports — small chevron
+  /* Pills scroll horizontally on narrow viewports: small chevron
      would help but the system scrollbar is enough as a primer. */
   .filter-row .filter-pills {
     overflow-x: auto;
@@ -123,7 +123,7 @@ EXTRA_CSS = """
   .dashboard { padding: 0 14px max(80px, calc(env(safe-area-inset-bottom) + 60px)); }
 }
 
-/* Legend — small inline strip under the intro. */
+/* Legend: small inline strip under the intro. */
 .legend {
   display: flex; gap: 22px; flex-wrap: wrap;
   font-size: 12.5px; color: var(--ink-60);
@@ -141,7 +141,7 @@ EXTRA_CSS = """
 .legend-square.assistive { background: var(--assistive); }
 .legend-square.no-data { background: var(--no-data); }
 
-/* Activity cards — paper, hairline border, no shadow. Each card has
+/* Activity cards: paper, hairline border, no shadow. Each card has
    the activity title + description + a small grid of K coloured
    squares (one per AEI match). */
 .card {
@@ -202,7 +202,7 @@ EXTRA_CSS = """
   letter-spacing: -0.005em;
 }
 
-/* Area sections — one editorial-width header per organizational area,
+/* Area sections: one editorial-width header per organizational area,
    then the cards for that area span the wider grid. */
 .area-section { margin: 56px 0 0; }
 .area-section:first-of-type { margin-top: 32px; }
@@ -270,7 +270,7 @@ EXTRA_CSS = """
 .dist-bar .seg.assistive { background: var(--assistive); }
 .dist-bar .seg.no-data { background: var(--no-data); }
 
-/* Popover — small floating card opened on click of a task square.
+/* Popover: small floating card opened on click of a task square.
    `position: absolute` so it stays anchored to the clicked square's
    document position; the JS uses document-coordinate maths. */
 .popover {
@@ -395,7 +395,7 @@ EXTRA_CSS = """
   color: var(--paper);
 }
 
-/* JS-produced classes — preserved from the v4 viewer with the
+/* JS-produced classes: preserved from the v4 viewer with the
    palette swapped to Carta sbiadita. Listed flat here so the JS in
    render_html doesn't need any change. */
 .grid {
@@ -514,7 +514,7 @@ EXTRA_CSS = """
   color: var(--ink-60);
 }
 .card.low-confidence .task-grid::before {
-  content: "Low confidence — top-1 similarity below threshold.";
+  content: "Low confidence: top-1 similarity below threshold.";
   width: 100%;
   font-size: 11px;
   color: var(--ink-60);
@@ -524,10 +524,10 @@ EXTRA_CSS = """
   margin-bottom: 6px;
 }
 
-/* Area section override — single editorial column above its cards. */
+/* Area section override: single editorial column above its cards. */
 .area-section { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--hairline-2); }
 
-/* Bottom colophon strip — same shape as the canvas viewers. */
+/* Bottom colophon strip: same shape as the canvas viewers. */
 .colophon-strip {
   position: fixed;
   left: 0; right: 0; bottom: 0;
@@ -584,7 +584,7 @@ _LEGACY_CSS_REMOVED = """
 .area-section .area-notes { margin-top: 18px; font-size: 0.92rem; line-height: 1.7; color: var(--fg); }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-/* Activity cards — full border, padding, hover signal. Even though
+/* Activity cards: full border, padding, hover signal. Even though
    the wrapper itself isn't the click target (the inner task-squares
    are), the border gives the activity a clean visual frame consistent
    with the other playbooks. */
@@ -593,7 +593,7 @@ _LEGACY_CSS_REMOVED = """
 .card-id { font-family: ui-monospace, SF Mono, Menlo, monospace; font-size: 0.68rem; color: var(--fg-muted); margin-bottom: 12px; }
 .card-desc { font-size: 0.88rem; color: var(--fg-muted); margin-bottom: 14px; line-height: 1.55; }
 
-/* Closest-match block — nested inside .card, distinguished by a
+/* Closest-match block: nested inside .card, distinguished by a
    subtle background tint, not by another border. */
 .closest-match { padding: 10px 12px; margin: 14px 0; background: var(--bg-alt); border-radius: 3px; font-size: 0.85rem; line-height: 1.55; }
 .closest-match .label { font-family: var(--font-display); font-size: 0.66rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 6px; font-weight: 500; }
@@ -620,10 +620,10 @@ _LEGACY_CSS_REMOVED = """
 .level-tag.zero { background: var(--no-data); color: var(--fg); }
 .level-tag.low-confidence { background: var(--low-conf); color: var(--fg); }
 
-.card.low-confidence .task-grid::before { content: "Low confidence — top-1 similarity below threshold."; grid-column: 1 / -1; font-size: 0.76rem; color: var(--fg-muted); padding: 8px 10px; background: var(--bg-alt); border-radius: 2px; }
+.card.low-confidence .task-grid::before { content: "Low confidence: top-1 similarity below threshold."; grid-column: 1 / -1; font-size: 0.76rem; color: var(--fg-muted); padding: 8px 10px; background: var(--bg-alt); border-radius: 2px; }
 .card.low-confidence .task-grid { max-width: none; }
 
-/* Decisions section — centered editorial column, same as value-map and world-model. */
+/* Decisions section: centered editorial column, same as value-map and world-model. */
 .section { max-width: 820px; margin: 96px auto 0; padding-top: 40px; border-top: 1px solid var(--fg-hairline); }
 .section h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 20px; }
 .section p { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 14px; max-width: 720px; }
@@ -634,7 +634,7 @@ _LEGACY_CSS_REMOVED = """
 .decision .answer { font-size: 0.95rem; line-height: 1.7; color: var(--fg); margin: 0 0 6px; max-width: 720px; }
 .decision .source { font-size: 0.78rem; color: var(--fg-muted); font-family: ui-monospace, SF Mono, Menlo, monospace; }
 
-/* Popover — small floating card next to the clicked square. Replaces
+/* Popover: small floating card next to the clicked square. Replaces
    the full-screen modal: pop-overs read as 'a tooltip you can read',
    not 'a page you have to dismiss'. */
 .popover { position: absolute; display: none; max-width: 360px; min-width: 240px; padding: 14px 18px 16px; background: #FFFFFF; border: 1px solid var(--fg-hairline); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); z-index: 100; animation: pn-pop 0.18s ease; }
@@ -665,8 +665,8 @@ STRINGS = {
     "en": {
         "subtitle": "How AI usage observed in the public Claude sample maps onto each activity this organization actually does, by matching every activity to the closest tasks in a public catalog of work.",
         "intro_h2": "What this map is",
-        "intro_p1": "Each activity below is a piece of work this organization actually does. For each one, this page finds the closest tasks in a public catalog of about 18,500 occupations, and shows how Claude was used on those tasks in a sample of public conversations. The colours describe how Claude was used in the sample — not what the activity is in this organization.",
-        "intro_p2": "Each activity is shown with five matches, not one. Picking only the single closest match would be fragile — that one match is often only partially right. Five squares show whether the pattern holds across nearby matches: five greens means Claude reliably worked alone on tasks like this in the sample; a mix of colours means the read is noisier and worth taking with a pinch of salt.",
+        "intro_p1": "Each activity below is a piece of work this organization actually does. For each one, this page finds the closest tasks in a public catalog of about 18,500 occupations, and shows how Claude was used on those tasks in a sample of public conversations. The colours describe how Claude was used in the sample: not what the activity is in this organization.",
+        "intro_p2": "Each activity is shown with five matches, not one. Picking only the single closest match would be fragile: that one match is often only partially right. Five squares show whether the pattern holds across nearby matches: five greens means Claude reliably worked alone on tasks like this in the sample; a mix of colours means the read is noisier and worth taking with a pinch of salt.",
         "intro_p3": "Click any square to read the matched task verbatim, how close it is to the activity (similarity), how Claude was used on it, and how big the sample behind that observation is. The colour key is in the legend below.",
         "legend_automated": "Mostly automated",
         "legend_augmented": "Mostly augmented",
@@ -678,6 +678,8 @@ STRINGS = {
         "unit_label": "Unit",
         "all": "All",
         "all_units": "Entire org",
+        "analysis_btn": "Analysis",
+        "help_btn_label": "What is this map?",
         "level_strong": "High signal",
         "level_medium": "Some signal",
         "level_mixed": "Low signal",
@@ -689,7 +691,7 @@ STRINGS = {
         "closest_match": "Closest O*NET task",
         "confidence": "Confidence",
         "automation": "Automation",
-        "low_conf_hint": "Low confidence — top-1 similarity below threshold.",
+        "low_conf_hint": "Low confidence: top-1 similarity below threshold.",
         "no_unit": "(no area)",
         "activities_count": "{n} activities",
         "tooltip_click": "Click for details",
@@ -702,7 +704,7 @@ STRINGS = {
         "modal_confidence": "Confidence (cosine similarity)",
         "modal_autonomy": "Average autonomy in Claude conversations",
         "modal_count": "Sample size (Claude.ai conversations)",
-        "modal_count_warn_small": "small sample — interpret cautiously",
+        "modal_count_warn_small": "small sample: interpret cautiously",
         "modal_category": "Anthropic category for the sample",
         "modal_no_rich": "Below the minimum activity count for stable estimates. The square is shown as 'no data'.",
         "modal_chain": "What this card actually says",
@@ -730,8 +732,8 @@ STRINGS = {
     "it": {
         "subtitle": "Come l'uso di AI osservato nel campione pubblico Claude si mappa su ogni attività che questa organizzazione fa, cercando la mansione più vicina in un catalogo pubblico del lavoro.",
         "intro_h2": "Cos'è questa mappa",
-        "intro_p1": "Ogni attività qui sotto è un pezzo di lavoro che l'organizzazione fa davvero. Per ognuna la pagina cerca le mansioni più vicine in un catalogo pubblico di circa 18.500 occupazioni, e mostra come Claude è stato usato su quelle mansioni in un campione di conversazioni pubbliche. I colori descrivono come Claude è stato usato nel campione — non cosa è l'attività dentro questa organizzazione.",
-        "intro_p2": "Ogni attività è mostrata con cinque match, non uno. Prendere solo la mansione più vicina sarebbe fragile — quel singolo match spesso è solo parzialmente azzeccato. Cinque quadratini mostrano se il pattern regge attraverso match diversi: cinque verdi vuol dire che Claude ha lavorato in autonomia su mansioni simili nel campione; un mix di colori vuol dire che il segnale è più rumoroso e va preso con cautela.",
+        "intro_p1": "Ogni attività qui sotto è un pezzo di lavoro che l'organizzazione fa davvero. Per ognuna la pagina cerca le mansioni più vicine in un catalogo pubblico di circa 18.500 occupazioni, e mostra come Claude è stato usato su quelle mansioni in un campione di conversazioni pubbliche. I colori descrivono come Claude è stato usato nel campione: non cosa è l'attività dentro questa organizzazione.",
+        "intro_p2": "Ogni attività è mostrata con cinque match, non uno. Prendere solo la mansione più vicina sarebbe fragile: quel singolo match spesso è solo parzialmente azzeccato. Cinque quadratini mostrano se il pattern regge attraverso match diversi: cinque verdi vuol dire che Claude ha lavorato in autonomia su mansioni simili nel campione; un mix di colori vuol dire che il segnale è più rumoroso e va preso con cautela.",
         "intro_p3": "Click su qualunque quadratino per leggere la mansione verbatim, quanto è vicina all'attività (similarità), come Claude è stato usato, e quanto è ampio il campione dietro quell'osservazione. La legenda dei colori è qui sotto.",
         "legend_automated": "Claude lavorava in autonomia (4-5 su 5)",
         "legend_augmented": "Claude assisteva con supervisione (3-4 su 5)",
@@ -743,6 +745,8 @@ STRINGS = {
         "unit_label": "Unit",
         "all": "Tutto",
         "all_units": "Tutta l'organizzazione",
+        "analysis_btn": "Analisi",
+        "help_btn_label": "Cos'è questa mappa?",
         "level_strong": "Forte: Claude in autonomia su almeno 3 mansioni vicine",
         "level_medium": "Medio: almeno 5 mansioni vicine assistite o autonome",
         "level_mixed": "Misto: mansioni vicine con dati spariti",
@@ -902,9 +906,15 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
         (metadata.get("_org") if isinstance(metadata, dict) else None)
         or "AI exposure"
     )
-    dated = ""  # filled by main() from the JSON payload, set on metadata if present
+    # Filled by main() from the JSON payload, set on metadata if
+    # present. Fallback to today's date so the chrome never renders
+    # the literal em dash placeholder STYLE.md bans.
+    from datetime import date as _date
+    dated = ""
     if isinstance(metadata, dict):
         dated = metadata.get("_dated", "")
+    if not dated:
+        dated = _date.today().isoformat()
     if lang == "it":
         what_html = "esposizione all'AI · attività × catalogo pubblico del lavoro"
     else:
@@ -941,25 +951,25 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
             lede="",
         )
 
-    # About-modal body — the editorial intro behind the "?" button.
+    # About-modal body: the editorial intro behind the "?" button.
     # Plain-language definitions of every category, no jargon (per
     # skills/STYLE.md). The colour-coded labels on the squares above
     # are otherwise opaque to a leader reading this for the first time.
     if lang == "it":
         colour_defs = """
   <h2>Cosa vogliono dire i colori dei quadratini</h2>
-  <p><strong>Per lo più automatizzata</strong> — sulle attività più vicine a questa, nel campione pubblico Claude ha lavorato in autonomia; nella maggior parte delle conversazioni l'umano non è dovuto intervenire.</p>
-  <p><strong>Per lo più aumentata</strong> — Claude e l'umano hanno lavorato insieme: entrambi hanno contribuito al risultato.</p>
-  <p><strong>Assistiva</strong> — Claude ha dato una mano (cercare informazioni, suggerire bozze), ma l'umano è rimasto in guida e ha preso le decisioni.</p>
-  <p><strong>Fuori dal campione osservato</strong> — nessuna conversazione pubblica con Claude nel campione corrispondeva abbastanza a questa attività. Significa "non lo sappiamo da questo campione", non "Claude qui non si usa".</p>
+  <p><strong>Per lo più automatizzata</strong>: sulle attività più vicine a questa, nel campione pubblico Claude ha lavorato in autonomia; nella maggior parte delle conversazioni l'umano non è dovuto intervenire.</p>
+  <p><strong>Per lo più aumentata</strong>: Claude e l'umano hanno lavorato insieme: entrambi hanno contribuito al risultato.</p>
+  <p><strong>Assistiva</strong>: Claude ha dato una mano (cercare informazioni, suggerire bozze), ma l'umano è rimasto in guida e ha preso le decisioni.</p>
+  <p><strong>Fuori dal campione osservato</strong>: nessuna conversazione pubblica con Claude nel campione corrispondeva abbastanza a questa attività. Significa "non lo sappiamo da questo campione", non "Claude qui non si usa".</p>
 """
     else:
         colour_defs = """
   <h2>What the colours mean</h2>
-  <p><strong>Mostly automated</strong> — on the public-catalog tasks closest to this activity, Claude in the sample handled the work on its own; in most of those conversations the human didn't step in.</p>
-  <p><strong>Mostly augmented</strong> — the human and Claude worked together; both contributed to the result.</p>
-  <p><strong>Assistive</strong> — Claude helped (looking things up, drafting, summarising) but the human stayed in the lead and made the calls.</p>
-  <p><strong>Outside the observed sample</strong> — no public Claude conversation in the sample was close enough to this activity. Read as "we don't know from this sample", not as "Claude isn't used here".</p>
+  <p><strong>Mostly automated</strong>: on the public-catalog tasks closest to this activity, Claude in the sample handled the work on its own; in most of those conversations the human didn't step in.</p>
+  <p><strong>Mostly augmented</strong>: the human and Claude worked together; both contributed to the result.</p>
+  <p><strong>Assistive</strong>: Claude helped (looking things up, drafting, summarising) but the human stayed in the lead and made the calls.</p>
+  <p><strong>Outside the observed sample</strong>: no public Claude conversation in the sample was close enough to this activity. Read as "we don't know from this sample", not as "Claude isn't used here".</p>
 """
 
     about_body = f"""
@@ -998,7 +1008,9 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
 
 {app_pure_dateline_html(org_name, what=what_html)}
 
-{app_pure_top_right_html(dated or "—", show_analysis=has_decisions, show_help=True)}
+{app_pure_top_right_html(dated, show_analysis=has_decisions, show_help=True,
+                          analysis_label=S.get("analysis_btn", "Analysis"),
+                          help_label=S.get("help_btn_label", "What is this map?"))}
 
 <!-- Filter row + dashboard live in the body directly. Editorial
      intro / legend / org snapshot are behind the "?" button. -->
@@ -1218,7 +1230,7 @@ function renderCard(d) {{
   const isLow = d.level === 'low-confidence';
   let squaresHtml = '';
   if (!isLow) {{
-    // Render exactly the matches that exist — no padding to a fixed
+    // Render exactly the matches that exist: no padding to a fixed
     // grid size. With top-K = 5 (default) this gives 5 squares per
     // activity; the grid CSS wraps them into rows of 5.
     const real = d.matches.map((m, idx) => ({{m, idx, cls: classifyMatch(m)}}));
@@ -1286,7 +1298,7 @@ function render() {{
     const sortedUnits = Object.keys(groups).sort();
     // When there is only one area (often the case for orgs without
     // area metadata, where everything falls into the "no_unit"
-    // bucket), suppress the area-head — its per-area summary just
+    // bucket), suppress the area-head: its per-area summary just
     // duplicates the org-overview already shown above. Render cards
     // flat in that case.
     if (sortedUnits.length === 1) {{
@@ -1354,7 +1366,7 @@ document.getElementById('search').addEventListener('input', e => {{
   render();
 }});
 
-// Popover positioning + click handlers — same shape as value-map.
+// Popover positioning + click handlers: same shape as value-map.
 const popoverEl   = document.getElementById('popover');
 const popoverBody = document.getElementById('popover-body');
 

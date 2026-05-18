@@ -45,11 +45,21 @@ from autoresearch_lib import (  # noqa: E402
 )
 
 
-# Vocabulary that should not appear in the decisions text. AEI numbers
-# are useful internally but shouldn't be quoted in leader-facing prose
-# without translation.
+# Vocabulary that should not appear in the decisions text. Two groups.
+#
+# (a) AEI / matcher internals: AI numbers are useful inside the agent
+#     loop and inside the per-card popovers, but the agent's prose in
+#     decisions and area notes must paraphrase them. A leader doesn't
+#     read `ai_autonomy_mean` or `top1_similarity`.
+#
+# (b) Universal style bans from STYLE.md, applied to every playbook
+#     (added 2026-05-18 after the AIRC graph-decision iteration):
+#     em dashes, rhetorical "Significa X, non Y" / "Not X, but Y"
+#     formulas, meta-rhetorical "the data says / declares" voice, repo
+#     and pipeline jargon leaking into user prose.
 AEI_JARGON = re.compile(
     "|".join([
+        # --- AEI / matcher internals ---
         r"\bO\*NET\b",
         r"\bai_autonomy_mean\b",
         r"\bai_education_years_mean\b",
@@ -58,6 +68,23 @@ AEI_JARGON = re.compile(
         r"\btop1?_similarity\b",
         r"\bcosine\s+similarity\b",
         r"\bembedding\b",
+        # --- meta-rhetorical (the data speaks) ---
+        r"\b(?:il\s+)?(?:dato|i\s+dati|il\s+modello|il\s+campione)\s+(?:dice|dichiara|mostra|racconta)\b",
+        r"\bthe\s+(?:data|model|sample|matcher)\s+(?:declares?|says?|knows?|shows?\s+us)\b",
+        r"\bl'?AEI\s+(?:dice|dichiara|mostra)\b",
+        # --- rhetorical formulas (in any language) ---
+        r"\bsignifica\s+\w+(?:\s+\w+){0,2},\s+non\s+\w+",
+        r"\bè\s+\w+(?:\s+\w+){0,2},\s+non\s+\w+",
+        r"\bnot\s+\w+(?:\s+\w+){0,2},\s+but\s+\w+",
+        r"\bisn'?t\s+\w+(?:\s+\w+){0,2},\s+it'?s\s+\w+",
+        # --- repo / pipeline jargon leaking into prose ---
+        r"\bpassata\s+di\s+ingest\b",
+        r"\bingerit[oaie]\b",
+        r"\bplaybook\b",
+        r"\bfrontmatter\b",
+        r"\b_path\b",
+        # --- punctuation banned by STYLE.md ---
+        r"—",
     ]),
     re.IGNORECASE,
 )
@@ -126,16 +153,35 @@ def score_llm_judge(play_data: dict) -> tuple[bool, str]:
 
 
 def _gather_names(play_data: dict) -> list[str]:
+    """Names the org should be recognisable by inside the decisions.
+
+    Three layers, in order of strength:
+    - activity ids (acl-ev-allestimento-logistica, peer-review-grant-call,
+      ...) and short readable labels;
+    - area / unit identifiers carried in `metadata[]` if the play
+      wrapper bundles it (per-activity `area` / `unit` fields);
+    - any explicit `_org` name on the wrapper.
+
+    Decisions written at activity grain hit layer 1; org-level
+    decisions (which name areas like 'peer-review' rather than
+    individual activities) need layers 2 and 3 to register.
+    """
     names: list[str] = []
     for m in play_data.get("matches") or []:
         if m.get("id"):
             names.append(m["id"])
-        # the readable text of the activity
         if m.get("text"):
-            # only keep short labels — the full text is too long to be a "name"
             t = m["text"]
             if len(t) <= 60:
                 names.append(t)
+    for md in play_data.get("metadata") or []:
+        for k in ("id", "title", "area", "unit"):
+            v = md.get(k)
+            if isinstance(v, str) and v:
+                names.append(v)
+    org = (play_data.get("_org") or "").strip()
+    if org:
+        names.append(org)
     return names
 
 
