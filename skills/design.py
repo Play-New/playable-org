@@ -1455,6 +1455,34 @@ def app_pure_css(*, layout: str = "canvas") -> str:
     body_overflow = "hidden" if layout == "canvas" else "auto"
     body_height = "100%" if layout == "canvas" else "auto"
     body_touch = "none" if layout == "canvas" else "manipulation"
+    # On scroll layouts the chrome (dateline, date-tr, analysis,
+    # help-btn) is position:fixed with a transparent background;
+    # scrolling content would otherwise paint directly onto it and
+    # the text becomes unreadable. A paper-coloured strip behind the
+    # chrome (z-index just below the chrome's 5) keeps the top zone
+    # readable while preserving the editorial appearance. Canvas
+    # layouts don't scroll, so the body::before stays inert.
+    chrome_backdrop = "" if layout == "canvas" else f"""
+body::before {{
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 54px;
+  background: var(--paper);
+  z-index: 4;
+  pointer-events: none;
+}}
+body::after {{
+  /* Soft fade-out below the strip so the edge isn't a hard line. */
+  content: "";
+  position: fixed;
+  top: 54px; left: 0; right: 0;
+  height: 18px;
+  background: linear-gradient(to bottom, {p['paper']} 0%, {p['paper']}00 100%);
+  z-index: 4;
+  pointer-events: none;
+}}
+"""
     return f"""{_font_face_block()}
 
 :root {{
@@ -1502,6 +1530,7 @@ body {{
 }}
 ::selection {{ background: var(--ink); color: var(--paper); }}
 .inspect, .modal, .scroll-paper {{ -webkit-user-select: text; user-select: text; }}
+{chrome_backdrop}
 
 /* ─── DATELINE — top-left, no border, hangs in space ──────────── */
 .dateline {{

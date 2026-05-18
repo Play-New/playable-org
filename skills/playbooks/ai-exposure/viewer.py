@@ -665,9 +665,9 @@ STRINGS = {
     "en": {
         "subtitle": "How AI usage observed in the public Claude sample maps onto each activity this organization actually does, by matching every activity to the closest tasks in a public catalog of work.",
         "intro_h2": "What this map is",
-        "intro_p1": "Each activity below is a piece of work this organization actually does. For each one, this page finds the closest tasks in a public catalog of about 18,500 occupations, and shows how Claude was used on those tasks in a sample of public conversations. The colours describe how Claude was used in the sample: not what the activity is in this organization.",
-        "intro_p2": "Each activity is shown with five matches, not one. Picking only the single closest match would be fragile: that one match is often only partially right. Five squares show whether the pattern holds across nearby matches: five greens means Claude reliably worked alone on tasks like this in the sample; a mix of colours means the read is noisier and worth taking with a pinch of salt.",
-        "intro_p3": "Click any square to read the matched task verbatim, how close it is to the activity (similarity), how Claude was used on it, and how big the sample behind that observation is. The colour key is in the legend below.",
+        "intro_p1": "Each activity on the page is a piece of work this organization actually does. For each one, the system finds the five closest tasks in a public catalog of about 18,500 occupations, and shows how Claude was used on those tasks in a sample of public conversations. The colour key is in the legend below.",
+        "intro_p2": "Every activity is shown with five matches. Picking only the single closest one would be fragile: that match is often partially right. Five squares show whether the pattern holds across the nearby matches. Five greens means Claude reliably worked alone on tasks like this in the sample. A mix of colours means the signal is noisier and worth taking with a pinch of salt.",
+        "intro_p3": "Click any square to read the matched task in its original wording, how close it is to the activity, how Claude was used on it, and how big the sample behind the observation is.",
         "legend_automated": "Mostly automated",
         "legend_augmented": "Mostly augmented",
         "legend_assistive": "Assistive",
@@ -708,7 +708,7 @@ STRINGS = {
         "modal_category": "Anthropic category for the sample",
         "modal_no_rich": "Below the minimum activity count for stable estimates. The square is shown as 'no data'.",
         "modal_chain": "What this card actually says",
-        "modal_chain_text": "this org's activity → closest match in the public catalog of work → category from how Claude was used on that catalog task in the Anthropic sample. The category describes that sample, not your activity.",
+        "modal_chain_text": "this org's activity → closest match in the public catalog of work → category from how Claude was used on that catalog task in the Anthropic sample. The category describes that sample. Reading it back onto the org's activity depends on how close the two really are.",
         "area_summary_label": "Snapshot",
         "area_distribution": "Distribution",
         "area_avg_confidence": "Avg. top-1 confidence",
@@ -732,9 +732,9 @@ STRINGS = {
     "it": {
         "subtitle": "Come l'uso di AI osservato nel campione pubblico Claude si mappa su ogni attività che questa organizzazione fa, cercando la mansione più vicina in un catalogo pubblico del lavoro.",
         "intro_h2": "Cos'è questa mappa",
-        "intro_p1": "Ogni attività qui sotto è un pezzo di lavoro che l'organizzazione fa davvero. Per ognuna la pagina cerca le mansioni più vicine in un catalogo pubblico di circa 18.500 occupazioni, e mostra come Claude è stato usato su quelle mansioni in un campione di conversazioni pubbliche. I colori descrivono come Claude è stato usato nel campione: non cosa è l'attività dentro questa organizzazione.",
-        "intro_p2": "Ogni attività è mostrata con cinque match, non uno. Prendere solo la mansione più vicina sarebbe fragile: quel singolo match spesso è solo parzialmente azzeccato. Cinque quadratini mostrano se il pattern regge attraverso match diversi: cinque verdi vuol dire che Claude ha lavorato in autonomia su mansioni simili nel campione; un mix di colori vuol dire che il segnale è più rumoroso e va preso con cautela.",
-        "intro_p3": "Click su qualunque quadratino per leggere la mansione verbatim, quanto è vicina all'attività (similarità), come Claude è stato usato, e quanto è ampio il campione dietro quell'osservazione. La legenda dei colori è qui sotto.",
+        "intro_p1": "Ogni attività in pagina è un pezzo di lavoro che l'organizzazione fa davvero. Per ognuna il sistema cerca le cinque mansioni più vicine in un catalogo pubblico di circa 18.500 occupazioni, e mostra come Claude è stato usato su quelle mansioni in un campione di conversazioni pubbliche. La legenda dei colori è qui sotto.",
+        "intro_p2": "Ogni attività è mostrata con cinque match. Prendere solo la mansione più vicina sarebbe fragile: quel singolo match spesso è parzialmente azzeccato. Cinque quadratini mostrano se il pattern regge attraverso le mansioni vicine. Cinque verdi vuol dire che Claude ha lavorato in autonomia su mansioni simili nel campione. Un mix di colori vuol dire che il segnale è più rumoroso e va preso con cautela.",
+        "intro_p3": "Click su qualunque quadratino per leggere la mansione nella sua formulazione originale, quanto è vicina all'attività, come Claude è stato usato, e quanto è ampio il campione dietro l'osservazione.",
         "legend_automated": "Claude lavorava in autonomia (4-5 su 5)",
         "legend_augmented": "Claude assisteva con supervisione (3-4 su 5)",
         "legend_assistive": "Claude usato come strumento puntuale (1-3 su 5)",
@@ -775,7 +775,7 @@ STRINGS = {
         "modal_category": "Etichetta del campione Anthropic",
         "modal_no_rich": "Per questa mansione il campione Anthropic non ha dato osservato (nessuna conversazione Claude o sotto soglia minima). Il quadratino compare come 'fuori dati'.",
         "modal_chain": "Cosa dice davvero questo riquadro",
-        "modal_chain_text": "La catena è: attività dell'organizzazione → mansione più vicina nel catalogo americano dei mestieri → categoria che Anthropic ha dato alle conversazioni Claude su quella mansione. L'etichetta descrive il campione Anthropic, non l'attività dell'organizzazione. Le distanze fra mansioni del catalogo USA e attività italiane di una fondazione sono spesso reali.",
+        "modal_chain_text": "La catena: attività dell'organizzazione → mansione più vicina nel catalogo americano dei mestieri → categoria che Anthropic ha dato alle conversazioni Claude su quella mansione. L'etichetta descrive il campione Anthropic. Riferirla all'attività dell'organizzazione è un salto separato, che dipende da quanto le due cose sono davvero vicine. Le distanze fra mansioni del catalogo USA e attività italiane di una fondazione possono essere reali.",
         "area_summary_label": "In sintesi",
         "area_distribution": "Come si dividono le mansioni vicine",
         "area_avg_confidence": "Vicinanza media della mansione più vicina",
@@ -958,18 +958,18 @@ def render_html(matches: list[dict], title: str, metadata: dict[str, dict], lang
     if lang == "it":
         colour_defs = """
   <h2>Cosa vogliono dire i colori dei quadratini</h2>
-  <p><strong>Per lo più automatizzata</strong>: sulle attività più vicine a questa, nel campione pubblico Claude ha lavorato in autonomia; nella maggior parte delle conversazioni l'umano non è dovuto intervenire.</p>
-  <p><strong>Per lo più aumentata</strong>: Claude e l'umano hanno lavorato insieme: entrambi hanno contribuito al risultato.</p>
-  <p><strong>Assistiva</strong>: Claude ha dato una mano (cercare informazioni, suggerire bozze), ma l'umano è rimasto in guida e ha preso le decisioni.</p>
-  <p><strong>Fuori dal campione osservato</strong>: nessuna conversazione pubblica con Claude nel campione corrispondeva abbastanza a questa attività. Significa "non lo sappiamo da questo campione", non "Claude qui non si usa".</p>
+  <p><strong>Per lo più automatizzata</strong>: sulle mansioni del catalogo più vicine a questa attività, nel campione pubblico Claude ha lavorato in autonomia. Nella maggior parte delle conversazioni l'umano non è dovuto intervenire.</p>
+  <p><strong>Per lo più aumentata</strong>: Claude e l'umano hanno lavorato insieme. Entrambi hanno contribuito al risultato.</p>
+  <p><strong>Assistiva</strong>: Claude ha dato una mano (cercare informazioni, suggerire bozze). L'umano è rimasto in guida e ha preso le decisioni.</p>
+  <p><strong>Fuori dal campione osservato</strong>: nessuna conversazione pubblica con Claude nel campione corrispondeva abbastanza a questa attività. Vuol dire "non lo sappiamo da questo campione". Vuol dire anche che il colore non si può leggere come "qui Claude non si usa": semplicemente il campione non lo riporta.</p>
 """
     else:
         colour_defs = """
   <h2>What the colours mean</h2>
-  <p><strong>Mostly automated</strong>: on the public-catalog tasks closest to this activity, Claude in the sample handled the work on its own; in most of those conversations the human didn't step in.</p>
-  <p><strong>Mostly augmented</strong>: the human and Claude worked together; both contributed to the result.</p>
-  <p><strong>Assistive</strong>: Claude helped (looking things up, drafting, summarising) but the human stayed in the lead and made the calls.</p>
-  <p><strong>Outside the observed sample</strong>: no public Claude conversation in the sample was close enough to this activity. Read as "we don't know from this sample", not as "Claude isn't used here".</p>
+  <p><strong>Mostly automated</strong>: on the public-catalog tasks closest to this activity, Claude in the sample handled the work on its own. In most of those conversations the human didn't step in.</p>
+  <p><strong>Mostly augmented</strong>: the human and Claude worked together. Both contributed to the result.</p>
+  <p><strong>Assistive</strong>: Claude helped (looking things up, drafting, summarising). The human stayed in the lead and made the calls.</p>
+  <p><strong>Outside the observed sample</strong>: no public Claude conversation in the sample was close enough to this activity. Read as "we don't know from this sample". The colour does not say "Claude isn't used here"; the sample just doesn't report it.</p>
 """
 
     about_body = f"""
