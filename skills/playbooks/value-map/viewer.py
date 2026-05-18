@@ -646,6 +646,7 @@ EXTRA_CSS = r"""
 JS_TEMPLATE = r"""
 (() => {
   const NODES = JSON.parse(document.getElementById('nodes-data').textContent);
+  const S = JSON.parse(document.getElementById('strings-data').textContent);
   const inspect = document.getElementById('inspect');
   const inspectBody = document.getElementById('inspect-body');
   const STAGE_COLORS = {
@@ -653,10 +654,10 @@ JS_TEMPLATE = r"""
     product: 'PRODUCT_HEX', commodity: 'COMMODITY_HEX'
   };
   const STAGE_PLAIN = {
-    genesis:   'new territory — nobody knows yet how to do this well',
-    custom:    'built in-house — every shop figures it out their own way',
-    product:   'common practice — vendors and patterns exist, you can buy it',
-    commodity: 'market standard — indistinguishable across providers',
+    genesis:   S.stage_genesis,
+    custom:    S.stage_custom,
+    product:   S.stage_product,
+    commodity: S.stage_commodity,
   };
   function stageFor(ev) {
     if (ev < 0.17) return 'genesis';
@@ -670,13 +671,13 @@ JS_TEMPLATE = r"""
     })[c]);
   }
   function kindLabel(node) {
-    if (node.is_new) return 'New / emerging';
-    if (node._kind === 'anchor') return 'User need';
-    if (node._kind === 'user') return 'End user';
-    if (node._kind === 'unit') return 'Unit';
-    if (node._kind === 'activity') return 'Activity';
-    if (node._kind === 'stakeholder') return 'External stakeholder';
-    return 'Part of the chain';
+    if (node.is_new) return S.kind_emerging;
+    if (node._kind === 'anchor') return S.kind_anchor;
+    if (node._kind === 'user') return S.kind_user;
+    if (node._kind === 'unit') return S.kind_unit;
+    if (node._kind === 'activity') return S.kind_activity;
+    if (node._kind === 'stakeholder') return S.kind_stakeholder;
+    return S.kind_generic;
   }
   function kindSwatch(node) {
     if (node.is_new) return 'ACCENT_HEX';
@@ -693,37 +694,53 @@ JS_TEMPLATE = r"""
     const isUser = node._kind === 'user';
     const stage = node.evolution != null ? stageFor(node.evolution) : null;
     const swatch = kindSwatch(node);
-    const desc = node.description || node._description || node._body || '';
 
     let html = `<div class="kind-tag" style="--tagcolor:${swatch}"><span class="swatch"></span><span>${escapeHtml(kindLabel(node))}</span></div>`;
     html += `<h2>${escapeHtml(node.label || id)}</h2>`;
-    if (node._structure_id) {
-      html += `<p class="path"><em>_path</em>  ${escapeHtml(node._structure_id)}</p>`;
+    // Description: pre-rendered HTML from inline_md() at build time.
+    // innerHTML is safe because the source markdown was escaped before
+    // the inline forms were applied; internal links resolve to focus
+    // anchors that re-focus the canvas on click.
+    if (node.blurb_html) {
+      html += `<div class="blurb">${node.blurb_html}</div>`;
     }
-    if (desc) html += `<p class="blurb">${escapeHtml(desc)}</p>`;
     if (!isUser && node.evolution != null) {
       const visText = node.visibility != null
-        ? (node.visibility >= 0.7 ? ' Visible to the client.'
-           : node.visibility >= 0.4 ? ' Mid-chain.'
-           : ' Behind the scenes.')
+        ? (node.visibility >= 0.7 ? ' ' + S.visibility_high
+           : node.visibility >= 0.4 ? ' ' + S.visibility_mid
+           : ' ' + S.visibility_low)
         : '';
-      html += `<p class="placement">${STAGE_PLAIN[stage]}.${visText}</p>`;
+      html += `<p class="placement">${STAGE_PLAIN[stage]}${visText}</p>`;
     }
     if (node.evolution_target != null && !node.is_new) {
-      html += `<p class="placement">→ Heading toward <em>${STAGE_PLAIN[stageFor(node.evolution_target)]}</em>.</p>`;
+      html += `<p class="placement">${S.evolution_target_lead} <em>${STAGE_PLAIN[stageFor(node.evolution_target)]}</em></p>`;
     }
     if (node.ai_effect && !node.is_new) {
-      html += `<p class="ai-effect">${escapeHtml(node.ai_effect)}</p>`;
+      const aiKey = 'ai_effect_' + node.ai_effect;
+      const aiPhrase = S[aiKey] || node.ai_effect;
+      html += `<p class="ai-effect"><em>${S.ai_effect_lead}</em> ${escapeHtml(aiPhrase)}</p>`;
     }
     if (node.is_new) {
       const why = node.ai_effect || node.rationale;
       if (why) {
-        html += `<div class="emerging-why"><div class="emerging-why-label">Why it's on the map</div><p>${escapeHtml(why)}</p></div>`;
+        html += `<div class="emerging-why"><div class="emerging-why-label">${S.emerging_label}</div><p>${escapeHtml(why)}</p></div>`;
       } else {
-        html += `<p class="placement">Emerging — does not exist today.</p>`;
+        html += `<p class="placement">${S.emerging_default}</p>`;
       }
     }
     inspectBody.innerHTML = html;
+    // Wire focus anchors inside the rendered blurb. Same shape as the
+    // Analysis modal anchors (graph viewer pattern).
+    inspectBody.querySelectorAll('.anchor[data-focus]').forEach(a => {
+      a.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        const tid = a.dataset.focus;
+        if (tid && NODES[tid]) {
+          if (typeof window.setFocus === 'function') window.setFocus(tid);
+          else renderInspectFor(tid);
+        }
+      });
+    });
 
     // Highlight the focused node in the SVG.
     document.querySelectorAll('.map-wrap g.node').forEach(g => g.classList.toggle('focused', g.dataset.nodeId === id));
@@ -803,6 +820,7 @@ HTML_TEMPLATE = """<!doctype html>
 {modal_html}
 
 <script type="application/json" id="nodes-data">{nodes_json}</script>
+<script type="application/json" id="strings-data">{strings_json}</script>
 <script>
 {baseline_js}
 {js}
@@ -817,6 +835,39 @@ HTML_TEMPLATE = """<!doctype html>
 # {id: node-data} object the JS can index.
 # ----------------------------------------------------------------------
 def _build_nodes_index(map_data: dict) -> dict[str, dict]:
+    """Build the per-node lookup that powers the inspect panel.
+
+    Two things happen here that didn't before:
+    - Descriptions are pre-rendered to safe HTML via `inline_md`. The
+      panel's JS sets innerHTML on the rendered string, so internal
+      `[label](node-id)` markdown links become focus anchors that
+      re-focus the canvas. Both `_description` (build-time) and any
+      agent-authored `description` are routed through the same helper.
+    - The link resolver knows both value-map component ids (c1, c2)
+      and the underlying org-side node ids (peer-review, ...) so the
+      agent can write whichever feels natural.
+    """
+    components = map_data.get("components") or []
+    component_ids = {c["id"] for c in components}
+    structure_to_component: dict[str, str] = {
+        c["_structure_id"]: c["id"] for c in components if c.get("_structure_id")
+    }
+
+    def _resolver(target: str) -> str | None:
+        if target in component_ids:
+            return target
+        if target in structure_to_component:
+            return structure_to_component[target]
+        return None
+
+    def _render_blurb(raw: str) -> str:
+        if not raw:
+            return ""
+        return "".join(
+            f"<p>{inline_md(p, link_resolver=_resolver)}</p>"
+            for p in raw.split("\n\n") if p.strip()
+        )
+
     index: dict[str, dict] = {}
     end_users = _normalize_end_users(map_data.get("end_user"))
     for i, label in enumerate(end_users):
@@ -830,9 +881,17 @@ def _build_nodes_index(map_data: dict) -> dict[str, dict]:
             "rationale": eu.get("rationale", "") if isinstance(eu, dict) else "",
         }
     for a in map_data.get("anchors") or []:
-        index[a["id"]] = {**a, "_kind": "anchor"}
-    for c in map_data.get("components") or []:
-        index[c["id"]] = c
+        node = {**a, "_kind": "anchor"}
+        raw = a.get("rationale") or a.get("description") or ""
+        if raw:
+            node["blurb_html"] = _render_blurb(raw)
+        index[a["id"]] = node
+    for c in components:
+        node = dict(c)
+        raw = c.get("description") or c.get("_description") or c.get("rationale") or ""
+        if raw:
+            node["blurb_html"] = _render_blurb(raw)
+        index[c["id"]] = node
     return index
 
 
@@ -842,11 +901,23 @@ def _build_modal_html(map_data: dict, org_name: str, dated: str, *, S: dict) -> 
         return ""
     nodes_idx = _build_nodes_index(map_data)
     node_ids_set = set(nodes_idx.keys())
+    # Reverse lookup org-side node id → value-map component id. Lets
+    # the agent write `[peer-review](peer-review)` and have the link
+    # focus the corresponding component on the canvas, instead of
+    # falling through to a plain blue href because `peer-review` is
+    # the org id, not the component id `c1`.
+    structure_to_component: dict[str, str] = {}
+    for c in map_data.get("components") or []:
+        sid = c.get("_structure_id")
+        if sid:
+            structure_to_component[sid] = c.get("id", "")
 
-    # Internal-node markdown links written inside decision answers
-    # (`[label](node-id)`) become focus anchors at render time.
     def _link_resolver(target: str) -> str | None:
-        return target if target in node_ids_set else None
+        if target in node_ids_set:
+            return target
+        if target in structure_to_component:
+            return structure_to_component[target]
+        return None
 
     items = []
     for dec in decisions:
@@ -914,6 +985,34 @@ STRINGS = {
             "Every component placed by how mature it is and how visible "
             "it is to the user, with the direction AI is pushing it."
         ),
+        # Inspect panel — kind labels
+        "kind_anchor": "User need",
+        "kind_user": "End user",
+        "kind_unit": "Unit",
+        "kind_activity": "Activity",
+        "kind_stakeholder": "External stakeholder",
+        "kind_emerging": "New / emerging",
+        "kind_generic": "Part of the chain",
+        # Inspect panel — stage explanations
+        "stage_genesis": "New territory. Nobody knows yet how to do this well.",
+        "stage_custom": "Built in-house. Every shop figures it out their own way.",
+        "stage_product": "Common practice. Vendors and patterns exist, you can buy it.",
+        "stage_commodity": "Market standard. Indistinguishable across providers.",
+        # Inspect panel — visibility hints
+        "visibility_high": "Visible to the user.",
+        "visibility_mid": "Mid-chain.",
+        "visibility_low": "Behind the scenes.",
+        # Inspect panel — AI effect + emerging
+        "ai_effect_lead": "Where AI sits today:",
+        "ai_effect_automated": "Claude reliably worked alone on tasks like this in the public sample.",
+        "ai_effect_augmented": "Claude and a human worked together on tasks like this in the public sample.",
+        "ai_effect_assistive": "Claude helped on tasks like this; the human stayed in the lead.",
+        "evolution_target_lead": "Heading toward:",
+        "emerging_label": "Why it's on the map",
+        "emerging_default": "Emerging. Does not exist today as such.",
+        # Inspect panel — chrome
+        "inspect_eyebrow": "Inspect",
+        "inspect_close_title": "Reset focus",
     },
     "it": {
         "analysis_btn": "Analisi",
@@ -930,6 +1029,34 @@ STRINGS = {
             "Ogni componente è posizionato per quanto è maturo e per quanto è "
             "visibile all'utente, con la direzione verso cui l'AI lo sta spingendo."
         ),
+        # Inspect panel — kind labels
+        "kind_anchor": "Bisogno utente",
+        "kind_user": "Utente",
+        "kind_unit": "Unità",
+        "kind_activity": "Attività",
+        "kind_stakeholder": "Stakeholder esterno",
+        "kind_emerging": "Nuovo / emergente",
+        "kind_generic": "Parte della catena",
+        # Inspect panel — stage explanations
+        "stage_genesis": "Territorio nuovo. Nessuno sa ancora come si fa bene.",
+        "stage_custom": "Costruito in casa. Ognuno lo inventa a modo suo.",
+        "stage_product": "Pratica diffusa. Fornitori e pattern esistono, si può comprare.",
+        "stage_commodity": "Standard di mercato. Indistinguibile fra fornitori.",
+        # Inspect panel — visibility hints
+        "visibility_high": "Visibile all'utente.",
+        "visibility_mid": "A metà catena.",
+        "visibility_low": "Dietro le quinte.",
+        # Inspect panel — AI effect + emerging
+        "ai_effect_lead": "Dove sta l'AI oggi:",
+        "ai_effect_automated": "Nel campione pubblico Claude ha lavorato in autonomia su mansioni simili.",
+        "ai_effect_augmented": "Nel campione pubblico Claude e una persona hanno lavorato insieme su mansioni simili.",
+        "ai_effect_assistive": "Nel campione pubblico Claude ha dato una mano; la persona è rimasta in guida.",
+        "evolution_target_lead": "Sta scivolando verso:",
+        "emerging_label": "Perché è sulla mappa",
+        "emerging_default": "Emergente. Oggi non esiste in questa forma.",
+        # Inspect panel — chrome
+        "inspect_eyebrow": "Ispeziona",
+        "inspect_close_title": "Reimposta focus",
     },
 }
 
@@ -1006,6 +1133,21 @@ def render_html(map_data: dict, *, org_name: str = "", lang: str = "en") -> str:
     dated = map_data.get("_dated") or _date.today().isoformat()
     nodes_index = _build_nodes_index(map_data)
     nodes_json = json.dumps(nodes_index, ensure_ascii=False).replace("</", "<\\/")
+    # Ship only the keys JS actually reads. Python-side keys with
+    # `.format()` placeholders (show_on_map, what_anchored, headline_*,
+    # about_*) stay in Python; they'd otherwise leak into the JSON as
+    # `{label}` and trip the orphan-placeholder regression test.
+    JS_STRING_KEYS = {
+        "kind_anchor", "kind_user", "kind_unit", "kind_activity",
+        "kind_stakeholder", "kind_emerging", "kind_generic",
+        "stage_genesis", "stage_custom", "stage_product", "stage_commodity",
+        "visibility_high", "visibility_mid", "visibility_low",
+        "ai_effect_lead", "ai_effect_automated", "ai_effect_augmented",
+        "ai_effect_assistive",
+        "evolution_target_lead", "emerging_label", "emerging_default",
+    }
+    js_strings = {k: v for k, v in S.items() if k in JS_STRING_KEYS}
+    strings_json = json.dumps(js_strings, ensure_ascii=False).replace("</", "<\\/")
     modal_html = _build_modal_html(map_data, org_name, dated, S=S)
     has_decisions = bool(map_data.get("decisions"))
 
@@ -1039,11 +1181,15 @@ def render_html(map_data: dict, *, org_name: str = "", lang: str = "en") -> str:
             analysis_label=S["analysis_btn"],
             help_label=S["help_btn_label"],
         ),
-        inspect_aside=app_pure_inspect_aside_html(),
+        inspect_aside=app_pure_inspect_aside_html(
+            eyebrow_label=S["inspect_eyebrow"],
+            close_title=S["inspect_close_title"],
+        ),
         modal_html=(modal_html or "") + about_modal_html_str,
         W=W, H=H,
         svg_inner=inner,
         nodes_json=nodes_json,
+        strings_json=strings_json,
         baseline_js=app_pure_baseline_js(),
         js=JS_TEMPLATE,
         GENESIS=GENESIS, CUSTOM=CUSTOM, PRODUCT=PRODUCT, COMMODITY=COMMODITY,

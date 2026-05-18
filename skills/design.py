@@ -2051,13 +2051,14 @@ body {{
 }}
 .decisions .anchor:hover {{ color: var(--ink); border-bottom-color: var(--ink); }}
 .decisions .anchor em {{ font-style: normal; color: var(--ink); font-weight: 500; }}
-/* Override for inline <a class="anchor"> emitted by inline_md() inside
-   decision answer paragraphs. The rule above was sized for the
-   "show on canvas →" <span>, italic and 12px; an <a> with the same
-   class also got the border-bottom hairline AND the browser's default
-   underline, producing a visible double line. Reset text-decoration,
-   match the surrounding prose register (not italic, inherit size),
-   keep the single hairline that signals "clickable". */
+/* Catchall: any <a> inside a decision answer paragraph wears the
+   editorial register, never the browser default blue underline. The
+   .anchor class arrives when inline_md() resolved an internal node;
+   the plain <a> arrives when the link target was an external URL or
+   an unresolved internal one. Both render the same way visually so
+   readers don't see an inconsistent "some links are blue, some
+   aren't" pattern. */
+.decisions p a,
 .decisions p a.anchor {{
   display: inline;
   font-size: inherit;
@@ -2068,6 +2069,7 @@ body {{
   padding-bottom: 0;
   cursor: pointer;
 }}
+.decisions p a:hover,
 .decisions p a.anchor:hover {{
   color: var(--ink);
   border-bottom-color: var(--ink);

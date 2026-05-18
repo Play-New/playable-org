@@ -74,8 +74,24 @@ def get_title(text: str) -> str:
     return m.group(1).strip() if m else ""
 
 
+_MD_LINK_RE = re.compile(r"\[([^\]]+)\]\([^)]+\)")
+
+
+def _clean_title(raw: str) -> str:
+    """Strip markdown link syntax from a node title.
+
+    AIRC commitment titles often inline a markdown link to the other
+    party: `AIRC ↔ [ricercatori-finanziati](../nodes/stakeholders/
+    ricercatori-finanziati.md), grant agreement`. The bracket-and-
+    parens leaked into the dateline as visible characters. Reduce to
+    the label and let the chrome treat it as plain text.
+    """
+    return _MD_LINK_RE.sub(r"\1", raw).strip()
+
+
 def load_node(org_dir: Path, kind: str, node_id: str) -> tuple[dict, str]:
-    """Return (frontmatter, title) for a structure node."""
+    """Return (frontmatter, title) for a structure node. Title is
+    normalised to plain text (markdown link syntax stripped)."""
     candidates = {
         "commitment": [org_dir / "commitments" / f"{node_id}.md"],
         "unit": [org_dir / "nodes" / "units" / f"{node_id}.md"],
@@ -84,7 +100,7 @@ def load_node(org_dir: Path, kind: str, node_id: str) -> tuple[dict, str]:
     for path in candidates.get(kind, []):
         if path.exists():
             text = path.read_text(encoding="utf-8")
-            return parse_frontmatter(text), get_title(text)
+            return parse_frontmatter(text), _clean_title(get_title(text))
     raise FileNotFoundError(f"{kind} '{node_id}' not found in {org_dir}")
 
 
